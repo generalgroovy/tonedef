@@ -1,0 +1,67 @@
+{
+  "date": "2026-09-15",
+  "palette": [
+    {
+      "color": "#e9e6dc",
+      "onPanel": 13.125958432633908,
+      "selectedText": 14.789482933098425
+    },
+    {
+      "color": "#be98ed",
+      "onPanel": 6.949455868111444,
+      "selectedText": 7.830198418137978
+    },
+    {
+      "color": "#70d4e4",
+      "onPanel": 9.543143536497057,
+      "selectedText": 10.752598310096156
+    },
+    {
+      "color": "#5b9dff",
+      "onPanel": 6.019081022021654,
+      "selectedText": 6.7819120794109455
+    },
+    {
+      "color": "#f17668",
+      "onPanel": 5.878435312212828,
+      "selectedText": 6.623441569580621
+    },
+    {
+      "color": "#69c8b0",
+      "onPanel": 8.187105356684043,
+      "selectedText": 9.224701995331575
+    },
+    {
+      "color": "#de8fcf",
+      "onPanel": 6.974661027213183,
+      "selectedText": 7.858597964904363
+    },
+    {
+      "color": "#e5c06c",
+      "onPanel": 9.434939734290907,
+      "selectedText": 10.630681248249793
+    },
+    {
+      "color": "#a7a5f4",
+      "onPanel": 7.283419563911717,
+      "selectedText": 8.206487159616302
+    },
+    {
+      "color": "#eca868",
+      "onPanel": 8.092070178691271,
+      "selectedText": 9.117622489466797
+    },
+    {
+      "color": "#95b9dd",
+      "onPanel": 8.009387375794942,
+      "selectedText": 9.024460842751859
+    },
+    {
+      "color": "#ee9fae",
+      "onPanel": 7.965907150605207,
+      "selectedText": 8.975470130822426
+    }
+  ],
+  "muted": 7.379003346339541,
+  "fretOutside": 8.29679964425256
+}

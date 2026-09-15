@@ -1,0 +1,27 @@
+✔ Golden intervals retain spelling, direction and octaves (5.0537ms)
+✔ Pitch and tuning fixtures; capo never counted twice (17.5124ms)
+✔ Chord identity, inversion and ambiguity come from actual pitches (2.3271ms)
+✔ Scale spelling is coherent, including leading tones and octaves (46.1084ms)
+✔ Rank transitions compare real sounding pitch and retain extra notes (1.2898ms)
+✔ Editor toggles, one-string replacement, repeats and key isolation (4.2201ms)
+✔ All examples are valid and JSON round-trips preserve exact events and flags (9.4941ms)
+✔ Timing uses quarter-note tempo even in compound meter; chords are polyphonic (1.65ms)
+✔ Generator property suite: 250 deterministic cases preserve fixed settings and playable chords (309.4831ms)
+✔ Randomization is atomic, exact for unchecked settings, and rejects impossible protected dependencies (92.2817ms)
+✔ Instrument reconciliation and undo preserve previous data (7.2182ms)
+✔ Re-entrant tuning and generated fingerings use physical string identity (1.3893ms)
+✔ Borrowed minor chord spelling, inversion and intervals agree (21.1737ms)
+✔ Generated event IDs stay unique when protected events retain generated IDs (12.8715ms)
+✔ Malformed imported position identity and payloads are rejected (11.8262ms)
+✔ Stop cancels a pending AudioContext resume and audition (1.9488ms)
+✔ Audio scheduler schedules loop boundary in advance and Stop cancels every voice (3.2912ms)
+✔ Zero-volume playback creates no oscillator (0.4485ms)
+✔ Imported IDs cannot inject markup and compound beat numbering uses eighths (2.251ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 758.7221
