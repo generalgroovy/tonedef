@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-09-15T07:02:55.776Z",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "sourceRevision": "0de7613464216a879061d8fff0b9019b0c7b0f37",
+  "contentSha256": "3889baecacc3865f694f0e438e3e5ebbb14b45741081c5590bfeace63bce2d5c",
+  "result": "PASS: all public runtime bytes match the reviewed local build",
+  "transport": "HTTPS with standard certificate validation; request-scoped DNS selection of 185.199.111.153 from the hostname published A records because other resolved endpoints timed out; no system or browser network settings changed",
+  "resources": [
+    {
+      "file": "favicon.svg",
+      "bytes": 239
+    },
+    {
+      "file": "index.html",
+      "bytes": 873
+    },
+    {
+      "file": "src/app.js",
+      "bytes": 56290
+    },
+    {
+      "file": "src/audio.js",
+      "bytes": 6039
+    },
+    {
+      "file": "src/generation-worker.js",
+      "bytes": 373
+    },
+    {
+      "file": "src/generator.js",
+      "bytes": 10213
+    },
+    {
+      "file": "src/model.js",
+      "bytes": 18994
+    },
+    {
+      "file": "src/theory.js",
+      "bytes": 11278
+    },
+    {
+      "file": "styles.css",
+      "bytes": 33637
+    }
+  ]
+}

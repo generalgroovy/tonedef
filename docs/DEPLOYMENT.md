@@ -2,13 +2,20 @@
 
 ## Current status (2026-09-15)
 
-**Local candidate; not published.** Dedicated repository target: `generalgroovy/tonedef`. Public Pages target: `https://generalgroovy.github.io/tonedef/`. Source integration branch: `codex/tonedef-initial`; release branch: `main`. Deployed revision: **none**. Actual local candidate revision is in `git log -1`; packaged runtime's `build.json` includes sourceRevision and a content SHA-256.
+**Published; CI and public runtime identity verified.** [Public app](https://generalgroovy.github.io/tonedef/) · [source repository](https://github.com/generalgroovy/tonedef). Source integration branch: `codex/tonedef-initial`; release/default branch: `main`. First deployed application revision: **`0de7613464216a879061d8fff0b9019b0c7b0f37`**. Documentation-only follow-up commits can be newer than the deployed application; this release record is committed with `[skip ci]` because it changes no runtime or workflow files. The public `build.json` is authoritative for the deployed revision.
 
-The existing `generalgroovy/generalgroovy` repository/site was analyzed read-only and remains untouched. Do not deploy into it. GitHub CLI currently reports an invalid generalgroovy credential; the browser login tab is ready for the user. The installed GitHub connector has no repository-creation capability. User authorization to create and publish ToneDef is already present; credentials are the remaining external prerequisite.
+The existing `generalgroovy/generalgroovy` repository/site was analyzed read-only and remains untouched. ToneDef uses its own public repository and GitHub Actions Pages source. Authenticated publication succeeded as generalgroovy.
 
-## Publish the tested candidate
+### First release evidence
 
-1. Confirm GitHub account generalgroovy and restore its CLI login, or complete browser login. Never save tokens in project files/logs.
+- [Workflow run 34939362081](https://github.com/generalgroovy/tonedef/actions/runs/34939362081): verify and deploy both succeeded; Pages deploy completed at 2026-09-15 06:58:35 UTC. Install, syntax, tests, build and artifact upload all passed. [Recorded result](evidence/github-first-deployment.json).
+- Public manifest and all nine runtime files fetched over certificate-validated HTTPS. Recomputed SHA-256 **`3889baecacc3865f694f0e438e3e5ebbb14b45741081c5590bfeace63bce2d5c`**, exactly matching the reviewed local build. [Recorded result](evidence/public-runtime.json).
+- The connection was intermittent. The successful file audit used one DNS-published GitHub Pages address for those requests, preserving the original HTTPS hostname and certificate checks. No system/browser network settings changed.
+- **Live browser smoke: BLOCKED by connection timeouts.** The in-app browser did not load the public app after bounded attempts. Local production interaction tests passed as recorded in ACCEPTANCE; they are not substituted for live browser tests. Human listening and musician acceptance remain NOT RUN.
+
+## Reconstruct publication or publish a future candidate
+
+1. Confirm GitHub account generalgroovy and valid authentication. Never save tokens in project files/logs.
 2. Create **public** repository `generalgroovy/tonedef`, without overwriting an existing repository. If that name exists, inspect it before writing. Push the reviewed source branch, create/review main from it, and use main for publication. The local repository is deliberately separate from the Apps parent checkout.
 3. Repository Settings → Pages → Source: **GitHub Actions**. Keep default github-pages environment; authorize only main deployments.
 4. Run `npm ci`, `npm run check`, `npm test`, `npm run build`. Serve `dist` at `/tonedef/` and repeat the production smoke below. Node24 is the CI runtime; there are no downloaded build dependencies.
@@ -37,6 +44,6 @@ Build copies only index.html/styles.css/favicon.svg/src plus .nojekyll. `build.j
 
 ## Rollback
 
-Before first publication there is no prior ToneDef release. If its first public smoke fails, repair the candidate or disable ToneDef Pages temporarily; preserve source and failed-run evidence. The old GeneralGroovy app remains available.
+The first release baseline is `0de7613464216a879061d8fff0b9019b0c7b0f37`, verified by CI and exact public runtime bytes, with live browser smoke still pending. If public interaction testing exposes a defect, repair it and retain this evidence. The old GeneralGroovy app remains available.
 
 After a known-good ToneDef deployment exists, record its commit. Revert the faulty main commit(s) with a normal revert commit, run verification, and deploy the previous known-good content through the same workflow. Verify build.json and the real URL again. Avoid force-push and repository deletion. Project JSON schema2 and generatorVersion1 are versioned; export local work before testing a future incompatible migration.

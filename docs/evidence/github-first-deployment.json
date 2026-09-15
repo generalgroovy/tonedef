@@ -1,0 +1,26 @@
+{
+  "recordType": "compact receipt transcribed from successful gh run view JSON",
+  "repository": "generalgroovy/tonedef",
+  "runId": 34939362081,
+  "url": "https://github.com/generalgroovy/tonedef/actions/runs/34939362081",
+  "headSha": "0de7613464216a879061d8fff0b9019b0c7b0f37",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "verify",
+      "id": 104284261969,
+      "conclusion": "success",
+      "completedAt": "2026-09-15T06:58:24Z",
+      "passedSteps": ["npm ci", "npm run check", "npm test", "npm run build", "actions/upload-pages-artifact@v4"]
+    },
+    {
+      "name": "deploy",
+      "id": 104284321612,
+      "conclusion": "success",
+      "completedAt": "2026-09-15T06:58:37Z",
+      "deploymentStepCompletedAt": "2026-09-15T06:58:35Z",
+      "passedSteps": ["actions/configure-pages@v5", "actions/deploy-pages@v4"]
+    }
+  ]
+}

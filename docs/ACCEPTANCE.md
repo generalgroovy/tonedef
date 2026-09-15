@@ -1,6 +1,6 @@
 # Acceptance evidence — ToneDef 1.0.0
 
-**Status: implemented locally; local verification completed within the boundaries below; publication pending GitHub authentication. No human musical acceptance claimed.** Recorded 2026-09-15, Windows, Node24.18.0, npm11.13.0, Codex in-app Chromium browser. The previous GeneralGroovy repository/site was only read.
+**Status: published; local verification, GitHub CI/deployment and exact public runtime byte verification passed within the boundaries below. Live browser interaction smoke is blocked by connection timeouts. No human musical acceptance claimed.** Recorded 2026-09-15, Windows, Node24.18.0, npm11.13.0, Codex in-app Chromium browser. The previous GeneralGroovy repository/site was only read.
 
 ## Executed checks
 
@@ -21,7 +21,7 @@
 | 13. Responsive/keyboard/color review | PASS within tested environment. Screenshots reviewed at1440×900,1280×720,768×1024,390×844 and360×800. No page-level horizontal overflow in measured views; musical surfaces scroll intentionally. Fret arrow navigation focused next physical fret. Labels provide non-color meaning. |
 | 14. Reconstruction | PASS for partial independent rehearsal: pitch/capo, six spelled intervals, key masks, one C chord, three transition levels, deterministic four-note generation and rhythm; imports no application source. [Executable record](evidence/rehearsal.mjs). This does not prove a full independent rebuild. |
 | 15. Build/subpath | PASS for module syntax and dependency-free static build. Production subpath smoke result below. |
-| 16. Publication | PENDING. GitHub CLI credential invalid and browser signed out at last check. No repository, CI deployment or public smoke result is claimed. |
+| 16. Publication | PASS for public repository, GitHub verification/deployment and runtime identity. Run34939362081 deployed0de7613464216a879061d8fff0b9019b0c7b0f37. All nine fetched runtime files hash identically to the reviewed local build. Public browser interaction smoke BLOCKED by network timeouts; see [deployment evidence](DEPLOYMENT.md). |
 
 ## Commands and retained artifacts
 
@@ -56,7 +56,7 @@ Actual UI clicks on12 physical strings ×37 positions (444 fret buttons),128-eve
 - Native200%browser zoom: **NOT RUN**. The in-app browser ignored zoom shortcuts; viewport-based reflow was tested at360/390/768px. Do not substitute these for actual zoom evidence.
 - Automated axe accessibility audit, forced-colors/reduced-motion runtime, worker cancellation timing under a deliberately slow task, corrupt browser-storage recovery via UI: **NOT RUN**. Relevant code paths were reviewed; import corruption and scheduler cancellation have executed evidence.
 - No arbitrary multi-event passage selection. Mode compatibility uses selected chord or complete melody. Generated chord span is not an ergonomic solver. Greedy melody/remap search can reject globally feasible alternatives. Finger sequence is an event practice annotation rather than a per-string finger map.
-- No public URL/CI verification until authenticated publication succeeds. Current app is a local candidate, not a deployed release or human-accepted product.
+- Public repository, CI/deployment and exact runtime-byte identity are verified. Public browser interaction smoke is **BLOCKED** by network timeouts, despite successful bounded HTTPS file retrieval. The deployed release has no human musical/usability acceptance claim.
 
 ## Production subpath smoke
 
