@@ -56,6 +56,14 @@ async function geometry(page, label) {
   const escaped = await page.locator(".topbar, .context-bar, .panel, .generate-strip").evaluateAll(elements =>
     elements.filter(e => { const r = e.getBoundingClientRect(); return r.left < -1 || r.right > innerWidth + 1; }).map(e => e.className));
   assert.deepEqual(escaped, [], `${label}: panels stay within the viewport`);
+  if (m.viewportWidth <= 650) {
+    const narrowCards = await page.locator('.side-column').evaluate(aside => {
+      const width = aside.getBoundingClientRect().width;
+      return [...aside.children].filter(card =>
+        Math.abs(card.getBoundingClientRect().width - width) > 1).map(card => card.className);
+    });
+    assert.deepEqual(narrowCards, [], `${label}: stacked sidebar cards fill available width`);
+  }
   return m;
 }
 async function interactions(page, label) {
