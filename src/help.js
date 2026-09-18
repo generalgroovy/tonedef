@@ -55,7 +55,8 @@ document.addEventListener('pointerover', (event) => {
   if (event.pointerType === 'touch') return;
   const node = event.target.closest?.('[data-help]');
   if (!node || node === trigger) return;
-  clearTimeout(showTimer);
+  // A pointerout from the previous control must not cancel this new hover.
+  clearTimeout(timer); clearTimeout(showTimer);
   showTimer = setTimeout(() => showHelp(node), 260);
 });
 document.addEventListener('pointerout', (event) => {
@@ -77,5 +78,7 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && popup && !popup.hidden) { hideHelp(); event.preventDefault(); event.stopPropagation(); }
 }, true);
 window.addEventListener('resize', hideHelp);
-window.addEventListener('scroll', hideHelp, true);
-
+window.addEventListener('scroll', () => {
+  // Scroll-into-view can finish just after pointerover; keep its pending help.
+  if (popup && !popup.hidden) hideHelp();
+}, true);
