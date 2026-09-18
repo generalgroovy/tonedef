@@ -1,0 +1,193 @@
+/* Compact workspace: loaded after styles.css. Keep the musical UI and its
+   keyboard/contrast states intact; reclaim spacing rather than scale text. */
+:root {
+  --workspace-gap: 10px;
+  --panel-padding: 12px;
+  --fret-width: 48px;
+  --string-height: 46px;
+}
+.topbar {
+  gap: 16px;
+  padding: 10px 16px;
+}
+.brand { gap: 8px; font-size: 1.3rem; }
+.brand-icon { width: 36px; height: 36px; font-size: 1.6rem; }
+.header-actions { gap: 5px; flex-wrap: wrap; }
+.header-actions button { min-height: 34px; padding: 6px 9px; }
+main { max-width: none; padding: 0 16px; }
+.context-bar { gap: 10px 16px; padding: 10px 0; flex-wrap: wrap; }
+.context-fields { gap: 10px; min-width: 0; }
+.key-tones { gap: 6px; }
+.workspace { grid-template-columns: minmax(0, 1fr) 320px; gap: var(--workspace-gap); }
+.main-column, .side-column { gap: var(--workspace-gap); }
+.panel, .side-column .panel { padding: var(--panel-padding); border-radius: 9px; }
+.section-title, .inspector .section-title {
+  gap: 8px 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.section-title > div:first-child { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.eyebrow { margin-bottom: 0; letter-spacing: 0.08em; }
+h1 { font-size: 1.25rem; }
+h2 { font-size: 1.05rem; }
+.count { width: 21px; height: 21px; margin-left: 4px; }
+.button-row { gap: 5px; }
+.segmented { padding: 2px; }
+.segmented button { min-height: 30px; padding: 5px 10px; }
+.segmented.small button { min-height: 28px; padding: 4px 8px; }
+.board-toolbar { gap: 6px 10px; margin-bottom: 7px; flex-wrap: wrap; }
+.board-toolbar > span { flex: 1 1 240px; line-height: 1.4; }
+.board-scroll { margin-right: 0; padding: 4px 2px 6px; }
+.fretboard { min-width: calc(52px + var(--columns) * var(--fret-width)); }
+.fret-header, .string-row { grid-template-columns: 52px repeat(var(--columns), minmax(var(--fret-width), 1fr)); }
+.fret-header > span { height: 30px; }
+.string-row, .fret { min-height: var(--string-height); }
+.fret { min-width: var(--fret-width); padding: 4px; }
+.board-legend { margin-top: 5px; gap: 6px 12px; }
+.board-shortcut { margin-left: 0; }
+.harmony-link { min-height: 30px; padding: 3px 7px; }
+.interval-legend { justify-content: flex-start; gap: 6px 16px; padding-top: 8px; margin-top: 8px; }
+.timeline { gap: 7px; padding-bottom: 6px; }
+.timeline .event-card { min-width: 132px; padding: 9px; gap: 6px; }
+.event-card > strong { font-size: 1.3rem; }
+.event-notes { min-height: 1.35em; line-height: 1.4; }
+.event-foot { padding-top: 5px; }
+.event-editor { gap: 6px 8px; margin-top: 6px; }
+.event-editor > label { flex-direction: row; align-items: center; gap: 5px; }
+.event-editor select, .event-editor input, .event-editor button { min-height: 32px; }
+.event-editor .button-row { margin-left: 0; }
+.timeline-caption { flex-wrap: wrap; gap: 3px 10px; margin-top: 8px; line-height: 1.4; }
+/* Do not reserve a blank column for the inactive playback readout. */
+.timeline-caption > span:empty { display: none; }
+.timeline-pages { margin-bottom: 7px; gap: 6px; flex-wrap: wrap; }
+.chord-identity { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 4px 9px; }
+.chord-identity > strong { font-size: 2rem; }
+.subtle, details p { margin: 6px 0; line-height: 1.45; }
+.note-list { margin: 9px 0; }
+.note-detail { min-height: 32px; grid-template-columns: 5px 42px 56px minmax(0, 1fr) 28px; gap: 6px; }
+.note-detail button { min-height: 28px; }
+.reference-row { padding-top: 6px; }
+.reference-row .setting { flex-direction: row; align-items: center; gap: 8px; }
+.reference-row .setting-input { width: auto; flex: 1 1 120px; }
+.reference-row select { min-width: 0; max-width: 100%; }
+.reference-readout { margin-top: 3px; }
+.interval-section { margin: 10px 0 6px; }
+.interval-section h3 { margin-bottom: 5px; }
+.interval-pairs { max-height: 180px; }
+.interval-pairs > div { padding: 3px 0; }
+summary { min-height: 32px; padding: 5px 0; }
+.transition-grid { margin-top: 10px; }
+.transition-row { grid-template-columns: 44px 44px minmax(18px, 1fr) 44px 72px; gap: 8px; margin-bottom: 8px; }
+/* Keep the wheel's ring geometry large enough for its two sets of controls. */
+.wheel { width: 270px; height: 270px; margin: 10px auto 4px; }
+.wheel-help { margin-bottom: 7px; }
+.tool-tabs button { min-height: 32px; padding: 5px 7px; }
+.mode-candidate { padding: 5px 0; }
+.matrix-scroll { margin: 10px 0; }
+.matrix th, .matrix td { padding: 5px; }
+.examples h3 { margin-bottom: 6px; }
+.examples > button { padding: 6px 0; min-height: 36px; }
+.examples > button > span { padding: 3px; }
+.generate-strip { flex-direction: row; flex-wrap: wrap; gap: 8px 14px; padding: var(--panel-padding); border-radius: 9px; }
+.generate-strip > div:first-child { flex: 1 1 230px; min-width: 0; }
+.generate-strip h2 { margin-bottom: 3px; }
+.generate-strip p { line-height: 1.45; }
+.generation-actions { width: auto; gap: 6px; max-width: 100%; }
+.generation-actions > label { text-align: left; }
+.settings-panel { margin: 12px 0; padding: 0 var(--panel-padding); }
+.settings-panel > summary { padding: 10px 0; }
+.settings-panel > summary > span { margin-left: 10px; }
+.settings-content { padding-bottom: 12px; }
+.settings-top { padding: 10px 0; }
+.settings-grid { gap: 16px; padding-top: 10px; }
+.settings-grid h3 { margin: 8px 0; }
+.setting { padding: 4px 0; gap: 8px; }
+.setting-input > input:not([type="checkbox"]), .setting-input > select { min-width: 0; max-width: 100%; }
+.setting input[type="number"], .setting select { min-height: 32px; }
+.preset-field { margin-bottom: 8px; gap: 4px; }
+.tuning-row { padding: 5px 0; }
+.empty { padding: 12px 0; }
+footer { gap: 8px 16px; padding-bottom: 14px; flex-wrap: wrap; }
+.modal-content { padding: 24px; }
+.modal-content > h2 { margin-bottom: 12px; }
+.button-stack { gap: 8px; margin: 14px 0; }
+.saved-projects { margin-top: 14px; }
+
+@media (min-width: 851px) {
+  .context-fields .setting { flex-direction: row; align-items: center; gap: 7px; }
+  .context-fields .setting label { max-width: none; }
+  .context-fields .setting select { min-width: 0; max-width: none; }
+  .context-fields .setting:first-child select { width: 70px; }
+  .context-fields .setting:nth-child(2) select { width: 200px; }
+}
+@media (min-width: 1600px) {
+  .workspace { grid-template-columns: minmax(0, 1fr) 350px; }
+}
+@media (max-width: 1150px) and (min-width: 851px) {
+  .workspace { grid-template-columns: minmax(0, 1fr) 300px; }
+}
+@media (max-width: 850px) {
+  main { padding: 0 12px; }
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .side-column { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .context-fields { flex: 1 1 auto; }
+  .context-fields .setting { gap: 3px; }
+  .generate-strip { align-items: center; }
+}
+@media (max-width: 650px) {
+  .side-column { display: flex; }
+  .settings-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 570px) {
+  :root { --panel-padding: 10px; --workspace-gap: 8px; }
+  .topbar { padding: 8px 10px; gap: 7px; }
+  .brand { font-size: 1.2rem; }
+  .brand-icon { width: 32px; height: 32px; font-size: 1.4rem; }
+  .header-actions { gap: 4px; }
+  .header-actions button { min-height: 34px; padding: 6px 8px; }
+  main { padding: 0 8px; }
+  .context-bar { padding: 8px 0; gap: 6px; }
+  .context-fields { flex: 1 1 100%; gap: 8px; }
+  .context-fields .setting:first-child { width: 70px; }
+  .key-tones { gap: 6px; }
+  .key-tones button { min-height: 30px; }
+  .section-title, .inspector .section-title { margin-bottom: 8px; }
+  .board-toolbar > span { flex-basis: 100%; }
+  .interval-legend { gap: 6px 12px; }
+  .board-legend { gap: 6px 10px; }
+  .board-shortcut { flex-basis: auto; }
+  .timeline-caption { flex-direction: row; font-size: 0.8125rem; }
+  .timeline-panel .button-row button { min-height: 32px; }
+  .transition-row { grid-template-columns: 40px 38px minmax(12px, 1fr) 38px 66px; gap: 6px; }
+  .generation-actions { width: 100%; }
+  .generation-actions .button-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .generation-actions button { padding: 7px; }
+  .wheel { width: min(290px, 100%); height: auto; aspect-ratio: 1; }
+  .wheel-note { width: 35px; height: 35px; min-width: 35px; min-height: 35px; }
+  .relative-minor { min-width: 28px; min-height: 28px; }
+  .settings-panel { padding: 0 var(--panel-padding); margin: 10px 0; }
+  .settings-panel > summary { padding: 10px 0; }
+  .settings-grid section { padding-bottom: 8px; }
+  .setting > label { max-width: 52%; }
+  .setting-input { flex-shrink: 1; }
+  .setting select { max-width: 160px; }
+  .note-detail { grid-template-columns: 5px 42px 56px minmax(0, 1fr) 28px; font-size: 0.8125rem; }
+  footer { padding: 0 2px 12px; }
+}
+/* Touch devices keep generous fret cells and controls. This also applies to
+   large touchscreens, not just a narrow viewport. */
+@media (pointer: coarse) {
+  :root { --fret-width: 50px; --string-height: 50px; }
+  button, select, input[type="number"], input[type="text"], input:not([type]),
+  .header-actions button, .segmented button, .segmented.small button,
+  .timeline-panel .button-row button, .event-editor select, .event-editor input,
+  .setting select, .setting input[type="number"], .tool-tabs button,
+  .examples > button, summary { min-height: 40px; }
+  input:not([type="checkbox"]):not([type="color"]), select { font-size: 1rem; }
+  .key-tones button { min-width: 34px; min-height: 40px; }
+  .note-detail { grid-template-columns: 5px 42px 56px minmax(0, 1fr) 36px; min-height: 40px; }
+  .note-detail button { min-width: 36px; min-height: 40px; }
+  .wheel-note { min-width: 35px; min-height: 35px; }
+  .relative-minor { min-width: 28px; min-height: 28px; }
+  .wheel { width: min(290px, 100%); height: auto; aspect-ratio: 1; }
+}

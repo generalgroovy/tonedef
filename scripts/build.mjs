@@ -3,15 +3,14 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 await mkdir("dist", { recursive: true });
+const assets = ["index.html", "styles.css", "compact.css", "favicon.svg"];
 const files = [
-  "index.html",
-  "styles.css",
-  "favicon.svg",
+  ...assets,
   ...(await readdir("src"))
     .filter((n) => n.endsWith(".js"))
     .map((n) => "src/" + n),
 ].sort();
-for (const file of ["index.html", "styles.css", "favicon.svg", "src"])
+for (const file of [...assets, "src"])
   await cp(file, `dist/${file}`, { recursive: true });
 await writeFile("dist/.nojekyll", "");
 const hash = createHash("sha256");
