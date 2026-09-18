@@ -1,0 +1,39 @@
+name: Compact UI regression
+on:
+  push:
+    branches: [main, 'codex/**']
+    paths: ['*.css', 'index.html', 'src/**', 'scripts/build.mjs', 'scripts/check-layout.mjs', '.github/workflows/layout.yml']
+  pull_request:
+    paths: ['*.css', 'index.html', 'src/**', 'scripts/build.mjs', 'scripts/check-layout.mjs', '.github/workflows/layout.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tonedef-layout-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm ci && npm run check && npm test && npm run build
+      - name: Install isolated browser test tooling
+        run: |
+          npm install --prefix "$RUNNER_TEMP/tonedef-browser" --no-audit --no-fund --package-lock=false playwright@1.57.0
+          "$RUNNER_TEMP/tonedef-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Check real built app on desktop and touch viewports
+        env:
+          TONEDEF_PLAYWRIGHT_PATH: ${{ runner.temp }}/tonedef-browser/node_modules/playwright/index.mjs
+        run: node scripts/check-layout.mjs
+      - name: Keep screenshots and measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compact-ui-evidence
+          path: test-results/compact-ui
+          if-no-files-found: ignore
+          retention-days: 14
