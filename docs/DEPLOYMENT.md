@@ -1,6 +1,14 @@
 # Deployment and rollback
 
-## Current status (2026-09-15)
+## Workspace update 1.1 (2026-09-20)
+
+Application revision `f8c059097fc26079b1233bbfc600a01ffccc5ad3` is pushed to main. Local syntax/build and 28 test groups passed. The same revision passed [verification CI](https://github.com/generalgroovy/tonedef/actions/runs/35475041682) and [browser regression across 13 desktop/touch viewport configurations](https://github.com/generalgroovy/tonedef/actions/runs/35475041712) before promotion. Local browser interaction and visual checks are detailed in [GUI-WORKSPACE](GUI-WORKSPACE.md).
+
+**Public deployment verification pending:** main [publish run 35475145030](https://github.com/generalgroovy/tonedef/actions/runs/35475145030) was last observed queued and [browser run 35475144928](https://github.com/generalgroovy/tonedef/actions/runs/35475144928) in progress. Subsequent GitHub API and public HTTPS requests timed out. This is not evidence of deployment failure or success. Live browser loading also timed out. Do not extend the first-release byte audit below to this update.
+
+Expected build manifest: version `1.1.0`, source revision above, runtime SHA-256 `6b1bfd5b82c428118d29464e38d143a890d57dd84b25290e1118bff5483882ed`. To close verification, inspect the main publish run, fetch public build.json and runtime files, compare their aggregate hash, then exercise the public app. Build now copies all three stylesheets (styles.css, compact.css, workspace.css), every src module, index.html and favicon.svg; package.json supplies the manifest version.
+
+## Original release status (2026-09-15)
 
 **Published; CI and public runtime identity verified.** [Public app](https://generalgroovy.github.io/tonedef/) · [source repository](https://github.com/generalgroovy/tonedef). Source integration branch: `codex/tonedef-initial`; release/default branch: `main`. First deployed application revision: **`0de7613464216a879061d8fff0b9019b0c7b0f37`**. Documentation-only follow-up commits can be newer than the deployed application; this release record is committed with `[skip ci]` because it changes no runtime or workflow files. The public `build.json` is authoritative for the deployed revision.
 
