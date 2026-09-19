@@ -1,5 +1,7 @@
 # Rebuild ToneDef from these documents
 
+For the current interface, also apply [Visual workspace](VISUAL-WORKSPACE.md) and the newer [GUI workspace supplement](GUI-WORKSPACE.md). The latter specifies version1.1.0, the independent panel preference schema, wooden fretboard, chord-line geometry, current stylesheet order and build assets; it supersedes earlier fixed-layout details while retaining the musical schema below.
+
 This contract is sufficient to reconstruct functional and visual behavior without source files. Byte-identical source recovery requires backups. REBUILD and DESIGN are authoritative; ACCEPTANCE holds proof and fixtures. The original implementation uses native ES modules with no runtime dependencies; Node >=22 is needed only for development/tests/build, verified with 24.18.0 and npm 11.13.0 on Windows.
 
 ## 1. Recreate files in this order

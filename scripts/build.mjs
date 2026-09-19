@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 await mkdir("dist", { recursive: true });
-const assets = ["index.html", "styles.css", "compact.css", "favicon.svg"];
+const assets = ["index.html", "styles.css", "compact.css", "workspace.css", "favicon.svg"];
 const files = [
   ...assets,
   ...(await readdir("src"))
@@ -31,7 +31,7 @@ try {
     }).trim();
 } catch {}
 const manifest = {
-  version: "1.0.0",
+  version: JSON.parse(await readFile('package.json', 'utf8')).version,
   sourceRevision: revision,
   contentSha256: hash.digest("hex"),
   files,

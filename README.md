@@ -20,6 +20,8 @@ On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Open `http://127.0.0.1
 
 ## Try it
 
+**Workspace update (1.1):** the fretboard has a wood finish and connected chord shapes. Open **Workspace → Arrange panels** to reorder and resize areas; use its checkboxes to show/hide them, and each area's plus/minus button to expand/collapse. Layout preferences save separately from your music. [Usage, implementation and verification](docs/GUI-WORKSPACE.md).
+
 1. Start with **C → Cm**. Select the second timeline card. The E becomes E♭, changing the root's major third (warm coral) to a minor third (blue).
 2. Click a fret to add/remove a note. Chord mode replaces any other note on that string. Melody mode preserves ordered occurrences; **Append / record** permits repeated notes.
 3. Right-click a fret to change the key's pitch-class collection. For touch, choose **Edit key**; for keyboard, use arrows, Enter/Space, and Shift+F10.

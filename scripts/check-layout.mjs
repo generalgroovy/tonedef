@@ -11,7 +11,7 @@ const { chromium } = await import(process.env.TONEDEF_PLAYWRIGHT_PATH ? pathToFi
 const root = path.resolve('dist'), output = path.resolve('test-results/compact-ui');
 await mkdir(output, {recursive:true});
 const manifest = JSON.parse(await readFile(path.join(root,'build.json'),'utf8'));
-for (const file of ['compact.css','src/help.js','src/interval-view.js','src/app.js']) {
+for (const file of ['compact.css','workspace.css','src/layout.js','src/workspace.js','src/help.js','src/interval-view.js','src/app.js']) {
   assert.ok(manifest.files.includes(file));
   assert.equal(await readFile(path.join(root,file),'utf8'), await readFile(file,'utf8'));
 }
@@ -53,14 +53,36 @@ async function geometry(page,label) {
   assert.ok(m.scrollWidth<=m.viewportWidth+1,`${label}: page overflow ${m.scrollWidth}/${m.viewportWidth}`);
   assert.ok(m.fret.width>=44&&m.fret.height>=44,`${label}: fret target >=44px`);
   assert.equal(m.fontSize,'16px');
-  const escaped=await page.locator('.topbar,.context-bar,.panel,.theory-row').evaluateAll(es=>es.filter(e=>{const r=e.getBoundingClientRect();return r.left< -1||r.right>innerWidth+1;}).map(e=>e.className));
+  const escaped=await page.locator('.topbar,.context-bar,.dock-panel:not([hidden])').evaluateAll(es=>es.filter(e=>{const r=e.getBoundingClientRect();return r.left< -1||r.right>innerWidth+1;}).map(e=>e.className));
   assert.deepEqual(escaped,[],`${label}: container overflow`);
-  const width=await page.locator('.theory-row').evaluate(e=>e.getBoundingClientRect().width);
+  const width=await page.locator('.dock-grid').evaluate(e=>e.getBoundingClientRect().width);
   const workspaceWidth=await page.locator('.workspace').evaluate(e=>e.getBoundingClientRect().width);
-  assert.ok(Math.abs(width-workspaceWidth)<=1,`${label}: theory fills available width`);
+  assert.ok(Math.abs(width-workspaceWidth)<=1,`${label}: dock fills available width`);
+  assert.equal(await page.locator('.dock-panel').count(),7,`${label}: all seven areas retained`);
   return m;
 }
 async function interact(page,label,touch) {
+  const originalNotes = await page.locator('.fret.selected').count();
+  assert.equal(await page.locator('.shape-line').count(),originalNotes-1);
+  await page.locator('#workspace-controls > summary').click();
+  await page.locator('#layout-edit-').click();
+  await page.locator('#layout-earlier-timeline').click();
+  assert.equal(await page.locator('.dock-panel').first().getAttribute('data-panel'),'timeline');
+  await page.locator('#layout-resize-fretboard').press('ArrowLeft');
+  await page.locator('#layout-resize-fretboard').press('ArrowDown');
+  const resized = await page.locator('#panel-body-fretboard').getAttribute('style');
+  await page.locator('#layout-collapse-fretboard').click();
+  await page.reload(); await page.waitForSelector('.dock-panel');
+  assert.equal(await page.locator('.dock-panel').first().getAttribute('data-panel'),'timeline');
+  assert.ok(await page.locator('#panel-body-fretboard').isHidden());
+  assert.equal(await page.locator('#panel-body-fretboard').getAttribute('style'),resized);
+  await page.locator('#workspace-controls > summary').click();
+  await page.locator('#layout-show-math').uncheck();
+  assert.ok(await page.locator('[data-panel="math"]').isHidden());
+  await page.locator('#layout-reset-').click();
+  assert.ok(await page.locator('[data-panel="math"]').isVisible());
+  assert.equal(await page.locator('.fret.selected').count(),originalNotes);
+  await page.locator('#workspace-controls > summary').click();
   const fret=page.locator('.fret').first(), selected=await fret.getAttribute('aria-pressed');
   await fret.click();assert.notEqual(await fret.getAttribute('aria-pressed'),selected);
   await page.locator('[data-action="undo"]').click();assert.equal(await fret.getAttribute('aria-pressed'),selected);
@@ -129,8 +151,8 @@ try {
       const oldContext=await browser.newContext(options),oldPage=await oldContext.newPage();
       await oldPage.goto(origin+'/baseline/',{waitUntil:'networkidle'});await oldPage.waitForSelector('.fret');
       entry.before=await measure(oldPage);entry.pageHeightReductionPercent=Math.round(100*(1-after.pageHeight/entry.before.pageHeight));
-      assert.ok(after.pageHeight<entry.before.pageHeight,`${label}: shorter than previous release`);
-      if(width===1440){assert.ok(after.board.width>entry.before.board.width);assert.ok(after.board.height<entry.before.board.height);}
+      // User-adjustable areas and larger symbols supersede the old minimum-height target.
+      // Retain before/after measurements without imposing the previous fixed layout.
       await oldPage.screenshot({path:path.join(output,`${label}-before.png`),fullPage:true});await oldContext.close();
     }
     await page.screenshot({path:path.join(output,`${label}-after.png`),fullPage:true});

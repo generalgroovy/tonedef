@@ -1,0 +1,33 @@
+# ToneDef 1.1 — adjustable wooden fretboard workspace
+
+## Use
+
+- Open **Workspace** to show/hide any area. Choose **Arrange panels** to drag panel titles, use the earlier/later buttons, and resize from the bottom corner. Choose **Done arranging** to hide those controls.
+- The plus/minus button on each area expands/collapses its body. Settings in the top bar restores and opens the Settings area, even when hidden.
+- Resize handles also accept arrow keys: left/right changes column span; up/down changes body height by 40px. **Fit height** restores natural height. **Reset layout** restores the defaults.
+- On narrow screens the areas stack. Their saved desktop widths remain available when the screen widens. Bodies with a fixed height scroll; fretboards and matrices retain their own horizontal scrolling.
+- The neck has CSS rosewood grain, metal fret wires, a light nut/capo, graduated strings, and larger labeled note discs. The nut mirrors in left-handed view.
+- Light lines join selected chord positions in physical string order. A dashed segment crosses a muted string. Lines do not indicate a barre, finger assignment, melody order, or voice leading. Melody and rest events have no chord connection. Notes outside the visible fret window do not create misleading replacement segments.
+- Existing half-step labels, signed interval matrix, frequency ratios, pitch axis, contextual help, musical editing, playback and generation remain available.
+
+## Rebuild supplement
+
+Load stylesheets in order: `styles.css`, `compact.css`, then `workspace.css`. Build/hash/copy all three and every `src/*.js` module. Read the app version from package.json when building build.json.
+
+`src/layout.js` provides three pure operations. `normalizeLayout` produces `{version:1, order, panels}`. Known panel IDs/default spans in order are fretboard12, timeline12, inspector4, math4, tools4, transitions12, settings12. Remove unknown and duplicate IDs and append missing known IDs. Each panel has `span` (integer4..12), `height` (null for natural height or240..1200px), `hidden` (false by default), and `collapsed` (true for settings only). Invalid values fall back to defaults. `movePanel` removes one known ID and inserts it immediately before/after the target, retaining every other ID. `chordSegments` maps visible physical string order to selected chord notes and returns consecutive pairs, with `skipped:true` when intervening strings have no selected note; it returns no pairs for non-chords.
+
+`src/workspace.js` owns the independent browser preference key `tonedef.workspace.v1`. This is not musical project state and is not randomized, exported in project JSON, or added to musical undo history. Storage read failures use defaults; write failures keep the current session layout and show a notice. The seven areas are wrapped in labeled sections with a single heading, persistent fold controls and scrollable bodies. DOM order follows preference order. Move existing functional header controls into the wrapper header, preserve the selected chord identity, and remove duplicate headings and old empty column wrappers. Convert the old settings details element to a body inside the Settings wrapper.
+
+Use a12-column grid, no dense packing or absolute overlapping windows. Below/equal900 CSS pixels, all visible panels occupy the single column. Pointer capture on title/resize handles isolates gestures from fret and event-card interaction. For resize, horizontal delta divided by gridWidth/12 changes span, vertical delta changes height; clamp bounds. On pointer release, save and render. For reorder, drop before/after a target based on whether the pointer is above/below its vertical midpoint. Pointer cancellation/Escape restores the pre-gesture dimensions. Earlier/later buttons provide a keyboard alternative. Preserve focus IDs, expanded details, and panel/fretboard/matrix/timeline scroll positions across rendering.
+
+`drawChordShape` in app.js recreates a pointer-transparent, aria-hidden SVG over the neck after rendering and on ResizeObserver notifications. Measure note-disc centers relative to the neck rectangle. Join each pair with a dark8px underlay and ivory4px rounded line, using5/8 dash lengths for skipped strings. Omit a segment if either endpoint is outside the rendered fret window; do not connect replacement visible endpoints across an off-window sounding note. Render above strings but below the note labels. Colors are #1e130c and #fff0bf. Half-step math and pitch calculations do not depend on these lines.
+
+Wood base #70452b; layer repeating gradients at2deg (dark #2b140d55 hairlines at4px in a12px repeat) and178deg (light #dda77914 hairlines in a9px repeat), above a90deg grain-tone gradient #3e2418 → #845331 → #5a3422 → #8b5935. Fret wires #c3b9a1; nut #f1dfb3. Discs use #171a1e with16px primary labels,12px half-step labels,38px minimum diameter, selected interval fill and an ivory outline. Forced-colors mode uses Canvas/Highlight lines and preserves the selected-note outline.
+
+## Validation
+
+Integrated with upstream `c18c2ab`, preserving its visual mathematics and compact UI. Local syntax/build and28 automated test groups passed, including the existing music/generation/audio/interval mathematics suites and new layout normalization, reordering and chord-line semantics tests.
+
+Executed in the in-app browser: keyboard reorder and resize; actual title drag and corner resize; collapse/hide/reset; arrangement/dimensions after reload; restoring hidden analysis and Settings; selected-note toggle/Undo; independent right-click key editing; muted-string dashed spans; no line on melody; left-handed fret order; interval matrix C3→C4 =+12/P8; randomization checkbox availability; Play/Stop. Phone reflow and desktop rendering were visually inspected. The actual narrow viewport measured355 CSS pixels, with341px page width and approximately46×46px fret targets. Browser zoom can affect the effective dimensions, so requested viewport dimensions are not substituted for these observations.
+
+The existing CI browser regression continues to test desktop/touch viewport sizes, matrix keyboard navigation, contextual help, settings, generation,12 strings/36 frets and empty events. It now also checks saved panel order/dimensions, hiding/reset and chord line counts. Historical before/after measurements remain, but the former requirement to make every screen shorter is superseded by adjustable areas and more legible symbols. Deployment/CI results are recorded separately from local checks. Physical touch hardware, human listening, and screen-reader acceptance are not claimed.
