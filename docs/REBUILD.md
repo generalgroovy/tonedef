@@ -289,3 +289,5 @@ Physical frets are listed string0 upward; x is mute. C=[x,3,2,0,1,0], Am=[x,0,2,
 Long timelines render16 events at a time with Previous/Next controls and the true total count. Selecting a page selects its first event. Playback retains the whole128-event project and displays its current event number even beyond the visible page. Memoize event analysis by exact event content and settings; invalidate when either changes. This avoids recalculating unchanged chord names on every fret edit.
 
 Guitar sound, strum scheduling and playback-following fretboard: [GUITAR-PLAYBACK.md](GUITAR-PLAYBACK.md).
+
+Expressive note input, pointer/keyboard lifecycle and visual hierarchy: [EXPRESSIVE-FRETBOARD.md](EXPRESSIVE-FRETBOARD.md).

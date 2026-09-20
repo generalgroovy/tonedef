@@ -57,7 +57,7 @@ export class Player {
     this.context ??= new AudioContext();
     if (this.context.state === "suspended") await this.context.resume();
   }
-  voice(midi, start, duration, volume, wave = "guitar") {
+  voice(midi, start, duration, volume, wave = "guitar", held = false) {
     if (volume <= 0) return;
     const ctx = this.context,
       osc = ctx.createOscillator(),
@@ -85,7 +85,7 @@ export class Player {
       start + Math.min(wave === "guitar" ? 0.003 : 0.012, duration / 4),
     );
     if (wave === "guitar")
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * 0.16), start + duration * 0.85);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * 0.16), start + (held ? 0.8 : duration * 0.85));
     else gain.gain.setValueAtTime(volume, start + duration * 0.65);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     if (filter) osc.connect(filter).connect(gain).connect(ctx.destination);
@@ -100,6 +100,30 @@ export class Player {
       gain.disconnect();
       this.voices.delete(node);
     };
+    let released = false;
+    return {
+      pitch: (nextMidi) => {
+        if (released || !this.voices.has(node) || !Number.isFinite(nextMidi)) return;
+        const hz = 440 * 2 ** ((Math.max(0, Math.min(129, nextMidi)) - 69) / 12);
+        osc.frequency.setTargetAtTime(hz, ctx.currentTime, 0.008);
+      },
+      release: () => {
+        if (released || !this.voices.has(node)) return;
+        released = true;
+        const at = Math.max(ctx.currentTime, start + 0.16);
+        gain.gain.cancelAndHoldAtTime(at);
+        gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.14);
+        osc.stop(at + 0.16);
+      },
+    };
+  }
+  async hold(midi, settings) {
+    this.stop();
+    const revision = this.revision;
+    await this.ready();
+    if (revision !== this.revision) return;
+    return this.voice(midi, this.context.currentTime + 0.005, 20,
+      settings.volume / 100 * 0.22, settings.waveform, true);
   }
   async audition(midis, settings) {
     const revision = this.revision;

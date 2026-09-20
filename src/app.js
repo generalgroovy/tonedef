@@ -42,8 +42,9 @@ import {
   tabExport,
 } from "./model.js";
 import { Player, playbackPlan } from "./audio.js";
+import { installExpression } from "./expression.js";
 import { mountWorkspace, revealPanel } from "./workspace.js";
-import { chordSegments } from "./layout.js";
+import { chordSegments, selectedInk } from "./layout.js";
 import { intervalWorkspace, signed } from "./interval-view.js";
 import { hideHelp, prepareHelp } from "./help.js";
 const $ = (selector) => document.querySelector(selector),
@@ -119,6 +120,11 @@ const player = new Player(
   },
 );
 const project = () => history.project;
+const expression = installExpression({
+  settings: () => project().settings, tool: () => tool, blocked: () => player.running,
+  describe: midi => pretty(spellPitch(midi, project().settings)),
+  error: message => notify("Note audio: " + message, true), hideHelp,
+});
 const formatBeats = (ticks) =>
   ({ 32: "⅓", 64: "⅔" })[ticks] ?? String(ticks / 96);
 function notify(message, error = false) {
@@ -336,7 +342,7 @@ function board() {
                 s.labels === "degrees"
                   ? degree
                   : pretty(name.replace(s.showOctaves ? /$^/ : /-?\d+$/, ""));
-            return `<button ${playingId ? 'disabled title="Stop playback to edit notes"' : ""} class="fret ${inKey ? "in-key" : ""} ${note ? "selected" : ""} ${pc === s.tonic ? "tonic" : ""} ${fret === s.capo ? "open-fret" : ""}" data-pos="${string.id}:${fret}" data-pc="${pc}" ${hint(`${pretty(name)} · ${midi} MIDI · ${(440 * 2 ** ((midi - 69) / 12)).toFixed(2)} Hz. ${signed(boardStep(midi))} half steps from the interval reference${s.colorReference === "pinned" ? " (actual register)" : " (mod 12)"}. Click to edit; right-click or Shift+F10 to change key membership.`)} aria-label="${esc(pretty(name))}, string ${string.index + 1}, fret ${fret}${note ? ", selected" : ""}${inKey ? ", in key" : ", outside key"}" aria-pressed="${!!note}" tabindex="${focusPos === `${string.id}:${fret}` ? "0" : "-1"}" style="--note-color:${colorFor(midi, analysis(event))}"><span class="note-disc">${esc(label)}${halfStepLabels ? `<small class="half-step-label">${boardStep(midi)}</small>` : s.labels === "both" ? `<small>${degree}</small>` : ""}</span></button>`;
+            return `<button ${playingId ? 'disabled title="Stop playback to edit notes"' : ""} class="fret ${inKey ? "in-key" : ""} ${note ? "selected" : ""} ${pc === s.tonic ? "tonic" : ""} ${fret === s.capo ? "open-fret" : ""}" data-pos="${string.id}:${fret}" data-pc="${pc}" ${hint(`${pretty(name)} · ${midi} MIDI · ${(440 * 2 ** ((midi - 69) / 12)).toFixed(2)} Hz. ${signed(boardStep(midi))} half steps from the interval reference${s.colorReference === "pinned" ? " (actual register)" : " (mod 12)"}. Tap to hear; Edit toggles notes, Explore only plays. Hold and drag sideways to slide or vertically to bend. Right-click or Shift+F10 edits the key.`)} aria-label="${esc(pretty(name))}, string ${string.index + 1}, fret ${fret}${note ? ", selected" : ""}${inKey ? ", in key" : ", outside key"}" aria-pressed="${!!note}" tabindex="${focusPos === `${string.id}:${fret}` ? "0" : "-1"}" style="--note-color:${colorFor(midi, analysis(event))};--note-ink:${selectedInk(colorFor(midi, analysis(event)))}"><span class="note-disc">${esc(label)}${halfStepLabels ? `<small class="half-step-label">${boardStep(midi)}</small>` : s.labels === "both" ? `<small>${degree}</small>` : ""}</span></button>`;
           })
           .join("")}</div>`,
     )
@@ -347,6 +353,8 @@ let boardObserver;
 function drawChordShape() {
   const neck = document.getElementById('fretboard');
   if (!neck) return;
+  const navigation = document.querySelector('.neck-navigation');
+  if (navigation) navigation.hidden = neck.parentElement.scrollWidth <= neck.parentElement.clientWidth + 2;
   neck.classList.toggle('left-handed', project().settings.leftHanded);
   neck.querySelector('.chord-shape')?.remove();
   const segments = chordSegments(boardEvent(), stringsOf(project().settings).reverse());
@@ -552,6 +560,7 @@ function settings() {
 }
 
 function render() {
+  expression.cancel();
   hideHelp();
   colorAnalysis = analysis();
   const panelScroll = [...document.querySelectorAll("[data-panel]")].map(n => [n.dataset.panel, n.querySelector(".dock-body")?.scrollTop ?? 0]);
@@ -560,7 +569,7 @@ function render() {
   const scrolls = [...document.querySelectorAll('.board-scroll,.matrix-scroll,.timeline')].map((el) => [el.className, el.scrollLeft, el.scrollTop]);
   const p = project(), s = p.settings, e = current();
   const reference = s.colorReference === "pinned" ? pretty(spellPitch(s.pinnedMidi, s)) : s.colorReference === "chord" && colorAnalysis.selected ? pretty(chordLabel({...colorAnalysis.selected, bass: colorAnalysis.selected.root}, s)) + " root" : pretty(tonicName(s)) + " tonic";
-  $("#app").innerHTML = `<header class="topbar"><a class="brand" href="./" aria-label="ToneDef home" ${hint("ToneDef · guitar and bass workspace by GeneralGroovy")}><span class="brand-icon">t<span>d</span></span></a><div class="project-title"><input id="project-title" aria-label="Project name" maxlength="120" value="${esc(p.title)}"></div><div class="header-actions"><button data-action="undo" ${!history.past.length ? "disabled" : ""} aria-label="Undo" ${hint("Undo · Ctrl/Command+Z")}>Undo</button><button data-action="redo" ${!history.future.length ? "disabled" : ""} aria-label="Redo" ${hint("Redo · Ctrl/Command+Shift+Z")}>Redo</button><button id="playButton" class="primary" data-action="play" aria-pressed="${player.running}">▶ Play</button><button data-action="stop" aria-label="Stop playback">■ Stop</button><button data-action="projects">Projects</button><button data-action="settings" ${hint("Instrument, generation, rhythm, sound and display settings.")}>Settings</button><button class="help-trigger" data-action="help" aria-label="Help and keyboard shortcuts">?</button></div></header><main><section class="context-bar" aria-label="Key and interval reference"><div class="context-fields">${field("tonic")}${collectionControl()}</div><div class="key-tones" aria-label="Current key tones">${pcsFor(s.keyMask).map((pc) => `<button data-key-pc="${pc}" data-pc="${pc}" title="Remove ${pretty(TONICS[pc])} from key" style="--note-color:${s[`color${mod(pc - s.tonic)}`]}">${pretty(spellPitch(60 + pc, s).replace(/\d+$/, ""))}</button>`).join("") || "<span>No key tones</span>"}${!(s.keyMask & (1 << s.tonic)) ? '<span class="warning-text">Tonic outside collection</span>' : ""}</div><div class="reference-row">${field("colorReference")}<span class="reference-readout">${esc(reference)}</span></div></section><div class="workspace"><section class="panel fretboard-panel"><h1 class="sr-only">Fretboard</h1><div class="board-bar"><div class="segmented" aria-label="Editor mode"><button data-mode="chord" aria-pressed="${s.editorMode === "chord"}">Chord</button><button data-mode="melody" aria-pressed="${s.editorMode === "melody"}">Melody</button></div><div class="segmented small" aria-label="Fretboard tool"><button data-tool="notes" aria-pressed="${tool === "notes"}" ${hint("Click a fret to edit a note. Chord mode keeps one note per string; another click removes it.")}>Edit notes</button><button data-tool="key" aria-pressed="${tool === "key"}" ${hint("Edit the pitch-class collection without changing notes. Right-click / Shift+F10 also edits the key.")}>Edit key</button></div>${s.editorMode === "melody" ? field("append", "Append") : ""}<button id="half-step-labels" data-action="half-step-labels" aria-pressed="${halfStepLabels}" ${hint("Show numeric half-step distances on the fretboard, relative to the selected Reference. Tonic and chord-root values are modulo 12; a pinned MIDI reference gives signed distances including octaves.")}>½ steps</button><span class="board-context">${e?.locked ? "▣ Locked · " : ""}${esc(e ? nameOf(e) : "—")}${halfStepLabels ? s.colorReference === "pinned" ? " · signed ½ steps" : " · mod 12" : ""}</span>${help("Fretboard", "Arrow keys move; Enter or Space toggles a note; Shift+F10 changes key membership. Filled discs are selected notes; outlined discs are key tones; double outlines are tonics. × marks a muted string. The chosen reference determines interval colors. Lines connect chord positions across physical strings; dashed spans cross muted strings. They do not indicate barres or voice leading.")}</div>${board()}<div class="interval-legend" aria-label="Interval color key in half steps"><span class="unit">½ steps</span>${INTERVALS.map((name, i) => `<span class="interval-key" style="--note-color:${s[`color${i}`]}" ${hint(`${i} half steps · ${name}. Interval color is repeated each octave.`)} tabindex="0"><i></i><b>${i}</b><small>${name}</small></span>`).join("")}</div></section>${timeline()}<div class="theory-row">${inspector()}${toolsPanel()}${intervalWorkspace(colorAnalysis.notes, s, intervalPair)}${transition()}</div></div>${settings()}<footer><span ${hint("Twelve-tone equal temperament; A4 = 440 Hz. Frequency ratio for n half steps is 2^(n/12).")} tabindex="0">12-TET · A4 440 Hz</span><button data-action="export-json" ${hint("Export your project as JSON. Projects otherwise stay in this browser.")}>Backup ↗</button></footer></main><dialog id="modal"></dialog>`;
+  $("#app").innerHTML = `<header class="topbar"><a class="brand" href="./" aria-label="ToneDef home" ${hint("ToneDef · guitar and bass workspace by GeneralGroovy")}><span class="brand-icon">t<span>d</span></span></a><div class="project-title"><input id="project-title" aria-label="Project name" maxlength="120" value="${esc(p.title)}"></div><div class="header-actions"><button data-action="undo" ${!history.past.length ? "disabled" : ""} aria-label="Undo" ${hint("Undo · Ctrl/Command+Z")}>Undo</button><button data-action="redo" ${!history.future.length ? "disabled" : ""} aria-label="Redo" ${hint("Redo · Ctrl/Command+Shift+Z")}>Redo</button><button id="playButton" class="primary" data-action="play" aria-pressed="${player.running}">▶ Play</button><button data-action="stop" aria-label="Stop playback">■ Stop</button><button data-action="projects">Projects</button><button data-action="settings" ${hint("Instrument, generation, rhythm, sound and display settings.")}>Settings</button><button class="help-trigger" data-action="help" aria-label="Help and keyboard shortcuts">?</button></div></header><main><section class="context-bar" aria-label="Key and interval reference"><div class="context-fields">${field("tonic")}${collectionControl()}</div><div class="key-tones" aria-label="Current key tones">${pcsFor(s.keyMask).map((pc) => `<button data-key-pc="${pc}" data-pc="${pc}" title="Remove ${pretty(TONICS[pc])} from key" style="--note-color:${s[`color${mod(pc - s.tonic)}`]}">${pretty(spellPitch(60 + pc, s).replace(/\d+$/, ""))}</button>`).join("") || "<span>No key tones</span>"}${!(s.keyMask & (1 << s.tonic)) ? '<span class="warning-text">Tonic outside collection</span>' : ""}</div><div class="reference-row">${field("colorReference")}<span class="reference-readout">${esc(reference)}</span></div></section><div class="workspace"><section class="panel fretboard-panel"><h1 class="sr-only">Fretboard</h1><div class="board-bar"><div class="segmented" aria-label="Editor mode"><button data-mode="chord" aria-pressed="${s.editorMode === "chord"}">Chord</button><button data-mode="melody" aria-pressed="${s.editorMode === "melody"}">Melody</button></div><div class="segmented small" aria-label="Fretboard tool"><button data-tool="notes" aria-pressed="${tool === "notes"}" ${hint("Click a fret to edit a note. Chord mode keeps one note per string; another click removes it.")}>Edit notes</button><button data-tool="explore" aria-pressed="${tool === "explore"}" ${hint("Play without changing the pattern. Hold and drag horizontally to slide or vertically to bend. Keyboard: hold Space/Enter, then arrows; release to stop.")}>Explore</button><button data-tool="key" aria-pressed="${tool === "key"}" ${hint("Edit the pitch-class collection without changing notes. Right-click / Shift+F10 also edits the key.")}>Edit key</button></div><label class="hear-toggle"><input type="checkbox" data-setting="audition" ${s.audition ? "checked" : ""}> Hear clicks</label>${s.editorMode === "melody" ? field("append", "Append") : ""}<button id="half-step-labels" data-action="half-step-labels" aria-pressed="${halfStepLabels}" ${hint("Show numeric half-step distances on the fretboard, relative to the selected Reference. Tonic and chord-root values are modulo 12; a pinned MIDI reference gives signed distances including octaves.")}>½ steps</button><span class="board-context">${e?.locked ? "▣ Locked · " : ""}${esc(e ? nameOf(e) : "—")}${halfStepLabels ? s.colorReference === "pinned" ? " · signed ½ steps" : " · mod 12" : ""}</span>${help("Fretboard", "Arrow keys move; Enter or Space toggles a note; Shift+F10 changes key membership. Filled discs are selected notes; outlined discs are key tones; double outlines are tonics. × marks a muted string. The chosen reference determines interval colors. Lines connect chord positions across physical strings; dashed spans cross muted strings. They do not indicate barres or voice leading.")}</div><div class="fretboard-guide"><span><b>${tool === "explore" ? "Explore" : tool === "key" ? "Key" : "Edit"}</b> · ${tool === "explore" ? "Tap to play; your pattern stays fixed." : tool === "key" ? "Tap a note to change key membership." : "Tap to hear & toggle. Drag to preview; no edit."}</span><output id="expression-readout" aria-live="off">Hold + drag ↔ slide · ↕ bend</output><details class="gesture-help"><summary>Gestures & legend</summary><p>Hold a note and move sideways to slide along its string; move vertically to bend up to two semitones. 100 cents = one semitone. The first movement chooses the gesture. Release to stop; Escape cancels. Enable Hear clicks for sound. Use the scrollbar below the neck to pan on touch.</p><p>Explore keyboard: hold Space or Enter and use ← → to slide by a fret, ↑ ↓ to raise or release a bend in quarter-semitone steps. Arrow keys alone move focus. In Edit, Enter or Space toggles a note. Right-click / Shift+F10 edits the key.</p><p><strong>Large, filled = chord / selected note.</strong> Medium, colored = key tone. Small = outside the key. Double ring = tonic. Colors show intervals from the selected Reference; the numbered legend below explains them.</p></details></div>${board()}<div class="neck-navigation" hidden><button data-neck-pan="-1" aria-label="Scroll fretboard left">← Neck</button><span>Pan the neck · drag notes to play</span><button data-neck-pan="1" aria-label="Scroll fretboard right">Neck →</button></div><div class="interval-legend" aria-label="Interval color key in half steps"><span class="unit">½ steps</span>${INTERVALS.map((name, i) => `<span class="interval-key" style="--note-color:${s[`color${i}`]}" ${hint(`${i} half steps · ${name}. Interval color is repeated each octave.`)} tabindex="0"><i></i><b>${i}</b><small>${name}</small></span>`).join("")}</div></section>${timeline()}<div class="theory-row">${inspector()}${toolsPanel()}${intervalWorkspace(colorAnalysis.notes, s, intervalPair)}${transition()}</div></div>${settings()}<footer><span ${hint("Twelve-tone equal temperament; A4 = 440 Hz. Frequency ratio for n half steps is 2^(n/12).")} tabindex="0">12-TET · A4 440 Hz</span><button data-action="export-json" ${hint("Export your project as JSON. Projects otherwise stay in this browser.")}>Backup ↗</button></footer></main><dialog id="modal"></dialog>`;
   mountWorkspace(render, notify);
   for (const [id, top] of panelScroll) {
     const body = document.querySelector('[data-panel="'+id+'"] .dock-body');
@@ -696,6 +705,11 @@ document.addEventListener("click", (event) => {
   const target = event.target.closest("button");
   if (!target) return;
   attempt(() => {
+    if (target.dataset.neckPan) {
+      const scroll = $(".board-scroll");
+      scroll.scrollBy({ left: Number(target.dataset.neckPan) * scroll.clientWidth * 0.65, behavior: "smooth" });
+      return;
+    }
     if (target.dataset.intervalFrom !== undefined) {
       intervalPair = [Number(target.dataset.intervalFrom), Number(target.dataset.intervalTo)];
       render();
@@ -703,13 +717,11 @@ document.addEventListener("click", (event) => {
     }
     if (target.dataset.pos) {
       const [stringId, fret] = target.dataset.pos.split(":");
-      commit(editPosition(project(), stringId, Number(fret), tool === "key"));
-      if (project().settings.audition && tool === "notes")
-        player
-          .audition(
-            [midiOf({ stringId, fret: Number(fret) }, project().settings)],
-            project().settings,
-          )
+      if (player.running) return;
+      if (tool !== "explore") commit(editPosition(project(), stringId, Number(fret), tool === "key"));
+      if (event.detail === 0 && project().settings.audition && tool !== "key")
+        expression
+          .audition(midiOf({ stringId, fret: Number(fret) }, project().settings))
           .catch((e) => notify(e.message, true));
       return;
     }
@@ -813,12 +825,12 @@ document.addEventListener("click", (event) => {
       persist();
       render();
     } else if (action === "play")
-      player
+      (expression.stop(), player)
         .play(clone(project()))
         .catch((e) => notify("Audio could not start: " + e.message, true));
-    else if (action === "stop") player.stop();
+    else if (action === "stop") { expression.stop(); player.stop(); }
     else if (action === "audition")
-      player
+      (expression.stop(), player)
         .play({ ...clone(project()), events: current() ? [clone(current())] : [],
           settings: { ...project().settings, loop: false, metronome: false } })
         .catch((e) => notify(e.message, true));
@@ -1089,6 +1101,7 @@ document.addEventListener("keydown", (event) => {
     !target.closest("button,dialog,summary")
   ) {
     event.preventDefault();
+    expression.stop();
     if (player.running) player.stop();
     else player.play(clone(project())).catch((e) => notify(e.message, true));
   }

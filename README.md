@@ -20,6 +20,9 @@ On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Open `http://127.0.0.1
 
 ## Try it
 
+**Expressive fretboard (1.3):** Hear clicks defaults on for new projects. In Edit, tap to hear and toggle a note; hold and drag sideways to slide or vertically to bend without changing the chord. Explore plays without editing. Large filled notes are selected, medium colored notes belong to the key, small notes are outside it. The fretboard's Gestures & legend explains pointer and keyboard controls. Existing saved sound/mute preferences are retained. [Rebuild and behavior](docs/EXPRESSIVE-FRETBOARD.md).
+
+
 **Guitar playback (1.2):** choose Settings → Sound → Guitar for the new plucked-string tone. Free picking strums chords down; Up, Down and Alternate choose direction, while Fingers plucks together. The fretboard follows the sounding chord and restores your editing selection on Stop. Existing saved sound choices are preserved. [Sound and playback details](docs/GUITAR-PLAYBACK.md).
 
 **Workspace update (1.1):** the fretboard has a wood finish and connected chord shapes. Open **Workspace → Arrange panels** to reorder and resize areas; use its checkboxes to show/hide them, and each area's plus/minus button to expand/collapse. Layout preferences save separately from your music. [Usage, implementation and verification](docs/GUI-WORKSPACE.md).

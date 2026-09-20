@@ -140,7 +140,7 @@ export const SCHEMA = {
   waveform: choice("Sound", "Playback", "guitar", ["guitar", "sine", "triangle"]),
   loop: bool("Loop pattern", "Playback", false),
   metronome: bool("Metronome", "Playback", false),
-  audition: bool("Hear note on selection", "Playback", false),
+  audition: bool("Hear notes on click", "Playback", true),
   labels: choice("Fretboard labels", "Display", "notes", [
     "notes",
     "degrees",

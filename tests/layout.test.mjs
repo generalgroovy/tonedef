@@ -22,3 +22,9 @@ test('chord connection follows physical order, marks skipped strings, never join
   assert.deepEqual(chordSegments(event,strings).map(s=>s.skipped),[false,false]);
   assert.deepEqual(chordSegments({...event,kind:'melody'},strings),[]);
 });
+
+test('Selected note ink remains readable for dark and light custom interval colors', async () => {
+  const { selectedInk } = await import('../src/layout.js');
+  assert.equal(selectedInk('#000000'),'#ffffff');
+  assert.equal(selectedInk('#ffffff'),'#10151b');
+});

@@ -35,3 +35,11 @@ export function chordSegments(event, strings) {
   const positions = strings.map((s, rank) => ({rank, note: event.notes.find(n => n.stringId === s.id)})).filter(p => p.note);
   return positions.slice(1).map((p, i) => ({from: positions[i].note, to: p.note, skipped: p.rank - positions[i].rank > 1}));
 }
+
+// Match the selected disc's 70% interval color / 30% white background.
+export function selectedInk(color) {
+  const channels = [1, 3, 5].map(i => (parseInt(color.slice(i, i + 2), 16) * 0.7 + 255 * 0.3) / 255)
+    .map(c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  return luminance > 0.20 ? '#10151b' : '#ffffff';
+}

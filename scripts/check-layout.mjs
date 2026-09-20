@@ -11,7 +11,7 @@ const { chromium } = await import(process.env.TONEDEF_PLAYWRIGHT_PATH ? pathToFi
 const root = path.resolve('dist'), output = path.resolve('test-results/compact-ui');
 await mkdir(output, {recursive:true});
 const manifest = JSON.parse(await readFile(path.join(root,'build.json'),'utf8'));
-for (const file of ['compact.css','workspace.css','src/layout.js','src/workspace.js','src/help.js','src/interval-view.js','src/app.js']) {
+for (const file of ['compact.css','workspace.css','src/layout.js','src/expression.js','src/workspace.js','src/help.js','src/interval-view.js','src/app.js']) {
   assert.ok(manifest.files.includes(file));
   assert.equal(await readFile(path.join(root,file),'utf8'), await readFile(file,'utf8'));
 }
@@ -83,6 +83,25 @@ async function interact(page,label,touch) {
   assert.ok(await page.locator('[data-panel="math"]').isVisible());
   assert.equal(await page.locator('.fret.selected').count(),originalNotes);
   await page.locator('#workspace-controls > summary').click();
+  // Expressive preview never mutates the saved fingering; full cells remain targets.
+  await page.getByLabel('Hear clicks',{exact:true}).check();
+  await page.locator('[data-tool="explore"]').click();
+  const expressiveBefore = await page.evaluate(()=>localStorage.getItem('tonedef.current.v2'));
+  const expressionFret = page.locator('[data-pos="s3:0"]');
+  await expressionFret.focus();
+  await page.keyboard.down('Space');
+  await page.waitForFunction(()=>document.querySelectorAll('.fret.sounding').length===1);
+  await page.keyboard.press('ArrowUp');
+  assert.match(await page.locator('#expression-readout').textContent(),/bend \+25 cents/);
+  await page.keyboard.press('ArrowRight');
+  assert.match(await page.locator('#expression-readout').textContent(),/slide/);
+  await page.keyboard.up('Space');
+  assert.equal(await page.locator('.fret.sounding').count(),0);
+  await page.keyboard.down('Space');await page.keyboard.press('Escape');await page.keyboard.up('Space');
+  assert.equal(await page.locator('.fret.sounding').count(),0);
+  if(touch) await expressionFret.tap(); else await expressionFret.click();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('tonedef.current.v2')),expressiveBefore);
+  await page.locator('[data-tool="notes"]').click();
   const fret=page.locator('.fret').first(), selected=await fret.getAttribute('aria-pressed');
   await fret.click();assert.notEqual(await fret.getAttribute('aria-pressed'),selected);
   await page.locator('[data-action="undo"]').click();assert.equal(await fret.getAttribute('aria-pressed'),selected);

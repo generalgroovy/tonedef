@@ -85,3 +85,47 @@
 
 /* Playback temporarily locks editing without dimming the sounding shape. */
 .fret:disabled { opacity: 1; cursor: default; }
+
+/* Visual hierarchy changes the symbols, not the full-cell hit targets. */
+:root { --string-height: 52px; }
+.fret { touch-action: none; user-select: none; padding: 3px; }
+.fret .note-disc { min-width: 24px; width: 24px; height: 26px; padding: 1px;
+  border: 1px solid #8f8273; background: #241d18e6; color: #dbd4c8;
+  font-size: .78rem; font-weight: 500; box-shadow: none; }
+.fret:not(.in-key):not(.selected) .half-step-label { display: none; }
+.fret.in-key { background: color-mix(in srgb, var(--note-color) 22%, transparent); }
+.fret.in-key .note-disc { min-width: 34px; width: 34px; height: 36px;
+  background: color-mix(in srgb, var(--note-color) 25%, #15202a);
+  color: #fff8ee; font-size: .95rem; border-width: 2px; font-weight: 650; }
+.fret.selected, .fret.selected:hover { background: color-mix(in srgb, var(--note-color) 48%, transparent); }
+.fret.selected .note-disc { min-width: 38px; width: 38px; height: 40px;
+  background: color-mix(in srgb, var(--note-color) 70%, white);
+  color: var(--note-ink, #10151b); font-size: 1.04rem; font-weight: 850;
+  outline: 2px solid #fff5db; outline-offset: 1px; box-shadow: 0 0 0 4px #20180fcc; }
+.fret:hover, .fret:focus-visible { background: color-mix(in srgb, var(--note-color) 35%, transparent); }
+.fret:hover .note-disc, .fret:focus-visible .note-disc { border-color: white; }
+.fret.sounding { background: color-mix(in srgb, var(--note-color) 65%, transparent); z-index: 4; }
+.fret.sounding .note-disc { outline: 3px solid white; outline-offset: 3px; box-shadow: 0 0 18px var(--note-color); }
+.fretboard.expressing { cursor: grabbing; }
+.fretboard.expressing .fret { cursor: grabbing; }
+.hear-toggle { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: .85rem; }
+.fretboard-guide { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 4px 0 8px;
+  padding: 8px 10px; background: #142725; border: 1px solid #37534b; border-radius: 7px; font-size: .8rem; }
+.fretboard-guide b { color: #b7ead0; }
+#expression-readout { font-variant-numeric: tabular-nums; color: #f7dda8; min-width: 220px; }
+.gesture-help { margin-left: auto; }
+.gesture-help summary { cursor: pointer; color: #c5d9e8; }
+.gesture-help[open] { flex-basis: 100%; }
+.gesture-help p { max-width: 85ch; line-height: 1.5; margin: 8px 0; }
+.interval-legend .interval-key { border-radius: 5px; padding: 5px 7px;
+  background: color-mix(in srgb, var(--note-color) 24%, #121a21); border-bottom: 3px solid var(--note-color); }
+.interval-legend .interval-key i { width: 13px; height: 13px; }
+.key-tones button { padding: 4px 8px; border-radius: 5px; background: color-mix(in srgb, var(--note-color) 18%, #151c22); }
+@media (forced-colors: active) {
+  .fret .note-disc { color: CanvasText; background: Canvas; border-color: CanvasText; }
+  .fret.selected .note-disc { background: Highlight; color: HighlightText; }
+  .fret.sounding .note-disc { outline-color: Highlight; }
+}
+.neck-navigation:not([hidden]) { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; }
+.neck-navigation span { font-size: .75rem; color: var(--muted); text-align: center; }
+.neck-navigation button { flex-shrink: 0; }
