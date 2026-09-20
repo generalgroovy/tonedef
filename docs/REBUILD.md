@@ -287,3 +287,5 @@ Tables below are the authoritative numeric reconstruction data. Numeric domains 
 Physical frets are listed string0 upward; x is mute. C=[x,3,2,0,1,0], Am=[x,0,2,2,1,0], F=[1,3,3,2,1,1], G=[3,2,0,0,0,3], Cm=[x,3,1,0,1,x]. Progression C-Am-F-G and comparison C-Cm use384ticks/event. A-minor melody is string5 frets[5,8,7,5,5,7,8,5],48ticks/event. Bass4 C-major arpeggio positions[(s1,3),(s2,2),(s3,0),(s3,5),(s3,0),(s2,2),(s1,3),(s1,3)] use96ticks and fingers i m.
 
 Long timelines render16 events at a time with Previous/Next controls and the true total count. Selecting a page selects its first event. Playback retains the whole128-event project and displays its current event number even beyond the visible page. Memoize event analysis by exact event content and settings; invalidate when either changes. This avoids recalculating unchanged chord names on every fret edit.
+
+Guitar sound, strum scheduling and playback-following fretboard: [GUITAR-PLAYBACK.md](GUITAR-PLAYBACK.md).

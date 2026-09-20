@@ -20,6 +20,8 @@ On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Open `http://127.0.0.1
 
 ## Try it
 
+**Guitar playback (1.2):** choose Settings → Sound → Guitar for the new plucked-string tone. Free picking strums chords down; Up, Down and Alternate choose direction, while Fingers plucks together. The fretboard follows the sounding chord and restores your editing selection on Stop. Existing saved sound choices are preserved. [Sound and playback details](docs/GUITAR-PLAYBACK.md).
+
 **Workspace update (1.1):** the fretboard has a wood finish and connected chord shapes. Open **Workspace → Arrange panels** to reorder and resize areas; use its checkboxes to show/hide them, and each area's plus/minus button to expand/collapse. Layout preferences save separately from your music. [Usage, implementation and verification](docs/GUI-WORKSPACE.md).
 
 1. Start with **C → Cm**. Select the second timeline card. The E becomes E♭, changing the root's major third (warm coral) to a minor third (blue).

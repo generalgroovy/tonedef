@@ -82,3 +82,6 @@
   .shape-outline { stroke: Canvas; }
   .fretboard { background: Canvas; }
 }
+
+/* Playback temporarily locks editing without dimming the sounding shape. */
+.fret:disabled { opacity: 1; cursor: default; }

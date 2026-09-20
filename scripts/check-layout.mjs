@@ -111,8 +111,14 @@ async function interact(page,label,touch) {
   await page.evaluate(()=>document.activeElement.blur());
   await help.focus();assert.ok(await page.locator('#ui-tooltip').isVisible());await page.keyboard.press('Escape');
   await page.locator('[data-event]').nth(1).click();assert.equal(await page.locator('[data-event]').nth(1).getAttribute('aria-pressed'),'true');
-  await page.locator('#playButton').click();await page.waitForFunction(()=>document.querySelector('#playButton').getAttribute('aria-pressed')==='true');
+  const editPositions = await page.locator('.fret.selected').evaluateAll(nodes=>nodes.map(n=>n.dataset.pos));
+  await page.locator('#playButton').click();
+  await page.waitForFunction(()=>document.querySelector('.board-context').textContent.startsWith('Playing · '));
+  assert.equal(await page.locator('.board-context').textContent(), 'Playing · '+await page.locator('.event-card.playing strong').textContent());
+  assert.ok(await page.locator('.fret:disabled').count()>0);
   await page.locator('[data-action="stop"]').click();assert.equal(await page.locator('#playButton').getAttribute('aria-pressed'),'false');
+  assert.deepEqual(await page.locator('.fret.selected').evaluateAll(nodes=>nodes.map(n=>n.dataset.pos)),editPositions);
+  assert.equal(await page.locator('.fret:disabled').count(),0);
   for(const tab of ['chromatic','fifths']) {await page.locator(`[data-tools-tab="${tab}"]`).click();assert.equal(await page.locator(`[data-tools-tab="${tab}"]`).getAttribute('aria-pressed'),'true');}
   await page.locator('[data-action="projects"]').click();assert.ok(await page.locator('dialog').evaluate(e=>e.open));
   await page.locator('[data-action="close-modal"]').click();

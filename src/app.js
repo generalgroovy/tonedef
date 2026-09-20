@@ -101,7 +101,9 @@ let analysisSettings = null;
 let analysisProject = null;
 const player = new Player(
   (id) => {
+    const changed = playingId !== id;
     playingId = id;
+    if (changed) refreshPlayingBoard();
     const readout = $("#play-status");
     if (readout)
       readout.textContent = id
@@ -214,9 +216,9 @@ function nameOf(event) {
     ? pretty(chordLabel(result.selected, project().settings))
     : `${event.notes.length} notes`;
 }
-function colorFor(midi) {
+function colorFor(midi, referenceAnalysis = colorAnalysis) {
   const s = project().settings,
-    a = colorAnalysis ?? analysis();
+    a = referenceAnalysis ?? analysis();
   let index;
   if (s.colorReference === "pinned") index = mod(Math.abs(midi - s.pinnedMidi));
   else
@@ -272,16 +274,36 @@ function collectionControl() {
     scale = currentScale(s.tonic, s.keyMask);
   return `<div class="setting"><label for="collection">Collection</label><div class="setting-input"><select id="collection" data-collection><option value="custom" ${!scale ? "selected" : ""}>Custom · ${pcsFor(s.keyMask).length} tones</option>${SCALE_DEFS.map((d, i) => `<option value="${i}" ${scale === d ? "selected" : ""}>${d.name}</option>`).join("")}</select>${randomBox("keyMask")}</div></div>`;
 }
+function boardEvent() {
+  return playingId ? project().events.find(e => e.id === playingId) : current();
+}
+function refreshPlayingBoard() {
+  const old = $(".board-scroll");
+  if (!old) return;
+  const x = old.scrollLeft, y = old.scrollTop;
+  const previousAnalysis = colorAnalysis;
+  colorAnalysis = analysis(boardEvent());
+  old.outerHTML = board();
+  colorAnalysis = previousAnalysis;
+  const next = $(".board-scroll");
+  next.scrollLeft = x; next.scrollTop = y;
+  const event = boardEvent();
+  const label = $(".board-context");
+  if (label) label.textContent = `${playingId ? "Playing · " : ""}${event ? nameOf(event) : "—"}`;
+  boardObserver?.disconnect();
+  boardObserver?.observe($("#fretboard"));
+  drawChordShape();
+}
 function boardStep(midi) {
   const s = project().settings;
   if (s.colorReference === "pinned") return midi - s.pinnedMidi;
-  const root = s.colorReference === "chord" ? analysis().selected?.root : undefined;
+  const root = s.colorReference === "chord" ? analysis(boardEvent()).selected?.root : undefined;
   return mod(midi - (root ?? s.tonic));
 }
 function board() {
   const p = project(),
     s = p.settings,
-    event = current(),
+    event = boardEvent(),
     notes = event?.notes ?? [];
   const named = analysis(event).notes;
   const strings = stringsOf(s).reverse();
@@ -314,7 +336,7 @@ function board() {
                 s.labels === "degrees"
                   ? degree
                   : pretty(name.replace(s.showOctaves ? /$^/ : /-?\d+$/, ""));
-            return `<button class="fret ${inKey ? "in-key" : ""} ${note ? "selected" : ""} ${pc === s.tonic ? "tonic" : ""} ${fret === s.capo ? "open-fret" : ""}" data-pos="${string.id}:${fret}" data-pc="${pc}" ${hint(`${pretty(name)} · ${midi} MIDI · ${(440 * 2 ** ((midi - 69) / 12)).toFixed(2)} Hz. ${signed(boardStep(midi))} half steps from the interval reference${s.colorReference === "pinned" ? " (actual register)" : " (mod 12)"}. Click to edit; right-click or Shift+F10 to change key membership.`)} aria-label="${esc(pretty(name))}, string ${string.index + 1}, fret ${fret}${note ? ", selected" : ""}${inKey ? ", in key" : ", outside key"}" aria-pressed="${!!note}" tabindex="${focusPos === `${string.id}:${fret}` ? "0" : "-1"}" style="--note-color:${colorFor(midi)}"><span class="note-disc">${esc(label)}${halfStepLabels ? `<small class="half-step-label">${boardStep(midi)}</small>` : s.labels === "both" ? `<small>${degree}</small>` : ""}</span></button>`;
+            return `<button ${playingId ? 'disabled title="Stop playback to edit notes"' : ""} class="fret ${inKey ? "in-key" : ""} ${note ? "selected" : ""} ${pc === s.tonic ? "tonic" : ""} ${fret === s.capo ? "open-fret" : ""}" data-pos="${string.id}:${fret}" data-pc="${pc}" ${hint(`${pretty(name)} · ${midi} MIDI · ${(440 * 2 ** ((midi - 69) / 12)).toFixed(2)} Hz. ${signed(boardStep(midi))} half steps from the interval reference${s.colorReference === "pinned" ? " (actual register)" : " (mod 12)"}. Click to edit; right-click or Shift+F10 to change key membership.`)} aria-label="${esc(pretty(name))}, string ${string.index + 1}, fret ${fret}${note ? ", selected" : ""}${inKey ? ", in key" : ", outside key"}" aria-pressed="${!!note}" tabindex="${focusPos === `${string.id}:${fret}` ? "0" : "-1"}" style="--note-color:${colorFor(midi, analysis(event))}"><span class="note-disc">${esc(label)}${halfStepLabels ? `<small class="half-step-label">${boardStep(midi)}</small>` : s.labels === "both" ? `<small>${degree}</small>` : ""}</span></button>`;
           })
           .join("")}</div>`,
     )
@@ -327,7 +349,7 @@ function drawChordShape() {
   if (!neck) return;
   neck.classList.toggle('left-handed', project().settings.leftHanded);
   neck.querySelector('.chord-shape')?.remove();
-  const segments = chordSegments(current(), stringsOf(project().settings).reverse());
+  const segments = chordSegments(boardEvent(), stringsOf(project().settings).reverse());
   if (!segments.length) return;
   const box = neck.getBoundingClientRect(), ns = 'http://www.w3.org/2000/svg';
   if (!box.width || !box.height) return;
@@ -526,7 +548,7 @@ function toolsPanel() {
 function settings() {
   const s = project().settings;
   const group = (title, text) => `<h3>${title}${help(title, text)}</h3>`;
-  return `<details id="settings-panel" class="panel settings-panel"><summary>Settings</summary><div class="settings-content"><div class="settings-top"><label><input type="checkbox" id="show-random" ${showRandom ? "checked" : ""}> Randomization flags</label>${help("Randomization", "Checked ↝ settings may change during Randomize; unchecked values stay fixed. Locks protect individual events.")}<div class="button-row"><button data-action="keep-fixed">Fix all</button><button data-action="enable-random">Enable all</button></div></div><div class="settings-grid"><section>${group("Instrument", "Fret numbers are physical and absolute, not relative to the capo. Instrument changes ask how to preserve the music.")}<label class="preset-field">Tuning<select id="instrument-preset"><option value="">Choose…</option>${Object.keys(PRESETS).map((name) => `<option>${name}</option>`).join("")}</select></label>${["stringCount", "fretCount", "capo", "fretMin", "fretMax"].map((id) => field(id)).join("")}<details id="individual-tuning"><summary>Strings & octaves</summary>${help("Tuning", "String 1 is the first physical string, initially the lowest. Re-entrant tuning preserves string identity. Enter a note and octave, such as E2.")}${stringsOf(s).map((string) => `<div class="tuning-row"><label>S${string.index + 1}<input data-tuning="${string.index}" aria-label="String ${string.index + 1} open pitch" value="${pretty(spellPitch(string.open, s))}"></label>${randomBox(`open${string.index}`)}${field(`enabled${string.index}`, "Use")}</div>`).join("")}</details></section><section>${group("Pattern", "The same seed and settings generate the same notes. Fret span constrains reach but does not guarantee ergonomic fingering. MIDI numbers specify absolute pitch; leap limits are half steps.")}${["generationType", "eventCount", "inKey", "allowOpen", "maxSpan", "maxLeap", "repeatNotes", "lowPitch", "highPitch", "chordVocabulary", "restRate", "seed"].map((id) => field(id)).join("")}<button data-action="new-seed">New seed</button></section><section>${group("Rhythm", "Tempo counts quarter notes. In 6/8, 9/8 and 12/8 the metronome groups eighths in threes. Duration and picking are defaults for new events; existing events are edited in the timeline. Finger letters: p thumb, i index, m middle, a ring.")}${["tempo", "meter", "duration", "picking", "fingerPattern"].map((id) => field(id)).join("")}${group("Sound", "Volume zero mutes playback. Audition plays notes while editing. Stop cancels scheduled sound.")}${["volume", "waveform", "loop", "metronome", "audition"].map((id) => field(id)).join("")}</section><section>${group("Display", "The ½ steps switch adds numerical distances on the fretboard. Tonic and chord-root distances are modulo 12; a pinned MIDI note retains signed register distance. Turn it off to see the selected Notes / Degrees label mode without added half-step numbers.")}${["labels", "showOctaves", "accidentals", "tonicSpelling", "leftHanded", "editorMode", "append"].map((id) => field(id)).join("")}<details id="color-settings"><summary>Interval colors</summary>${COLORS.map((_, i) => field(`color${i}`, `${i} · ${INTERVALS[i]}`)).join("")}</details><details id="examples"><summary>Examples</summary><div class="button-row"><button data-example="compare">C → Cm</button><button data-example="progression">I · vi · IV · V</button><button data-example="melody">A minor</button><button data-example="bass">Bass</button></div></details></section></div></div></details>`;
+  return `<details id="settings-panel" class="panel settings-panel"><summary>Settings</summary><div class="settings-content"><div class="settings-top"><label><input type="checkbox" id="show-random" ${showRandom ? "checked" : ""}> Randomization flags</label>${help("Randomization", "Checked ↝ settings may change during Randomize; unchecked values stay fixed. Locks protect individual events.")}<div class="button-row"><button data-action="keep-fixed">Fix all</button><button data-action="enable-random">Enable all</button></div></div><div class="settings-grid"><section>${group("Instrument", "Fret numbers are physical and absolute, not relative to the capo. Instrument changes ask how to preserve the music.")}<label class="preset-field">Tuning<select id="instrument-preset"><option value="">Choose…</option>${Object.keys(PRESETS).map((name) => `<option>${name}</option>`).join("")}</select></label>${["stringCount", "fretCount", "capo", "fretMin", "fretMax"].map((id) => field(id)).join("")}<details id="individual-tuning"><summary>Strings & octaves</summary>${help("Tuning", "String 1 is the first physical string, initially the lowest. Re-entrant tuning preserves string identity. Enter a note and octave, such as E2.")}${stringsOf(s).map((string) => `<div class="tuning-row"><label>S${string.index + 1}<input data-tuning="${string.index}" aria-label="String ${string.index + 1} open pitch" value="${pretty(spellPitch(string.open, s))}"></label>${randomBox(`open${string.index}`)}${field(`enabled${string.index}`, "Use")}</div>`).join("")}</details></section><section>${group("Pattern", "The same seed and settings generate the same notes. Fret span constrains reach but does not guarantee ergonomic fingering. MIDI numbers specify absolute pitch; leap limits are half steps.")}${["generationType", "eventCount", "inKey", "allowOpen", "maxSpan", "maxLeap", "repeatNotes", "lowPitch", "highPitch", "chordVocabulary", "restRate", "seed"].map((id) => field(id)).join("")}<button data-action="new-seed">New seed</button></section><section>${group("Rhythm", "Tempo counts quarter notes. In 6/8, 9/8 and 12/8 the metronome groups eighths in threes. Duration and picking are defaults for new events; existing events are edited in the timeline. Finger letters: p thumb, i index, m middle, a ring.")}${["tempo", "meter", "duration", "picking", "fingerPattern"].map((id) => field(id)).join("")}${group("Sound", "Guitar has a plucked attack and decaying tone. Free strums down; Up/Down/Alternate set direction. Fingers plucks together. Stop restores the editing fretboard.")}${["volume", "waveform", "loop", "metronome", "audition"].map((id) => field(id)).join("")}</section><section>${group("Display", "The ½ steps switch adds numerical distances on the fretboard. Tonic and chord-root distances are modulo 12; a pinned MIDI note retains signed register distance. Turn it off to see the selected Notes / Degrees label mode without added half-step numbers.")}${["labels", "showOctaves", "accidentals", "tonicSpelling", "leftHanded", "editorMode", "append"].map((id) => field(id)).join("")}<details id="color-settings"><summary>Interval colors</summary>${COLORS.map((_, i) => field(`color${i}`, `${i} · ${INTERVALS[i]}`)).join("")}</details><details id="examples"><summary>Examples</summary><div class="button-row"><button data-example="compare">C → Cm</button><button data-example="progression">I · vi · IV · V</button><button data-example="melody">A minor</button><button data-example="bass">Bass</button></div></details></section></div></div></details>`;
 }
 
 function render() {
@@ -548,6 +570,7 @@ function render() {
   boardObserver = new ResizeObserver(drawChordShape);
   boardObserver.observe(document.getElementById('fretboard'));
   drawChordShape();
+  if (playingId) refreshPlayingBoard();
   for (const id of open) { const detail = document.getElementById(id); if (detail) detail.open = true; }
   prepareHelp($("#app"));
   if (activePos) document.querySelector(`[data-pos="${activePos}"]`)?.focus({preventScroll: true});
@@ -796,10 +819,8 @@ document.addEventListener("click", (event) => {
     else if (action === "stop") player.stop();
     else if (action === "audition")
       player
-        .audition(
-          analysis().notes.map((n) => n.midi),
-          project().settings,
-        )
+        .play({ ...clone(project()), events: current() ? [clone(current())] : [],
+          settings: { ...project().settings, loop: false, metronome: false } })
         .catch((e) => notify(e.message, true));
     else if (action === "inspect") {
       revealPanel("inspector");

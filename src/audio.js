@@ -25,7 +25,7 @@ export function playbackPlan(project) {
       duration,
       notes: notes.map((n, i) => ({
         midi: midiOf(n, s),
-        offset: ["up", "down"].includes(stroke)
+        offset: event.kind === "chord" && stroke !== "fingers"
           ? Math.min(0.025, duration / (notes.length + 1)) * i
           : 0,
       })),
@@ -57,27 +57,46 @@ export class Player {
     this.context ??= new AudioContext();
     if (this.context.state === "suspended") await this.context.resume();
   }
-  voice(midi, start, duration, volume, wave = "triangle") {
+  voice(midi, start, duration, volume, wave = "guitar") {
     if (volume <= 0) return;
     const ctx = this.context,
       osc = ctx.createOscillator(),
       gain = ctx.createGain();
-    osc.type = wave;
+    let filter = null;
+    if (wave === "guitar") {
+      // A picked string has a rich attack whose upper partials decay first.
+      const real = new Float32Array(17), imag = new Float32Array(17);
+      for (let h = 1; h < imag.length; h++)
+        imag[h] = Math.sin(Math.PI * h * 0.19) / (h * h * 0.19);
+      osc.setPeriodicWave(ctx.createPeriodicWave(real, imag));
+      filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.Q.value = 0.35;
+      const fundamental = frequency(midi);
+      filter.frequency.setValueAtTime(Math.min(ctx.sampleRate * 0.45, fundamental * 16), start);
+      filter.frequency.exponentialRampToValueAtTime(
+        Math.min(ctx.sampleRate * 0.45, Math.max(180, fundamental * 2.2)),
+        start + Math.min(0.3, duration * 0.8));
+    } else osc.type = wave;
     osc.frequency.value = frequency(midi);
     gain.gain.setValueAtTime(0, start);
     gain.gain.linearRampToValueAtTime(
       volume,
-      start + Math.min(0.012, duration / 4),
+      start + Math.min(wave === "guitar" ? 0.003 : 0.012, duration / 4),
     );
-    gain.gain.setValueAtTime(volume, start + duration * 0.65);
+    if (wave === "guitar")
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * 0.16), start + duration * 0.85);
+    else gain.gain.setValueAtTime(volume, start + duration * 0.65);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    osc.connect(gain).connect(ctx.destination);
+    if (filter) osc.connect(filter).connect(gain).connect(ctx.destination);
+    else osc.connect(gain).connect(ctx.destination);
     osc.start(start);
     osc.stop(start + duration + 0.03);
     const node = { osc, gain };
     this.voices.add(node);
     osc.onended = () => {
       osc.disconnect();
+      filter?.disconnect();
       gain.disconnect();
       this.voices.delete(node);
     };
@@ -87,11 +106,11 @@ export class Player {
     await this.ready();
     if (revision !== this.revision) return;
     const start = this.context.currentTime + 0.02;
-    for (const midi of midis)
+    for (const [index, midi] of midis.entries())
       this.voice(
         midi,
-        start,
-        0.45,
+        start + index * 0.025,
+        0.65,
         ((settings.volume / 100) * 0.22) / Math.sqrt(Math.max(1, midis.length)),
         settings.waveform,
       );

@@ -164,7 +164,7 @@ test("Timing uses quarter-note tempo even in compound meter; chords are polyphon
   assert.equal(plan.beatTicks, 144);
   assert.equal(plan.barTicks, 288);
   assert.equal(plan.events[0].notes.length, 5);
-  assert.ok(plan.events[0].notes.every((n) => n.offset === 0));
+  assert.ok(plan.events[0].notes.every((n, i) => n.offset === i * 0.025));
   p.events[0].picking = "up";
   assert.deepEqual(
     playbackPlan(p).events[0].notes.map((n) => n.midi),

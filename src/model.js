@@ -137,7 +137,7 @@ export const SCHEMA = {
     "i m a",
   ]),
   volume: number("Volume (%)", "Playback", 25, 0, 60, 5),
-  waveform: choice("Sound", "Playback", "triangle", ["sine", "triangle"]),
+  waveform: choice("Sound", "Playback", "guitar", ["guitar", "sine", "triangle"]),
   loop: bool("Loop pattern", "Playback", false),
   metronome: bool("Metronome", "Playback", false),
   audition: bool("Hear note on selection", "Playback", false),

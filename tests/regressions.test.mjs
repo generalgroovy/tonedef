@@ -127,6 +127,7 @@ test("Audio scheduler schedules loop boundary in advance and Stop cancels every 
     p.events = p.events.slice(0, 1);
     p.events[0].duration = 24;
     p.settings.tempo = 120;
+    p.settings.waveform = "triangle";
     p.settings.loop = true;
     const length = playbackPlan(p).duration;
     await player.play(p);
