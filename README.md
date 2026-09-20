@@ -2,7 +2,7 @@
 
 **Guitar and bass theory, made tangible.** A minimal, local-first workspace by GeneralGroovy for exploring a fretboard, understanding harmony and generating practice patterns.
 
-[**Open ToneDef**](https://generalgroovy.github.io/tonedef/) · [Source on GitHub](https://github.com/generalgroovy/tonedef). The original release was published on 2026-09-15. Workspace update 1.1 was tested and pushed to main on 2026-09-20; its public deployment verification is pending because the connection timed out. See [deployment status](docs/DEPLOYMENT.md).
+[**Open ToneDef**](https://generalgroovy.github.io/tonedef/) · [Source on GitHub](https://github.com/generalgroovy/tonedef). Version 1.3 published 2026-09-20: 36 automated groups and the browser regression passed; all 16 public runtime files match the tested build. Live browser pluck/slide/bend and playback checks passed. See [deployment status](docs/DEPLOYMENT.md).
 
 ## Start
 

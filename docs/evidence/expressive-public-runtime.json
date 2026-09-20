@@ -1,0 +1,74 @@
+{
+  "checkedAt": "2026-09-20T11:41:24.733Z",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "sourceRevision": "c9bcdc8d9d4ef4bbfef5c9ba3dff8bb04a21a991",
+  "contentSha256": "25fddc8a8c58251aab908dee8a7f9dd2375faa25253e07e239dde2c6d8963265",
+  "result": "PASS: all public runtime bytes match the reviewed local build",
+  "transport": "HTTPS with standard certificate validation and normal DNS resolution",
+  "resources": [
+    {
+      "file": "compact.css",
+      "bytes": 17167
+    },
+    {
+      "file": "favicon.svg",
+      "bytes": 239
+    },
+    {
+      "file": "index.html",
+      "bytes": 977
+    },
+    {
+      "file": "src/app.js",
+      "bytes": 66298
+    },
+    {
+      "file": "src/audio.js",
+      "bytes": 8099
+    },
+    {
+      "file": "src/expression.js",
+      "bytes": 6163
+    },
+    {
+      "file": "src/generation-worker.js",
+      "bytes": 373
+    },
+    {
+      "file": "src/generator.js",
+      "bytes": 10213
+    },
+    {
+      "file": "src/help.js",
+      "bytes": 3547
+    },
+    {
+      "file": "src/interval-view.js",
+      "bytes": 5594
+    },
+    {
+      "file": "src/layout.js",
+      "bytes": 2276
+    },
+    {
+      "file": "src/model.js",
+      "bytes": 18998
+    },
+    {
+      "file": "src/theory.js",
+      "bytes": 11278
+    },
+    {
+      "file": "src/workspace.js",
+      "bytes": 9584
+    },
+    {
+      "file": "styles.css",
+      "bytes": 33637
+    },
+    {
+      "file": "workspace.css",
+      "bytes": 9395
+    }
+  ]
+}

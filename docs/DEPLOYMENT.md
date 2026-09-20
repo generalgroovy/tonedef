@@ -1,6 +1,16 @@
 # Deployment and rollback
 
-## Workspace update 1.1 (2026-09-20)
+## Current release: expressive fretboard 1.3 (2026-09-20)
+
+**Published and verified**, application revision `c9bcdc8d9d4ef4bbfef5c9ba3dff8bb04a21a991`. Includes the previously local 1.2 guitar sound, chord strums and playback-following fretboard. Main [verify/deploy run 35508465507](https://github.com/generalgroovy/tonedef/actions/runs/35508465507) and [browser run 35508465498](https://github.com/generalgroovy/tonedef/actions/runs/35508465498) succeeded. The same application revision passed [feature browser run 35508409172](https://github.com/generalgroovy/tonedef/actions/runs/35508409172) before promotion. There are36 automated groups and13 browser viewport configurations (320–2560px, including touch configurations).
+
+All16 public runtime files were fetched over HTTPS and matched the fresh local build: SHA-256 `25fddc8a8c58251aab908dee8a7f9dd2375faa25253e07e239dde2c6d8963265`. [Byte audit](evidence/expressive-public-runtime.json). Rebuild after checkout/line-ending normalization before comparing exact bytes: the earlier pre-checkout Windows build differed in line endings; committed source, CI output and rebuilt local output agree.
+
+Live browser smoke passed: Explore pluck, three-semitone continuous slide, two-semitone bend, unchanged selected fingering after gestures, pattern playback showing the sounding G chord, and Stop restoring the original Fmaj7 editing chord. Console error list was empty. Hear clicks was enabled and Guitar sound selected for the existing saved public project; its notes were preserved. Human listening and physical touch hardware acceptance remain unclaimed.
+
+Reconstruction details: [expressive interaction](EXPRESSIVE-FRETBOARD.md), [guitar synthesis and scheduling](GUITAR-PLAYBACK.md), [workspace](GUI-WORKSPACE.md). This release record is a documentation-only `[skip ci]` follow-up; public build.json identifies the application revision above.
+
+## Historical checkpoint: workspace update 1.1 (2026-09-20)
 
 Application revision `f8c059097fc26079b1233bbfc600a01ffccc5ad3` is pushed to main. Local syntax/build and 28 test groups passed. The same revision passed [verification CI](https://github.com/generalgroovy/tonedef/actions/runs/35475041682) and [browser regression across 13 desktop/touch viewport configurations](https://github.com/generalgroovy/tonedef/actions/runs/35475041712) before promotion. Local browser interaction and visual checks are detailed in [GUI-WORKSPACE](GUI-WORKSPACE.md).
 
