@@ -96,6 +96,9 @@ export const SCHEMA = {
   maxSpan: number("Maximum fretted span", "Generation", 4, 0, 12),
   maxLeap: number("Maximum melodic leap", "Generation", 7, 0, 36),
   repeatNotes: bool("Allow consecutive repeated pitches", "Generation", true),
+  melodicContour: choice("Melody contour", "Generation", "random", [
+    "random", "ascending", "descending", "arch",
+  ]),
   lowPitch: number("Lowest MIDI pitch", "Generation", 24, 0, 127),
   highPitch: number("Highest MIDI pitch", "Generation", 88, 0, 127),
   chordVocabulary: choice("Chord vocabulary", "Generation", "triads", [
@@ -378,6 +381,11 @@ export function importProject(text) {
     }));
     raw.selectedId ??= raw.events[0]?.id ?? null;
   }
+  // Add only the new optional field; malformed existing fields still fail.
+  if (raw.version === 2 && raw.settings && raw.randomize) {
+    if (!Object.hasOwn(raw.settings, "melodicContour")) raw.settings.melodicContour = "random";
+    if (!Object.hasOwn(raw.randomize, "melodicContour")) raw.randomize.melodicContour = false;
+  }
   return validateProject(raw);
 }
 export function positionChoices(s, all = false) {
@@ -415,6 +423,10 @@ export function editPosition(p, stringId, fret, keyTool = false) {
     return next;
   }
   let event = next.events.find((e) => e.id === next.selectedId);
+  // Generation may select a different kind without changing fixed settings.
+  // An explicit edit follows that event, just like selecting its timeline card.
+  if (event && event.kind !== "rest" && !(s.editorMode === "melody" && s.append))
+    s.editorMode = event.kind;
   if (s.editorMode === "melody" && s.append) {
     if (next.events.length >= MAX_EVENTS)
       throw Error(`Maximum ${MAX_EVENTS} events reached.`);

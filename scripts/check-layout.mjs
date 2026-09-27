@@ -48,7 +48,7 @@ const measure=page=>page.evaluate(()=>{
   return {pageHeight:document.documentElement.scrollHeight,scrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,fontSize:getComputedStyle(document.body).fontSize,
     header:box('.topbar'),board:box('.fretboard-panel'),fret:box('.fret'),timeline:box('.timeline-panel'),inspector:box('.inspector'),math:box('.math-panel'),wheel:box('.music-tools')};
 });
-async function geometry(page,label) {
+async function geometry(page,label,panelCount=7) {
   await settle(page);const m=await measure(page);
   assert.ok(m.scrollWidth<=m.viewportWidth+1,`${label}: page overflow ${m.scrollWidth}/${m.viewportWidth}`);
   assert.ok(m.fret.width>=44&&m.fret.height>=44,`${label}: fret target >=44px`);
@@ -58,7 +58,7 @@ async function geometry(page,label) {
   const width=await page.locator('.dock-grid').evaluate(e=>e.getBoundingClientRect().width);
   const workspaceWidth=await page.locator('.workspace').evaluate(e=>e.getBoundingClientRect().width);
   assert.ok(Math.abs(width-workspaceWidth)<=1,`${label}: dock fills available width`);
-  assert.equal(await page.locator('.dock-panel').count(),7,`${label}: all seven areas retained`);
+  assert.equal(await page.locator('.dock-panel').count(),panelCount,`${label}: applicable areas retained`);
   return m;
 }
 async function interact(page,label,touch) {
@@ -140,6 +140,14 @@ async function interact(page,label,touch) {
   assert.equal(await page.locator('.fret:disabled').count(),0);
   for(const tab of ['chromatic','fifths']) {await page.locator(`[data-tools-tab="${tab}"]`).click();assert.equal(await page.locator(`[data-tools-tab="${tab}"]`).getAttribute('aria-pressed'),'true');}
   await page.locator('[data-action="projects"]').click();assert.ok(await page.locator('dialog').evaluate(e=>e.open));
+  const cardDownload = page.waitForEvent('download');
+  await page.getByRole('button',{name:'Export practice card',exact:true}).click();
+  const card = await cardDownload;
+  assert.equal(card.suggestedFilename(),'tonedef-practice.md');
+  const chunks=[];for await(const chunk of await card.createReadStream())chunks.push(chunk);
+  const markdown=Buffer.concat(chunks).toString('utf8');
+  assert.ok(markdown.includes('ToneDef practice card')&&markdown.includes('## Pattern'));
+  assert.ok(markdown.includes('JSON backup for re-import'));
   await page.locator('[data-action="close-modal"]').click();
   await page.locator('[data-action="settings"]').click();
   await page.locator('#show-random').check();assert.ok(await page.locator('[data-random]').count()>10);
@@ -150,6 +158,34 @@ async function interact(page,label,touch) {
   await page.waitForFunction(()=>!document.querySelector('[data-action="generate"]').disabled,null,{timeout:20000});
   assert.equal(await page.locator('.toast.error').count(),0);assert.ok(await page.locator('[data-event]').count()>0);
   await geometry(page,`${label} generated`);
+  assert.equal(await page.locator('#setting-melodicContour').count(),0);
+  await page.locator('#setting-generationType').selectOption('melody');
+  await page.getByLabel('Melody contour',{exact:true}).selectOption('ascending');
+  await page.locator('#setting-repeatNotes').uncheck();
+  await page.locator('#setting-eventCount').fill('8');
+  await page.locator('#setting-eventCount').press('Tab');
+  await page.locator('[data-action="generate"]').click();
+  await page.waitForFunction(()=>!document.querySelector('[data-action="generate"]').disabled,null,{timeout:20000});
+  assert.equal(await page.locator('.toast.error').count(),0);
+  const generated=await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
+  assert.equal(generated.events.length,8);
+  const pitches=generated.events.map(e=>generated.settings['open'+e.notes[0].stringId.slice(1)]+e.notes[0].fret);
+  assert.ok(pitches.every((m,i)=>!i||m>pitches[i-1]));
+  assert.equal(await page.locator('[data-mode="melody"]').getAttribute('aria-pressed'),'true');
+  await page.locator('[data-pos="s5:12"]').click();
+  assert.equal(await page.locator('.toast.error').count(),0);
+  const edited=await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
+  assert.equal(edited.settings.editorMode,'melody');
+  assert.equal(edited.events[0].notes.length,1);
+  assert.equal(edited.events[0].notes[0].fret,12);
+  await page.locator('[data-action="undo"]').click();
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2'))),generated);
+  await page.reload();await page.waitForSelector('.fret');
+  await page.locator('[data-action="settings"]').click();
+  assert.equal(await page.getByLabel('Melody contour',{exact:true}).inputValue(),'ascending');
+  // Chord-motion panel is intentionally absent for an all-melody pattern.
+  await geometry(page,`${label} melody contour`,6);
+  await page.screenshot({path:path.join(output,`${label}-contour.png`),fullPage:true});
   // Test dense instrument and re-entrant pitches without changing the user's files.
   await page.evaluate(async()=>{
     const {example}=await import('./src/model.js'); const p=example();
@@ -162,7 +198,7 @@ async function interact(page,label,touch) {
   await geometry(page,`${label} twelve strings`);
   await page.locator('[data-action="add"][data-kind="rest"]').click();
   assert.ok(await page.locator('.math-panel .empty').isVisible());await geometry(page,`${label} rest`);
-  report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','matrix keyboard','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop','theory tabs','Projects','settings/random flags','generation worker','12 strings/36 frets/re-entrant tuning','empty/rest']});
+  report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','matrix keyboard','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop','theory tabs','Projects/practice-card download','settings/random flags','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
 }
 try {
   for(const [width,height,touch] of [[2560,1440,false],[1920,1080,false],[1440,1000,false],[1280,900,false],[1100,900,false],[1024,768,false],[850,1000,false],[768,1024,true],[650,900,false],[570,900,true],[390,844,true],[360,800,true],[320,800,true]]) {

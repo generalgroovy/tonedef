@@ -20,6 +20,11 @@ On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Open `http://127.0.0.1
 
 ## Try it
 
+**Consolidated guitar practice:** choose Settings → Pattern → Melody, then select
+an ascending, descending or arch contour. Existing random generation remains the
+default. Projects → **Export practice card** saves the actual pattern, tuning,
+rhythm and tab as Markdown for a practice journal. [Scope and compatibility](docs/CONSOLIDATION.md).
+
 **Expressive fretboard (1.3):** Hear clicks defaults on for new projects. In Edit, tap to hear and toggle a note; hold and drag sideways to slide or vertically to bend without changing the chord. Explore plays without editing. Large filled notes are selected, medium colored notes belong to the key, small notes are outside it. The fretboard's Gestures & legend explains pointer and keyboard controls. Existing saved sound/mute preferences are retained. [Rebuild and behavior](docs/EXPRESSIVE-FRETBOARD.md).
 
 

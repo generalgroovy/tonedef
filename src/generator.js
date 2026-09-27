@@ -114,6 +114,41 @@ function chordTargets(settings) {
       })),
   );
 }
+// Solve the whole contour before choosing notes so a random first note cannot
+// strand an otherwise feasible ascent. Domains contain MIDI pitches, not every
+// duplicate fret position: at most 64 layers x 128 pitches x 128 transitions.
+function contourNotes(project, pool, rand) {
+  const s = project.settings, result = new Map(), layers = [];
+  const pitches = [...new Set(pool.map(n => n.midi))];
+  for (let index = 0; index < s.eventCount; index++) {
+    const locked = project.events[index]?.locked ? project.events[index] : null;
+    if (locked) {
+      if (locked.notes.length) layers.push({ index, pitches: [midiOf(locked.notes[0], s)], locked: true });
+    } else if (rand() < s.restRate / 100) result.set(index, null);
+    else layers.push({ index, pitches });
+  }
+  const pivot = Math.floor(layers.length / 2);
+  const fits = (from, to, index) => {
+    const delta = to - from;
+    const direction = s.melodicContour === "descending" ||
+      (s.melodicContour === "arch" && index > pivot) ? -1 : 1;
+    return Math.abs(delta) <= s.maxLeap && (s.repeatNotes || delta !== 0) && delta * direction >= 0;
+  };
+  for (let index = layers.length - 2; index >= 0; index--) {
+    layers[index].pitches = layers[index].pitches.filter(from =>
+      layers[index + 1].pitches.some(to => fits(from, to, index + 1)));
+  }
+  if (layers.length && !layers[0].pitches.length)
+    throw Error("No complete melody fits this contour, locked notes and leap/repetition constraints. Widen the range, allow repeats, shorten the pattern or change the contour. Nothing changed.");
+  let previous = null;
+  layers.forEach((layer, index) => {
+    const choices = layer.pitches.filter(pitch => previous === null || fits(previous, pitch, index));
+    const pitch = pick(choices, rand);
+    if (!layer.locked) result.set(layer.index, pick(pool.filter(n => n.midi === pitch), rand));
+    previous = pitch;
+  });
+  return result;
+}
 export function generate(p) {
   validateProject(p);
   const next = clone(p),
@@ -129,6 +164,8 @@ export function generate(p) {
       "The requested length would remove a locked event. Increase pattern events or unlock it.",
     );
   const type = s.generationType;
+  const contour = type === "melody" && s.melodicContour !== "random"
+    ? contourNotes(p, pool, rand) : null;
   const targets = chordTargets(s);
   const progressionRoots = [0, 9, 5, 7].map((i) => mod(s.tonic + i));
   let previous = null;
@@ -159,7 +196,7 @@ export function generate(p) {
       fingers: s.fingerPattern,
       interpretation: null,
     };
-    if (rand() < s.restRate / 100) {
+    if (contour ? contour.get(i) === null : rand() < s.restRate / 100) {
       event.kind = "rest";
       events.push(event);
       continue;
@@ -204,7 +241,7 @@ export function generate(p) {
         throw Error(
           `No next note meets the leap/repetition constraints at event ${i + 1}. Try a larger leap or enable repeats.`,
         );
-      const note = pick(candidates, rand);
+      const note = contour ? contour.get(i) : pick(candidates, rand);
       event.notes = [
         { id: `gn-${s.seed}-${i}-0`, stringId: note.stringId, fret: note.fret },
       ];
