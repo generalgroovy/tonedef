@@ -21,6 +21,7 @@ export function practiceCard(project) {
     `- One pass: ${(ticks / PPQ * 60 / s.tempo).toFixed(2)} seconds; ${project.events.length} events`,
     `- Tuning (physical string 1 first): ${stringsOf(s).map(string => spellPitch(string.open, s)).join(", ")}`,
     `- Capo: physical fret ${s.capo}; tab uses absolute physical fret numbers`,
+    `- String practice ranges (physical frets): ${stringsOf(s).map(string => `S${string.index + 1}: ${s.practiceRanges[string.index].min}–${s.practiceRanges[string.index].max}${string.enabled ? "" : " (off)"}`).join(", ")}`,
     `- Generator settings: ${s.generationType}; seed ${s.seed}; melody contour ${s.melodicContour}`,
     "", "## Practice notes", "",
     "- Date: ", "- Focus: ", "- Comfortable tempo: ", "- Next session: ", "",

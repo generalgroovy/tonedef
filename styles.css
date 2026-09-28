@@ -1919,3 +1919,38 @@ dialog::backdrop {
 
 .dialog-feedback { padding: 10px 12px; border-left: 3px solid var(--accent); }
 .dialog-feedback.error { border-left-color: #dc5757; }
+
+/* A separate range track leaves the expressive note gestures unchanged. */
+.practice-ranges { margin: 8px 0; padding: 8px 12px; border: 1px solid var(--border, #48524b); border-radius: 8px; }
+.practice-ranges > summary { cursor: pointer; font-weight: 650; }
+.practice-ranges > summary span { margin-left: 8px; font-size: .75rem; font-weight: 400; }
+.range-toolbar { display: flex; gap: 8px; align-items: start; flex-wrap: wrap; margin: 12px 0; }
+.range-toolbar details { flex: 1; min-width: 48px; }
+.range-toolbar p { max-width: 65ch; font-size: .875rem; }
+.practice-range-row { display: grid; grid-template-columns: 44px minmax(60px,1fr) 112px 24px; align-items: center; gap: 16px; }
+.range-string { font-size: .8125rem; font-weight: 650; }
+.range-string small { display: block; font-weight: 400; }
+.range-track { position: relative; height: 60px; touch-action: none; user-select: none; margin: 0 12px; }
+.range-track::before,.range-band { content: ""; position: absolute; top: 29px; height: 4px; border-radius: 2px; }
+.range-track::before { left: 0; right: 0; background: #56645b; }
+.range-band { left: var(--range-start); right: calc(100% - var(--range-end)); background: #bbdb9f; }
+.range-handle { position: absolute; transform: translateX(-50%); min-width: 28px; width: 28px; min-height: 28px; height: 28px; padding: 0; font-size: 12px; touch-action: none; }
+.range-min { top: 0; }
+.range-max { bottom: 0; }
+.range-handle:focus-visible { outline: 3px solid #d2efa7; outline-offset: 2px; z-index: 2; }
+.range-numbers { display: flex; gap: 6px; }
+.range-numbers label { min-width: 0; flex: 1; font-size: .6875rem; }
+.range-numbers input { width: 100%; min-width: 0; padding: 4px; min-height: 36px; }
+.range-count { font-size: .75rem; text-align: right; }
+.range-disabled { opacity: .65; }
+@media (max-width: 480px) {
+  .practice-ranges { padding: 8px; }
+  .practice-range-row { grid-template-columns: 32px minmax(45px,1fr) 94px; gap: 6px; }
+  .range-count { display: none; }
+  .range-track { margin: 0 14px; }
+  .practice-ranges > summary span { display: block; margin: 4px 0 0 16px; }
+}
+
+.range-axis { font-size: .6875rem; color: #b9c2bc; }
+.range-ticks { display: flex; justify-content: space-between; margin: 0 12px; }
+.fretboard-guide output:empty { display: none; }

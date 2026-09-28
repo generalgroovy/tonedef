@@ -10,11 +10,14 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 
 1. Select an event in **Pattern**. Tap a fret to edit its notes. **Chord** keeps one note per string; **Melody** edits one note per event. Enable **Append** to record a sequence.
 2. Open **Settings** to choose tuning, strings, key and generation constraints. Select the Melody pattern type to reveal **Melody contour**: Random, Ascending, Descending or Arch.
-3. Press **Generate** to use the saved seed. **Randomize** changes only settings whose randomization flags are checked. Lock timeline events that must survive regeneration.
-4. Press **Play** and practice along. **Stop** releases playback and restores the editing selection. Tempo counts quarter notes; metronome, loop, volume and sound are in Settings.
-5. Use **Projects** to save a named copy, export JSON, export tab or download a Markdown practice card.
+3. Open **Practice range** above the fretboard to set each string’s first and last allowed physical fret. Drag either handle, tap the track, use arrow keys (Shift = five frets; Home/End = limit), or enter numbers. **Use visible frets** copies the current window; **Reset ranges** removes per-string restrictions.
+4. Press **Generate** to use the saved seed. **Randomize** changes only settings whose randomization flags are checked. Lock timeline events that must survive regeneration.
+5. Press **Play** and practice along. **Stop** releases playback and restores the editing selection. Tempo counts quarter notes; metronome, loop, volume and sound are in Settings.
+6. Use **Projects** to save a named copy, export JSON, export tab or download a Markdown practice card.
 
 Projects opens with the name field focused. Save confirmations and import errors stay inside the dialog; **Import JSON** also works from the keyboard. A rejected import leaves the current project unchanged.
+
+Per-string bounds intersect the visible fret window, capo, key, pitch and open-string settings. Even effective open strings must fit their range. Bounds attach to physical string numbers and remain saved when tuning or string count changes; off-instrument frets are unavailable. They constrain new generation, including randomized variants, without moving existing or locked notes.
 
 An impossible generation request leaves your work unchanged. Widen the range, reduce the length, allow repeats or relax the leap limit. Arch rises to the middle sounding event and then falls; rests do not count toward its midpoint.
 
@@ -37,7 +40,7 @@ Large filled notes are selected, medium colored notes are in the key and small n
 
 The current project autosaves in this browser. Projects keeps up to 20 named copies; panel layout saves separately. A last-good backup is attempted if the current autosave cannot be read. On recovery failure, the app opens an example without overwriting the damaged storage until you make an edit.
 
-**Export JSON before clearing browser data or moving between sites/devices.** The public GitHub app and localhost have separate browser storage. Exported JSON is the editable backup. Text tab and Markdown practice cards are reference exports and cannot be imported as projects. Older ToneDef version-2 saves receive the new contour default automatically; GeneralGroovy browser storage is not migrated.
+**Export JSON before clearing browser data or moving between sites/devices.** The public GitHub app and localhost have separate browser storage. Exported JSON is the editable backup. Text tab and Markdown practice cards are reference exports and cannot be imported as projects. Older ToneDef version-2 saves receive the contour default and unrestricted per-string ranges automatically; GeneralGroovy browser storage is not migrated.
 
 No account, server database, analytics or external fonts are required.
 

@@ -190,10 +190,11 @@ export const uid = () =>
   globalThis.crypto?.randomUUID?.() ?? `n-${Date.now()}-${Math.random()}`;
 export const clone = (value) => structuredClone(value);
 export function defaultSettings() {
-  return Object.fromEntries(
+  return { ...Object.fromEntries(
     Object.entries(SCHEMA).map(([id, def]) => [id, def.value]),
-  );
+  ), practiceRanges: defaultPracticeRanges() };
 }
+export const defaultPracticeRanges = () => Array.from({ length: 12 }, () => ({ min: 0, max: 36 }));
 export function emptyEvent(kind = "chord", duration = 384) {
   return {
     id: uid(),
@@ -252,6 +253,10 @@ export function createNote(stringId, fret) {
   return { id: uid(), stringId, fret };
 }
 export function settingsProblem(s) {
+  if (!Array.isArray(s.practiceRanges) || s.practiceRanges.length !== 12 ||
+      s.practiceRanges.some(r => !r || !Number.isInteger(r.min) || !Number.isInteger(r.max) ||
+        r.min < 0 || r.max > 36 || r.min > r.max))
+    return "Each string practice range needs a first and last physical fret between 0 and 36, in order.";
   for (const [key, def] of Object.entries(SCHEMA)) {
     const value = s[key];
     if (
@@ -383,6 +388,7 @@ export function importProject(text) {
   }
   // Add only the new optional field; malformed existing fields still fail.
   if (raw.version === 2 && raw.settings && raw.randomize) {
+    if (!Object.hasOwn(raw.settings, "practiceRanges")) raw.settings.practiceRanges = defaultPracticeRanges();
     if (!Object.hasOwn(raw.settings, "melodicContour")) raw.settings.melodicContour = "random";
     if (!Object.hasOwn(raw.randomize, "melodicContour")) raw.randomize.melodicContour = false;
   }
@@ -393,6 +399,8 @@ export function positionChoices(s, all = false) {
     if (!all && !string.enabled) return [];
     const result = [];
     for (let fret = s.capo; fret <= s.fretCount; fret++) {
+      const range = s.practiceRanges[string.index];
+      if (!all && (fret < range.min || fret > range.max)) continue;
       const open = fret === s.capo;
       if (
         !all &&

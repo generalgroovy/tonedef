@@ -40,7 +40,7 @@ const server=createServer(async(req,res)=>{
 });
 await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
 const origin=`http://127.0.0.1:${server.address().port}`;
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true, ...(process.env.TONEDEF_CHROMIUM_PATH ? {executablePath:process.env.TONEDEF_CHROMIUM_PATH} : {})});
 const report={sourceRevision:manifest.sourceRevision,baselineRevision,viewports:[],interactions:[]};
 const settle=page=>page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
 const measure=page=>page.evaluate(()=>{
@@ -165,6 +165,35 @@ async function interact(page,label,touch) {
   assert.ok(markdown.includes('ToneDef practice card')&&markdown.includes('## Pattern'));
   assert.ok(markdown.includes('JSON backup for re-import'));
   await page.locator('[data-action="close-modal"]').click();
+  await page.locator('#practice-ranges > summary').click();
+  const rangeBefore = await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
+  await page.locator('#range-value-0-min').fill('5');
+  await page.locator('#range-value-0-min').press('Tab');
+  assert.equal(await page.locator('#range-0-min').getAttribute('aria-valuenow'),'5');
+  await page.locator('#range-0-min').focus(); await page.keyboard.press('ArrowRight');
+  assert.equal(await page.locator('#range-0-min').getAttribute('aria-valuenow'),'6');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'range-0-min');
+  const track = await page.locator('[data-range-track="0"]').boundingBox();
+  const handle = await page.locator('#range-0-max').boundingBox();
+  await page.mouse.move(handle.x+handle.width/2,handle.y+handle.height/2);await page.mouse.down();
+  await page.mouse.move(track.x+track.width*10/36,handle.y+handle.height/2,{steps:8});await page.mouse.up();
+  assert.equal(await page.locator('#range-0-max').getAttribute('aria-valuenow'),'10');
+  await page.locator('[data-action="undo"]').click();
+  assert.equal(await page.locator('#range-0-max').getAttribute('aria-valuenow'),'36','One drag is one undo entry');
+  const cancelHandle=await page.locator('#range-0-max').boundingBox();
+  await page.mouse.move(cancelHandle.x+cancelHandle.width/2,cancelHandle.y+cancelHandle.height/2);await page.mouse.down();
+  await page.mouse.move(track.x+track.width*12/36,cancelHandle.y+cancelHandle.height/2);await page.keyboard.press('Escape');await page.mouse.up();
+  assert.equal(await page.locator('#range-0-max').getAttribute('aria-valuenow'),'36');
+  const rangeSaved=await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
+  assert.deepEqual(rangeSaved.events,rangeBefore.events,'Range edits preserve existing music');
+  assert.equal(rangeSaved.settings.practiceRanges[0].min,6);
+  await geometry(page,`${label} practice ranges`);
+  await page.screenshot({path:path.join(output,`${label}-practice-ranges.png`),fullPage:true});
+  await page.reload();await page.waitForSelector('.fret');
+  await page.locator('#practice-ranges > summary').click();
+  assert.equal(await page.locator('#range-0-min').getAttribute('aria-valuenow'),'6');
+  await page.locator('[data-action="ranges-reset"]').click();
+  await page.locator('#practice-ranges > summary').click();
   await page.locator('[data-action="settings"]').click();
   await page.locator('#show-random').check();assert.ok(await page.locator('[data-random]').count()>10);
   await page.locator('#setting-labels').selectOption('both');assert.ok(await page.locator('.note-disc small').count()>0);
@@ -214,7 +243,7 @@ async function interact(page,label,touch) {
   await geometry(page,`${label} twelve strings`);
   await page.locator('[data-action="add"][data-kind="rest"]').click();
   assert.ok(await page.locator('.math-panel .empty').isVisible());await geometry(page,`${label} rest`);
-  report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','matrix keyboard','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop','theory tabs','Projects/practice-card download','settings/random flags','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
+  report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','matrix keyboard','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop','theory tabs','Projects/practice-card download','settings/random flags','practice-range numeric/keyboard/drag/cancel/undo/persistence','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
 }
 try {
   for(const [width,height,touch] of [[2560,1440,false],[1920,1080,false],[1440,1000,false],[1280,900,false],[1100,900,false],[1024,768,false],[850,1000,false],[768,1024,true],[650,900,false],[570,900,true],[390,844,true],[360,800,true],[320,800,true]]) {
