@@ -1,4 +1,8 @@
-# Acceptance evidence — ToneDef 1.0.0
+# Historical acceptance evidence — ToneDef 1.0.0
+
+This is the dated first-release record, not the current release status. See
+[deployment and current release](DEPLOYMENT.md) and [1.4 consolidation checks](CONSOLIDATION.md)
+for subsequent verified work. Historical blocked checks below are retained as evidence.
 
 **Status: published; local verification, GitHub CI/deployment and exact public runtime byte verification passed within the boundaries below. Live browser interaction smoke is blocked by connection timeouts. No human musical acceptance claimed.** Recorded 2026-09-15, Windows, Node24.18.0, npm11.13.0, Codex in-app Chromium browser. The previous GeneralGroovy repository/site was only read.
 

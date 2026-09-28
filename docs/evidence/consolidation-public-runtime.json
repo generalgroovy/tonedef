@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-09-27T14:47:55.629Z",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "result": "PASS",
+  "version": "1.4.0",
+  "sourceRevision": "ccb227c55b80bc0dab72a250dd7eb20c1ee1bc09",
+  "contentSha256": "5499617943f5e88883558f9903a446b5f6a113c3166be7f96255039ce52fbec7",
+  "files": [
+    "compact.css",
+    "favicon.svg",
+    "index.html",
+    "src/app.js",
+    "src/audio.js",
+    "src/expression.js",
+    "src/generation-worker.js",
+    "src/generator.js",
+    "src/help.js",
+    "src/interval-view.js",
+    "src/layout.js",
+    "src/model.js",
+    "src/practice.js",
+    "src/theory.js",
+    "src/workspace.js",
+    "styles.css",
+    "workspace.css"
+  ],
+  "transport": "HTTPS with normal DNS and certificate validation"
+}

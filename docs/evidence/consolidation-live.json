@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-09-27T14:49:20.933Z",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "result": "PASS",
+  "pitches": [
+    53,
+    50,
+    48,
+    41
+  ],
+  "checks": [
+    "real-worker descending contour",
+    "active editor mode",
+    "edit/Undo",
+    "Play/Stop",
+    "practice card download"
+  ],
+  "errors": []
+}

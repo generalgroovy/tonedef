@@ -1,70 +1,83 @@
 # ToneDef
 
-**Guitar and bass theory, made tangible.** A minimal, local-first workspace by GeneralGroovy for exploring a fretboard, understanding harmony and generating practice patterns.
+A browser workspace for guitar and bass: edit a fretboard, explore harmony, generate practice patterns and play them back.
 
-[**Open ToneDef**](https://generalgroovy.github.io/tonedef/) · [Source on GitHub](https://github.com/generalgroovy/tonedef). Version 1.3 published 2026-09-20: 36 automated groups and the browser regression passed; all 16 public runtime files match the tested build. Live browser pluck/slide/bend and playback checks passed. See [deployment status](docs/DEPLOYMENT.md).
+[Open ToneDef](https://generalgroovy.github.io/tonedef/) · [Release verification](docs/DEPLOYMENT.md)
 
-## Start
+ToneDef is the main guitar project. Useful melody contours from Guitar Practice Generator and practice cards from GeneralGroovy are included here; those older apps remain references.
 
-Node.js 22 or newer; verified with Node 24.18.0. There are no runtime or build dependencies.
+## Start practicing
+
+1. Select an event in **Pattern**. Tap a fret to edit its notes. **Chord** keeps one note per string; **Melody** edits one note per event. Enable **Append** to record a sequence.
+2. Open **Settings** to choose tuning, strings, key and generation constraints. Select the Melody pattern type to reveal **Melody contour**: Random, Ascending, Descending or Arch.
+3. Press **Generate** to use the saved seed. **Randomize** changes only settings whose randomization flags are checked. Lock timeline events that must survive regeneration.
+4. Press **Play** and practice along. **Stop** releases playback and restores the editing selection. Tempo counts quarter notes; metronome, loop, volume and sound are in Settings.
+5. Use **Projects** to save a named copy, export JSON, export tab or download a Markdown practice card.
+
+An impossible generation request leaves your work unchanged. Widen the range, reduce the length, allow repeats or relax the leap limit. Arch rises to the middle sounding event and then falls; rests do not count toward its midpoint.
+
+## Controls
+
+| Control | Behavior |
+| --- | --- |
+| Edit notes | Tap to audition and toggle; drag to preview without editing |
+| Explore | Play without changing the pattern |
+| Hold and drag | Horizontal slide on a physical string; vertical bend up to two semitones |
+| Edit key / right-click / Shift+F10 | Change key membership without changing selected notes |
+| Arrow keys; Enter or Space | Move fret focus; edit the focused note |
+| Explore keyboard | Hold Space/Enter and use arrows for slide/bend; release or Escape stops |
+| Undo / Redo | Restore project edits, including generation and settings |
+| Workspace | Show, hide, arrange, resize or reset panels |
+
+Large filled notes are selected, medium colored notes are in the key and small notes are outside it. Labels accompany interval colors. The interval matrix, pitch wheel and chord-motion panel describe the current selection; chord motion compares sorted pitches, not inferred independent voices.
+
+## Saved work and recovery
+
+The current project autosaves in this browser. Projects keeps up to 20 named copies; panel layout saves separately. A last-good backup is attempted if the current autosave cannot be read. On recovery failure, the app opens an example without overwriting the damaged storage until you make an edit.
+
+**Export JSON before clearing browser data or moving between sites/devices.** The public GitHub app and localhost have separate browser storage. Exported JSON is the editable backup. Text tab and Markdown practice cards are reference exports and cannot be imported as projects. Older ToneDef version-2 saves receive the new contour default automatically; GeneralGroovy browser storage is not migrated.
+
+No account, server database, analytics or external fonts are required.
+
+## Run locally
+
+Requires Node.js 22 or newer. From this checkout:
 
 ```sh
-npm ci
-npm test
-npm run check
-npm run build
 npm start
 ```
 
-On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Open `http://127.0.0.1:4173/tonedef/`. For the built version: `npm run preview`. All assets use relative URLs; deploy only `dist/`. HTTP is needed for ES modules and the generation worker; opening index.html as a file is unsupported.
+Open `http://127.0.0.1:4173/tonedef/`. Use `npm.cmd` on Windows if PowerShell blocks `npm.ps1`. ES modules and the generation worker require HTTP; opening `index.html` directly is unsupported.
 
-## Try it
+To build and preview the deployable app:
 
-**Consolidated guitar practice:** choose Settings → Pattern → Melody, then select
-an ascending, descending or arch contour. Existing random generation remains the
-default. Projects → **Export practice card** saves the actual pattern, tuning,
-rhythm and tab as Markdown for a practice journal. [Scope and compatibility](docs/CONSOLIDATION.md).
+```sh
+npm run build
+npm run preview
+```
 
-**Expressive fretboard (1.3):** Hear clicks defaults on for new projects. In Edit, tap to hear and toggle a note; hold and drag sideways to slide or vertically to bend without changing the chord. Explore plays without editing. Large filled notes are selected, medium colored notes belong to the key, small notes are outside it. The fretboard's Gestures & legend explains pointer and keyboard controls. Existing saved sound/mute preferences are retained. [Rebuild and behavior](docs/EXPRESSIVE-FRETBOARD.md).
+Only `dist/` is published. There are no application or build dependencies.
 
+## Check changes
 
-**Guitar playback (1.2):** choose Settings → Sound → Guitar for the new plucked-string tone. Free picking strums chords down; Up, Down and Alternate choose direction, while Fingers plucks together. The fretboard follows the sounding chord and restores your editing selection on Stop. Existing saved sound choices are preserved. [Sound and playback details](docs/GUITAR-PLAYBACK.md).
+```sh
+npm ci
+npm run check
+npm test
+npm run build
+```
 
-**Workspace update (1.1):** the fretboard has a wood finish and connected chord shapes. Open **Workspace → Arrange panels** to reorder and resize areas; use its checkboxes to show/hide them, and each area's plus/minus button to expand/collapse. Layout preferences save separately from your music. [Usage, implementation and verification](docs/GUI-WORKSPACE.md).
+The optional browser suite is `node scripts/check-layout.mjs`. It needs Playwright 1.57.0 and its Chromium browser; `TONEDEF_PLAYWRIGHT_PATH` can point to an isolated installation's `index.mjs`. CI runs it separately from the dependency-free application tests.
 
-1. Start with **C → Cm**. Select the second timeline card. The E becomes E♭, changing the root's major third (warm coral) to a minor third (blue).
-2. Click a fret to add/remove a note. Chord mode replaces any other note on that string. Melody mode preserves ordered occurrences; **Append / record** permits repeated notes.
-3. Right-click a fret to change the key's pitch-class collection. For touch, choose **Edit key**; for keyboard, use arrows, Enter/Space, and Shift+F10.
-4. Follow **Between chords** from lowest sounding note upward. Extra notes enter/leave explicitly. Select **Intervals** for a matrix, or explore major and relative minor keys on **Fifths**.
-5. **Generate pattern** uses the current settings. **Randomize** changes only eligible settings and pattern content. Expand settings and turn on **Show randomization checkboxes**. Unchecked settings stay exactly fixed. Lock any event that must survive regeneration.
-6. Press **Play**, adjust tempo/metronome/picking, and practice the pattern. **Projects** saves named copies and imports/exports portable JSON. Use **Export a backup** to keep a copy outside browser storage.
+The 1.4.0 release passed 44 automated test groups, 13 browser widths and a live hosted smoke. See the dated [release record](docs/DEPLOYMENT.md); these results do not imply human listening or physical touch-device acceptance.
 
-## Included
+## Scope and reference
 
-- 1–12 physical strings, per-string octave-aware tuning, guitar/bass presets, 1–36 frets, capo, left-handed display and fret window.
-- Chord/melody/rest timeline, durations including triplets, reorder, duplicate, locks, undo/redo.
-- Actual-pitch chord recognition with inversions, alternatives, explicit incomplete matches, Roman degree labels and spelled simple/compound intervals.
-- Thirteen scale collections; circle of fifths, relative minors, chromatic wheel, interval matrix and ranked compatibility.
-- Seeded melody/arpeggio/chord/progression generation with allowed strings, pitch range, key, span, leap, rhythm and picking constraints.
-- Web Audio playback, simultaneous chords and directional strums, metronome, loop, immediate Stop; volume zero mutes.
-- Autosave, last-good recovery, 20 named local copies, versioned JSON and readable text tablature export.
+Supports 1–12 strings, octave-aware/re-entrant tuning, capo, up to 36 frets, 128 edited events and 64 generated events. Edited chords allow 12 notes; generated voicings allow six. JSON imports are limited to 500 KB. Twelve-tone equal temperament, A4 = 440 Hz; fret numbers are absolute physical frets. Fret-span limits are reach heuristics, not ergonomic guarantees. Microphone assessment, MIDI-file export and cloud sync are not implemented.
 
-## Musical boundaries
+- [Consolidation and contour behavior](docs/CONSOLIDATION.md)
+- [Expressive fretboard](docs/EXPRESSIVE-FRETBOARD.md) and [sound/playback](docs/GUITAR-PLAYBACK.md)
+- [Rebuild contract](docs/REBUILD.md) and [workspace behavior](docs/GUI-WORKSPACE.md)
+- [Historical acceptance evidence](docs/ACCEPTANCE.md) and [roadmap](docs/ROADMAP.md)
 
-Twelve-tone equal temperament, A4 = 440 Hz, C4 = MIDI 60. Frets are **absolute physical fret numbers**: capo 2 + relative fret 3 means physical fret 5. Physical string 1 begins as the lowest but retains its identity under re-entrant tuning. Stroke direction refers to physical string order, never pitch direction.
-
-Chord/scale names describe supported candidates. A note set does not uniquely prove a key or modulation. Rank comparison does not infer independent voices. Fret span is a reach heuristic, not a guarantee of comfortable fingering. Finger letters are practice instructions; the synthesizer does not reproduce or assess human technique. Chord extensions have explicit bounded required/optional tones. Ascending melodic minor is labeled as such. Colors are a learning convention and always accompanied by text/shape.
-
-Maximum 128 edited events, 64 generated events, 12 sounding notes per edited chord, 6 in generated voicings, and 500 KB per imported file. Generation uses finite search and may report that it did not find a solution. Progress tracking, microphone assessment, cloud accounts and other instrument adapters are future work. Export is text tablature, not a MIDI file.
-
-## Engineering and evidence
-
-Native browser ES modules and Node's built-in test runner keep the application reconstructable and dependency-free. Runtime state validation replaces the preferred TypeScript/Vite stack for this small static application. This is a documented implementation choice, not a claim that JavaScript provides compile-time type checking.
-
-- [Rebuild contract](docs/REBUILD.md): complete schemas, musical tables, algorithms, defaults, build and reconstruction instructions.
-- [Design](docs/DESIGN.md): interaction and visual decisions.
-- [Acceptance evidence](docs/ACCEPTANCE.md): exact verified boundaries and unrun checks.
-- [Deployment and rollback](docs/DEPLOYMENT.md).
-- [Roadmap](docs/ROADMAP.md).
-
-MIT license. No analytics, external fonts, tracking scripts or application backend.
+MIT license.
