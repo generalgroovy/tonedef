@@ -1068,7 +1068,15 @@ document.addEventListener("change", (event) => {
       file
         .text()
         .then((text) =>
-          attempt(() => commit(importProject(text), "Project imported.")),
+          attempt(() => {
+            try {
+              commit(importProject(text), "Project imported.");
+            } catch (error) {
+              if (error instanceof SyntaxError)
+                throw Error("This file is not valid JSON. Choose a ToneDef JSON backup and try again.");
+              throw error;
+            }
+          }),
         )
         .catch(() => notify("Could not read this file. Choose it again or try another JSON backup.", true));
     }

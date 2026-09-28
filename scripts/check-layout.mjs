@@ -154,6 +154,7 @@ async function interact(page,label,touch) {
   await (await chooser).setFiles({name:'broken.json',mimeType:'application/json',buffer:Buffer.from('{bad')});
   await page.waitForFunction(()=>document.querySelector('#dialog-feedback')?.getAttribute('role')==='alert');
   assert.ok(await page.locator('#dialog-feedback').isVisible());
+  assert.match(await page.locator('#dialog-feedback').textContent(),/This file is not valid JSON\. Choose a ToneDef JSON backup and try again\./);
   assert.equal(await page.evaluate(()=>localStorage.getItem('tonedef.current.v2')),beforeProjects,'Saving a copy and failed import preserve the active project');
   const cardDownload = page.waitForEvent('download');
   await page.getByRole('button',{name:'Export practice card',exact:true}).click();
