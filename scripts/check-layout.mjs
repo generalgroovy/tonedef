@@ -173,16 +173,23 @@ async function interact(page,label,touch) {
   await page.locator('#range-0-min').focus(); await page.keyboard.press('ArrowRight');
   assert.equal(await page.locator('#range-0-min').getAttribute('aria-valuenow'),'6');
   assert.equal(await page.evaluate(()=>document.activeElement.id),'range-0-min');
+  // S1 is the last visual row. Its lower thumb may be below the viewport
+  // even after focusing the upper thumb, particularly with Linux fonts.
+  await page.locator('#range-0-max').scrollIntoViewIfNeeded();
   const track = await page.locator('[data-range-track="0"]').boundingBox();
   const handle = await page.locator('#range-0-max').boundingBox();
+  assert.ok(handle.y >= 0 && handle.y + handle.height <= page.viewportSize().height,
+    `${label}: drag handle is entirely in the viewport before coordinate input`);
   await page.mouse.move(handle.x+handle.width/2,handle.y+handle.height/2);await page.mouse.down();
   await page.mouse.move(track.x+track.width*10/36,handle.y+handle.height/2,{steps:8});await page.mouse.up();
   assert.equal(await page.locator('#range-0-max').getAttribute('aria-valuenow'),'10');
   await page.locator('[data-action="undo"]').click();
   assert.equal(await page.locator('#range-0-max').getAttribute('aria-valuenow'),'36','One drag is one undo entry');
+  await page.locator('#range-0-max').scrollIntoViewIfNeeded();
+  const cancelTrack=await page.locator('[data-range-track="0"]').boundingBox();
   const cancelHandle=await page.locator('#range-0-max').boundingBox();
   await page.mouse.move(cancelHandle.x+cancelHandle.width/2,cancelHandle.y+cancelHandle.height/2);await page.mouse.down();
-  await page.mouse.move(track.x+track.width*12/36,cancelHandle.y+cancelHandle.height/2);await page.keyboard.press('Escape');await page.mouse.up();
+  await page.mouse.move(cancelTrack.x+cancelTrack.width*12/36,cancelHandle.y+cancelHandle.height/2);await page.keyboard.press('Escape');await page.mouse.up();
   assert.equal(await page.locator('#range-0-max').getAttribute('aria-valuenow'),'36');
   const rangeSaved=await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
   assert.deepEqual(rangeSaved.events,rangeBefore.events,'Range edits preserve existing music');
