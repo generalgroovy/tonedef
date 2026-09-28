@@ -14,6 +14,8 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 4. Press **Play** and practice along. **Stop** releases playback and restores the editing selection. Tempo counts quarter notes; metronome, loop, volume and sound are in Settings.
 5. Use **Projects** to save a named copy, export JSON, export tab or download a Markdown practice card.
 
+Projects opens with the name field focused. Save confirmations and import errors stay inside the dialog; **Import JSON** also works from the keyboard. A rejected import leaves the current project unchanged.
+
 An impossible generation request leaves your work unchanged. Widen the range, reduce the length, allow repeats or relax the leap limit. Arch rises to the middle sounding event and then falls; rests do not count toward its midpoint.
 
 ## Controls

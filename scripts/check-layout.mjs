@@ -140,6 +140,21 @@ async function interact(page,label,touch) {
   assert.equal(await page.locator('.fret:disabled').count(),0);
   for(const tab of ['chromatic','fifths']) {await page.locator(`[data-tools-tab="${tab}"]`).click();assert.equal(await page.locator(`[data-tools-tab="${tab}"]`).getAttribute('aria-pressed'),'true');}
   await page.locator('[data-action="projects"]').click();assert.ok(await page.locator('dialog').evaluate(e=>e.open));
+  assert.equal(await page.locator('dialog').getAttribute('aria-labelledby'),'dialog-title');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'save-name');
+  const beforeProjects = await page.evaluate(()=>localStorage.getItem('tonedef.current.v2'));
+  await page.locator('#save-name').fill('Practice copy');
+  await page.getByRole('button',{name:'Save named copy',exact:true}).click();
+  assert.ok(await page.locator('#dialog-feedback').isVisible());
+  assert.match(await page.locator('#dialog-feedback').textContent(),/Named copy saved/);
+  assert.equal(await page.locator('[data-load-project]').first().textContent(),'Practice copy '+await page.locator('[data-load-project] small').first().textContent());
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button',{name:'Import JSON',exact:true}).focus();
+  await page.keyboard.press('Enter');
+  await (await chooser).setFiles({name:'broken.json',mimeType:'application/json',buffer:Buffer.from('{bad')});
+  await page.waitForFunction(()=>document.querySelector('#dialog-feedback')?.getAttribute('role')==='alert');
+  assert.ok(await page.locator('#dialog-feedback').isVisible());
+  assert.equal(await page.evaluate(()=>localStorage.getItem('tonedef.current.v2')),beforeProjects,'Saving a copy and failed import preserve the active project');
   const cardDownload = page.waitForEvent('download');
   await page.getByRole('button',{name:'Export practice card',exact:true}).click();
   const card = await cardDownload;

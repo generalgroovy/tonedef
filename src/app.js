@@ -129,6 +129,14 @@ const expression = installExpression({
 const formatBeats = (ticks) =>
   ({ 32: "⅓", 64: "⅔" })[ticks] ?? String(ticks / 96);
 function notify(message, error = false) {
+  const feedback = $("#modal[open] #dialog-feedback");
+  if (feedback) {
+    feedback.hidden = false;
+    feedback.className = error ? "dialog-feedback error" : "dialog-feedback";
+    feedback.setAttribute("role", error ? "alert" : "status");
+    feedback.textContent = message;
+    return;
+  }
   let node = $("#toast");
   if (!node) {
     node = document.createElement("div");
@@ -173,8 +181,9 @@ function attempt(fn) {
   try {
     fn();
   } catch (error) {
+    // Keep dialog fields and feedback available so the user can correct or retry.
+    if (!$("#modal")?.open) render();
     notify(error.message, true);
-    render();
   }
 }
 function mutate(fn, message) {
@@ -611,7 +620,12 @@ function render() {
 }
 function openModal(html) {
   const modal = $("#modal");
-  modal.innerHTML = `<div class="modal-content"><button class="modal-close" data-action="close-modal" aria-label="Close dialog">×</button>${html}</div>`;
+  modal.innerHTML = `<div class="modal-content"><button class="modal-close" data-action="close-modal" aria-label="Close dialog">×</button>${html}<p id="dialog-feedback" class="dialog-feedback" role="status" aria-atomic="true" hidden></p></div>`;
+  const heading = modal.querySelector("h2");
+  if (heading) {
+    heading.id = "dialog-title";
+    modal.setAttribute("aria-labelledby", heading.id);
+  } else modal.removeAttribute("aria-labelledby");
   hideHelp();
   prepareHelp(modal);
   modal.showModal();
@@ -712,7 +726,7 @@ function library() {
 }
 function projectsModal() {
   openModal(
-    `<h2>Your projects</h2><label class="preset-field">Name for saved copy<input id="save-name" maxlength="120" value="${esc(project().title)}"></label><p>Saved on this device. Export JSON to move a project or keep a separate backup.</p><div class="button-row"><button data-action="save-library">Save named copy</button><button data-action="new-project">New blank project</button><button data-action="export-json">Export JSON</button><button data-action="export-tab">Export tab</button><button data-action="export-practice">Export practice card</button><label class="button file-button">Import JSON<input id="import-file" type="file" accept=".json,application/json"></label></div><div class="saved-projects">${
+    `<h2>Your projects</h2><label class="preset-field">Name for saved copy<input id="save-name" maxlength="120" value="${esc(project().title)}"></label><p>Saved on this device. Export JSON to move a project or keep a separate backup.</p><div class="button-row"><button class="primary" data-action="save-library">Save named copy</button><button data-action="new-project">New blank project</button><button data-action="export-json">Export JSON</button><button data-action="export-tab">Export tab</button><button data-action="export-practice">Export practice card</button><button data-action="import-project">Import JSON</button><input id="import-file" type="file" accept=".json,application/json" hidden></div><div class="saved-projects">${
       library()
         .map(
           (p, i) =>
@@ -721,6 +735,7 @@ function projectsModal() {
         .join("") || "<p>No named copies saved yet.</p>"
     }</div>`,
   );
+  $("#save-name").focus();
 }
 document.addEventListener("click", (event) => {
   const target = event.target.closest("button");
@@ -850,6 +865,7 @@ document.addEventListener("click", (event) => {
       $(".inspector").scrollIntoView({ behavior: "smooth", block: "start" });
     }
     else if (action === "projects") projectsModal();
+    else if (action === "import-project") $("#import-file").click();
     else if (action === "close-modal") {
       $("#modal").close();
       if (pendingInstrument) {
@@ -1045,13 +1061,16 @@ document.addEventListener("change", (event) => {
       transitionIndex = Number(el.value);
       render();
     } else if (el.id === "import-file" && el.files[0]) {
-      if (el.files[0].size > 500000)
+      const file = el.files[0];
+      el.value = "";
+      if (file.size > 500000)
         throw Error("Project file exceeds 500 KB.");
-      el.files[0]
+      file
         .text()
         .then((text) =>
           attempt(() => commit(importProject(text), "Project imported.")),
-        );
+        )
+        .catch(() => notify("Could not read this file. Choose it again or try another JSON backup.", true));
     }
   });
 });

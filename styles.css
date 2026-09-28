@@ -1916,3 +1916,6 @@ dialog::backdrop {
   font-size: 0.8125rem;
   padding: 6px;
 }
+
+.dialog-feedback { padding: 10px 12px; border-left: 3px solid var(--accent); }
+.dialog-feedback.error { border-left-color: #dc5757; }
