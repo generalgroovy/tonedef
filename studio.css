@@ -9,7 +9,7 @@ button:focus-visible, summary:focus-visible, select:focus-visible, input:focus-v
 summary { display: list-item; cursor: pointer; font-size: .875rem; padding: 8px 0; }
 .topbar { position: relative; background: transparent; border-bottom: 0; max-width: 1600px; margin: auto; padding: 18px 24px 14px; gap: 18px; }
 .wordmark { font-size: 1.5rem; font-weight: 750; letter-spacing: -.065em; color: #ecf2e7; }
-.brand .wordmark { display: inline; white-space: nowrap; }
+.brand > .wordmark:last-child { display: inline; white-space: nowrap; }
 .brand .wordmark > span { display: inline; color: var(--accent); }
 .project-title { flex: 1; min-width: 80px; }
 .project-title input { background: transparent; border-color: transparent; font-size: .9rem; color: var(--muted); width: 100%; }
@@ -50,7 +50,7 @@ main { max-width: 1600px; padding: 0 24px 20px; margin: auto; }
 .board-display-content #color-settings { width: 100%; }
 #color-settings[open] { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 12px; }
 #color-settings > summary { grid-column: 1/-1; }
-.interval-legend { width: 100%; gap: 6px; padding: 0; }
+.interval-legend { width: 100%; gap: 6px; padding: 0; flex-wrap: wrap; }
 .interval-legend .interval-key { padding: 5px 8px; }
 .interval-legend > .unit { display: none; }
 .interval-legend small { display: inline; }
@@ -155,9 +155,15 @@ footer { font-size: .72rem; opacity: .8; margin: 14px 0 0; padding: 0; border: 0
 }
 @media(max-width:760px) {
   .topbar { padding: 12px; flex-wrap: wrap; }
-  .project-title { flex-basis: calc(100% - 130px); }
-  .header-actions { width: 100%; justify-content: space-between; gap: 0; }
+  .project-title { display: block; flex-basis: calc(100% - 130px); }
+  .header-actions { width: 100%; flex-basis: 100%; justify-content: space-between; gap: 3px; flex-wrap: wrap; }
   .header-actions button { padding: 6px 9px; }
+  .header-actions button[data-action=undo], .header-actions button[data-action=redo] { font-size: 0; min-width: 32px; padding: 4px; }
+  .header-actions button[data-action=undo]::after { content: '↶'; font-size: 1.25rem; }
+  .header-actions button[data-action=redo]::after { content: '↷'; font-size: 1.25rem; }
+  .header-actions button[aria-label=Redo] { display: block; }
+  .header-actions button[data-action=projects] { position: static; }
+  #app-options > summary { white-space: nowrap; padding: 8px 4px; }
   main { padding: 0 10px 16px; }
   .focused-studio .dock-body > .panel { padding: 10px; }
   .board-bar { gap: 8px 12px; }

@@ -269,6 +269,24 @@ async function interact(page,label,touch) {
   assert.equal(await page.locator('.string-row').count(),12);
   assert.equal(await page.locator('.fret').count(),444);
   await geometry(page,`${label} twelve strings`);
+  // All schema controls and randomization flags remain reachable, once each.
+  await page.getByLabel('Fretboard action').selectOption('melody');
+  await page.locator('#board-display > summary').click();
+  await page.locator('#setting-colorReference').selectOption('pinned');
+  await page.locator('#studio-practice').click();
+  await page.locator('#setting-generationType').selectOption('melody');
+  await page.locator('#randomization > summary').click();
+  await page.locator('#show-random').check();
+  const inventory = await page.evaluate(async()=>{
+    const {SCHEMA}=await import('./src/model.js');
+    const controls = [...document.querySelectorAll('[data-setting]')].map(e=>e.dataset.setting);
+    controls.push('editorMode','keyMask', ...[...document.querySelectorAll('[data-tuning]')].map(e=>'open'+e.dataset.tuning));
+    const flags = [...document.querySelectorAll('[data-random]')].map(e=>e.dataset.random);
+    return {keys:Object.keys(SCHEMA).sort(),controls:controls.sort(),flags:flags.sort()};
+  });
+  assert.deepEqual(inventory.controls,inventory.keys,'Every setting has exactly one control');
+  assert.deepEqual(inventory.flags,inventory.keys,'Every setting has exactly one randomization flag');
+  await page.locator('#board-display > summary').click();
   await page.locator('[data-action="add"][data-kind="rest"]').click();
   await page.locator('#studio-notes').click();
   assert.ok(await page.locator('.math-panel .empty').isVisible());await geometry(page,`${label} rest`);
