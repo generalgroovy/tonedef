@@ -136,13 +136,16 @@ async function interact(page,label,touch) {
   await page.locator('#half-step-labels').click();assert.ok(await page.locator('.half-step-label').count()>0);
   await page.locator('#half-step-labels').click();assert.equal(await page.locator('.half-step-label').count(),0);
   assert.equal(await page.evaluate(()=>localStorage.getItem('tonedef.current.v2')),stored,'Visualization must not modify project data');
-  const help=page.locator('#half-step-labels');
+  await page.locator('#studio-notes').click();
+  const help=page.locator('[data-panel="inspector"] .help-trigger');
   if(touch) await help.tap(); else {await help.hover();await page.waitForTimeout(350);}
   assert.ok(await page.locator('#ui-tooltip').isVisible());
   if(!touch){await page.locator('#ui-tooltip').hover();await page.waitForTimeout(250);assert.ok(await page.locator('#ui-tooltip').isVisible());}
   await page.keyboard.press('Escape');assert.ok(await page.locator('#ui-tooltip').isHidden());
   await page.evaluate(()=>document.activeElement.blur());
   await help.focus();assert.ok(await page.locator('#ui-tooltip').isVisible());await page.keyboard.press('Escape');
+  await page.locator('#studio-notes').click();
+  await page.locator('#setting-colorReference').selectOption('chord');
   await page.locator('#board-display > summary').click();
   await page.locator('[data-event]').nth(1).click();assert.equal(await page.locator('[data-event]').nth(1).getAttribute('aria-pressed'),'true');
   const editPositions = await page.locator('.fret.selected').evaluateAll(nodes=>nodes.map(n=>n.dataset.pos));
@@ -150,7 +153,9 @@ async function interact(page,label,touch) {
   await page.waitForFunction(()=>document.querySelector('.board-context').textContent.startsWith('Playing · '));
   assert.equal(await page.locator('.board-context').textContent(), 'Playing · '+await page.locator('.event-card.playing strong').textContent());
   assert.ok(await page.locator('.fret:disabled').count()>0);
+  assert.match(await page.locator('#board-display > summary').textContent(),/C chord root/);
   await page.locator('#playButton').click();assert.equal(await page.locator('#playButton').getAttribute('aria-pressed'),'false');
+  assert.match(await page.locator('#board-display > summary').textContent(),/A chord root/);
   assert.deepEqual(await page.locator('.fret.selected').evaluateAll(nodes=>nodes.map(n=>n.dataset.pos)),editPositions);
   assert.equal(await page.locator('.fret:disabled').count(),0);
   await page.locator('#studio-key').click();

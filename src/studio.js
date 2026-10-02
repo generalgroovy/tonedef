@@ -29,7 +29,7 @@ export function mountStudio(rerender) {
   if (warning) key.append(warning);
   const colors = element('details', 'board-display', '<summary>Colors & labels</summary>');
   colors.firstElementChild.textContent = `Colors · ${$('.reference-readout').textContent}`;
-  colors.firstElementChild.setAttribute('aria-label', 'Colors and labels');
+  colors.firstElementChild.setAttribute('aria-label', `Colors and labels, from ${$('.reference-readout').textContent}`);
   colors.id = 'board-display';
   const colorBody = element('div', 'board-display-content');
   colorBody.append($('.reference-row'), $('#half-step-labels'), $('.interval-legend'));
