@@ -1,0 +1,154 @@
+{
+  "checkedAt": "2026-10-02T10:44:07.929248+00:00",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "manifest": {
+    "version": "1.7.0",
+    "sourceRevision": "8659f4ab0ee167a0e0b51c7fbfd2589f65013e89",
+    "contentSha256": "adc3a4c770f3419e9a697bf8f5f35d7ea4b4c0873c67f1e7eac8c8a17d68751b",
+    "files": [
+      "compact.css",
+      "favicon.svg",
+      "index.html",
+      "src/app.js",
+      "src/audio.js",
+      "src/expression.js",
+      "src/generation-worker.js",
+      "src/generator.js",
+      "src/help.js",
+      "src/interval-view.js",
+      "src/layout.js",
+      "src/model.js",
+      "src/practice-ranges.js",
+      "src/practice.js",
+      "src/studio.js",
+      "src/theory.js",
+      "src/workspace.js",
+      "studio.css",
+      "styles.css",
+      "workspace.css"
+    ]
+  },
+  "files": [
+    {
+      "path": "compact.css",
+      "sha256": "30554b4b98b473837284bc0ad7e90b02f2a44573ad80923c2d949fee1e26a83b",
+      "bytes": 17167,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "favicon.svg",
+      "sha256": "7d5e60cf93b6c8a9e86b5ba4c4fda307f091643eba30d51949e679cde4717e92",
+      "bytes": 239,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "index.html",
+      "sha256": "2f13267523e2412c160bc6599be4295c71e5e2ade2d96f008e1e79f6f092d4c0",
+      "bytes": 1027,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/app.js",
+      "sha256": "3b72f577ffe00f2d72ce41e10f8e105c94e0e37fc6facf1f38fc372352c887e4",
+      "bytes": 65444,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/audio.js",
+      "sha256": "397ef80fd3625d014ff3a51a8ac900e4019b3426cafae3fce35a323ef56229db",
+      "bytes": 8099,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/expression.js",
+      "sha256": "8054211b7d08ad62f514cb475cd184a73a03f8039b3916f62918ead87ddb6b55",
+      "bytes": 6163,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/generation-worker.js",
+      "sha256": "266ec8e54452102ebe6599e0db94626756804a512c8fe2ef998a59a025f7e8ec",
+      "bytes": 373,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/generator.js",
+      "sha256": "914d4e717f8b5fc72f981475072b179767037dcf72adbf0a595d4e934ab8fc35",
+      "bytes": 12297,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/help.js",
+      "sha256": "e77b1df3d13fcfe0e85cdad45bccb4e657f8145b7b05ed75e6a9f2ef6803e174",
+      "bytes": 3547,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/interval-view.js",
+      "sha256": "76526e61b7755da6cb5283576e078c072edb8840876b16afb423cbbe9cc08dfe",
+      "bytes": 4712,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/layout.js",
+      "sha256": "9c274c1179347ac15e4052cc21f4babc7993d8d6981367fc21eaa504a58a24a3",
+      "bytes": 2265,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/model.js",
+      "sha256": "446957c6f89e9aa481d6ac57a9003744bbc26c4539c75ba6bcefd1a37b41d60d",
+      "bytes": 20431,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/practice-ranges.js",
+      "sha256": "86fa257d3983c95dd6f94abf3bf3e1bfa5837b7b72be2551c6d97f16ee8273aa",
+      "bytes": 7820,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/practice.js",
+      "sha256": "51688bb51d5a98ebe0ffa111068a5291653c7fe27d55831c78ee54ae4eb7388b",
+      "bytes": 2388,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/studio.js",
+      "sha256": "ee164fcfef5706168145928790012e50c893fa6e6fd63593c39173e3d5ab17b0",
+      "bytes": 6769,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/theory.js",
+      "sha256": "ba464fcdaa5d79810c48ff3eedc3bb5dcbe069f8421af027eb09e2ee5101361b",
+      "bytes": 11278,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "src/workspace.js",
+      "sha256": "06a9e94d02eeba3fd6b14834c49a4d7f9469012a659120bf211d33310d4738ac",
+      "bytes": 9584,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "studio.css",
+      "sha256": "24cdd29e115541de189efb98c1dc747cabf6269057a0474568b1be429912fec9",
+      "bytes": 14445,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "styles.css",
+      "sha256": "c1115f773b77dbfb924f47212dd651e8787868d2d6fa389aafdae42c064d5947",
+      "bytes": 36048,
+      "matchesCommittedSource": true
+    },
+    {
+      "path": "workspace.css",
+      "sha256": "83b760da6d65200f5a8579dcffcf03bebecca58a8bb9aa6d4709036226a120d7",
+      "bytes": 9395,
+      "matchesCommittedSource": true
+    }
+  ],
+  "httpsCertificateValidation": true
+}

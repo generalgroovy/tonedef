@@ -15,7 +15,7 @@ generation, expressive audio and practice-range contracts remain unchanged.
 | Notes & intervals | Chord interpretation, actual note positions, pinning and enharmonic spelling; **one** From/To note comparison; optional frequency mathematics; adjacent chord motion by sorted pitch rank |
 | Key map | Circle of fifths/relative minors, editable chromatic wheel, scale steps, compatible scales and modes |
 | Practice | Type/count/contour/vocabulary/key constraint; reach, pitch and repeat limits; rhythm and picking defaults; per-string ranges; Generate; seed, randomization flags and Randomize; examples |
-| Instrument | Tuning preset, 1–12 strings, 0–36 frets, capo, visible range, handedness, per-string tuning/enabling, sound, volume, meter |
+| Instrument | Tuning preset, 1–12 strings, 1–36 frets plus open strings, capo, visible range, handedness, per-string tuning/enabling, sound, volume, meter |
 | Projects | Named local copies, new project, JSON import/export, text tab and Markdown practice card export |
 | Layout → Customize panels | Restore independent saved panel order, visibility, collapsed state and size; keyboard and pointer arrangement; reset/fit controls |
 
@@ -59,7 +59,9 @@ when the focused view is used.
    `settings.practiceRanges`: 12 `{min,max}` integer pairs, initially 0 and 36,
    indexed by physical string. Missing legacy ranges migrate to defaults;
    malformed explicit ranges are rejected. Intersect ranges with the visible
-   window, capo, key, pitch limits and enabled strings before generation. Bounds
+   window, capo, key, pitch limits and enabled strings before generation. Enabled
+   effective open strings may lie outside the visible window but must still lie
+   inside their per-string range. Bounds
    do not move existing notes and remain stored for temporarily absent strings.
    Range handles and numeric inputs form one transaction per gesture; Escape
    cancels; arrows move one fret, Shift five, Home/End to limits. Reversed bounds
