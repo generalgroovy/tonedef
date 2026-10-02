@@ -11,15 +11,15 @@ const { chromium } = await import(process.env.TONEDEF_PLAYWRIGHT_PATH ? pathToFi
 const root = path.resolve('dist'), output = path.resolve('test-results/compact-ui');
 await mkdir(output, {recursive:true});
 const manifest = JSON.parse(await readFile(path.join(root,'build.json'),'utf8'));
-for (const file of ['compact.css','workspace.css','src/layout.js','src/expression.js','src/workspace.js','src/help.js','src/interval-view.js','src/app.js']) {
+for (const file of ['compact.css','workspace.css','studio.css','src/studio.js','src/layout.js','src/expression.js','src/workspace.js','src/help.js','src/interval-view.js','src/app.js']) {
   assert.ok(manifest.files.includes(file));
   assert.equal(await readFile(path.join(root,file),'utf8'), await readFile(file,'utf8'));
 }
 // Compare to the actual previous release, not the new DOM with CSS disabled.
-const baselineRevision = 'a56e15387d75e1ffa943fa9fc67efd8cfa91eab3';
+const baselineRevision = '3de8f1d0a6b0d2d37153012f296949d501544278';
 const baseline = await mkdtemp(path.join(tmpdir(),'tonedef-baseline-'));
 const files = execFileSync('git',['ls-tree','-r','--name-only',baselineRevision],{encoding:'utf8'}).trim().split('\n')
-  .filter(f => ['index.html','styles.css','compact.css','favicon.svg'].includes(f) || /^src\/[^/]+\.js$/.test(f));
+  .filter(f => ['index.html','styles.css','compact.css','workspace.css','favicon.svg'].includes(f) || /^src\/[^/]+\.js$/.test(f));
 for (const file of files) {
   await mkdir(path.dirname(path.join(baseline,file)),{recursive:true});
   await writeFile(path.join(baseline,file),execFileSync('git',['show',`${baselineRevision}:${file}`]));
@@ -58,12 +58,20 @@ async function geometry(page,label,panelCount=7) {
   const width=await page.locator('.dock-grid').evaluate(e=>e.getBoundingClientRect().width);
   const workspaceWidth=await page.locator('.workspace').evaluate(e=>e.getBoundingClientRect().width);
   assert.ok(Math.abs(width-workspaceWidth)<=1,`${label}: dock fills available width`);
-  assert.equal(await page.locator('.dock-panel').count(),panelCount,`${label}: applicable areas retained`);
+  assert.equal(await page.locator('.dock-panel').count(),panelCount - Number(await page.locator('body.focused-studio').count()>0),`${label}: applicable areas retained`);
+  const ids=await page.locator('[id]').evaluateAll(es=>es.map(e=>e.id));
+  assert.equal(new Set(ids).size,ids.length,`${label}: no duplicate control IDs`);
   return m;
 }
 async function interact(page,label,touch) {
   const originalNotes = await page.locator('.fret.selected').count();
   assert.equal(await page.locator('.shape-line').count(),originalNotes-1);
+  assert.equal(await page.locator('.studio-section:visible').count(),0);
+  assert.equal(await page.locator('.studio-nav button').count(),4);
+  assert.equal(await page.locator('.distance-matrix').count(),0);
+  assert.equal(await page.locator('.key-tones').count(),0);
+  await page.locator('#app-options > summary').click();
+  await page.locator('[data-studio-layout]').click();
   await page.locator('#workspace-controls > summary').click();
   await page.locator('#layout-edit-').click();
   await page.locator('#layout-earlier-timeline').click();
@@ -83,9 +91,12 @@ async function interact(page,label,touch) {
   assert.ok(await page.locator('[data-panel="math"]').isVisible());
   assert.equal(await page.locator('.fret.selected').count(),originalNotes);
   await page.locator('#workspace-controls > summary').click();
+  await page.locator('#app-options > summary').click();
+  await page.locator('[data-studio-layout]').click();
+  assert.equal(await page.locator('.studio-section:visible').count(),0);
   // Expressive preview never mutates the saved fingering; full cells remain targets.
-  await page.getByLabel('Hear clicks',{exact:true}).check();
-  await page.locator('[data-tool="explore"]').click();
+  await page.getByLabel('Hear notes',{exact:true}).check();
+  await page.getByLabel('Fretboard action').selectOption('explore');
   const expressiveBefore = await page.evaluate(()=>localStorage.getItem('tonedef.current.v2'));
   const expressionFret = page.locator('[data-pos="s3:0"]');
   await expressionFret.focus();
@@ -101,7 +112,7 @@ async function interact(page,label,touch) {
   assert.equal(await page.locator('.fret.sounding').count(),0);
   if(touch) await expressionFret.tap(); else await expressionFret.click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('tonedef.current.v2')),expressiveBefore);
-  await page.locator('[data-tool="notes"]').click();
+  await page.getByLabel('Fretboard action').selectOption('chord');
   const fret=page.locator('.fret').first(), selected=await fret.getAttribute('aria-pressed');
   await fret.click();assert.notEqual(await fret.getAttribute('aria-pressed'),selected);
   await page.locator('[data-action="undo"]').click();assert.equal(await fret.getAttribute('aria-pressed'),selected);
@@ -109,35 +120,40 @@ async function interact(page,label,touch) {
   assert.notEqual(await page.evaluate(()=>document.activeElement.dataset.pos),position);
   await page.keyboard.press('Escape');
   const stored=await page.evaluate(()=>localStorage.getItem('tonedef.current.v2'));
-  await page.locator('#interval-cell-0-3').click();
+  await page.locator('#studio-notes').click();
+  await page.locator('#interval-from').selectOption('0');
+  await page.locator('#interval-to').selectOption('3');
+  await page.locator('#pitch-detail > summary').click();
   assert.match(await page.locator('.math-readout').innerText(),/\+12/);
   assert.match(await page.locator('.equation').innerText(),/2\.0000/);
-  await page.locator('#interval-cell-3-0').click();
+  await page.getByRole('button',{name:'Swap interval direction'}).click();
   assert.match(await page.locator('.math-readout').innerText(),/-12/);
   assert.match(await page.locator('.equation').innerText(),/0\.5000/);
-  await page.locator('#interval-cell-3-0').focus();await page.keyboard.press('ArrowRight');
-  assert.equal(await page.evaluate(()=>document.activeElement.id),'interval-cell-3-1');
-  await page.keyboard.press('Enter');assert.equal(await page.locator('#interval-cell-3-1').getAttribute('aria-pressed'),'true');
-  await page.keyboard.press('Escape');
-  await page.locator('#half-step-labels').click();assert.equal(await page.locator('.half-step-label').count(),0);
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'interval-swap');
+  await page.locator('#studio-notes').click();
+  await page.locator('#board-display > summary').click();
+  assert.equal(await page.locator('.half-step-label').count(),0);
   await page.locator('#half-step-labels').click();assert.ok(await page.locator('.half-step-label').count()>0);
+  await page.locator('#half-step-labels').click();assert.equal(await page.locator('.half-step-label').count(),0);
   assert.equal(await page.evaluate(()=>localStorage.getItem('tonedef.current.v2')),stored,'Visualization must not modify project data');
-  const help=page.locator('.board-bar > .help-trigger');
+  const help=page.locator('#half-step-labels');
   if(touch) await help.tap(); else {await help.hover();await page.waitForTimeout(350);}
   assert.ok(await page.locator('#ui-tooltip').isVisible());
   if(!touch){await page.locator('#ui-tooltip').hover();await page.waitForTimeout(250);assert.ok(await page.locator('#ui-tooltip').isVisible());}
   await page.keyboard.press('Escape');assert.ok(await page.locator('#ui-tooltip').isHidden());
   await page.evaluate(()=>document.activeElement.blur());
   await help.focus();assert.ok(await page.locator('#ui-tooltip').isVisible());await page.keyboard.press('Escape');
+  await page.locator('#board-display > summary').click();
   await page.locator('[data-event]').nth(1).click();assert.equal(await page.locator('[data-event]').nth(1).getAttribute('aria-pressed'),'true');
   const editPositions = await page.locator('.fret.selected').evaluateAll(nodes=>nodes.map(n=>n.dataset.pos));
   await page.locator('#playButton').click();
   await page.waitForFunction(()=>document.querySelector('.board-context').textContent.startsWith('Playing · '));
   assert.equal(await page.locator('.board-context').textContent(), 'Playing · '+await page.locator('.event-card.playing strong').textContent());
   assert.ok(await page.locator('.fret:disabled').count()>0);
-  await page.locator('[data-action="stop"]').click();assert.equal(await page.locator('#playButton').getAttribute('aria-pressed'),'false');
+  await page.locator('#playButton').click();assert.equal(await page.locator('#playButton').getAttribute('aria-pressed'),'false');
   assert.deepEqual(await page.locator('.fret.selected').evaluateAll(nodes=>nodes.map(n=>n.dataset.pos)),editPositions);
   assert.equal(await page.locator('.fret:disabled').count(),0);
+  await page.locator('#studio-key').click();
   for(const tab of ['chromatic','fifths']) {await page.locator(`[data-tools-tab="${tab}"]`).click();assert.equal(await page.locator(`[data-tools-tab="${tab}"]`).getAttribute('aria-pressed'),'true');}
   await page.locator('[data-action="projects"]').click();assert.ok(await page.locator('dialog').evaluate(e=>e.open));
   assert.equal(await page.locator('dialog').getAttribute('aria-labelledby'),'dialog-title');
@@ -165,6 +181,8 @@ async function interact(page,label,touch) {
   assert.ok(markdown.includes('ToneDef practice card')&&markdown.includes('## Pattern'));
   assert.ok(markdown.includes('JSON backup for re-import'));
   await page.locator('[data-action="close-modal"]').click();
+  await page.locator('#studio-practice').click();
+  assert.ok(await page.locator('#studio-content-key').isHidden());
   await page.locator('#practice-ranges > summary').click();
   const rangeBefore = await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
   await page.locator('#range-value-0-min').fill('5');
@@ -197,12 +215,14 @@ async function interact(page,label,touch) {
   await geometry(page,`${label} practice ranges`);
   await page.screenshot({path:path.join(output,`${label}-practice-ranges.png`),fullPage:true});
   await page.reload();await page.waitForSelector('.fret');
+  await page.locator('#studio-practice').click();
   await page.locator('#practice-ranges > summary').click();
   assert.equal(await page.locator('#range-0-min').getAttribute('aria-valuenow'),'6');
   await page.locator('[data-action="ranges-reset"]').click();
   await page.locator('#practice-ranges > summary').click();
-  await page.locator('[data-action="settings"]').click();
+  await page.locator('#randomization > summary').click();
   await page.locator('#show-random').check();assert.ok(await page.locator('[data-random]').count()>10);
+  await page.locator('#board-display > summary').click();
   await page.locator('#setting-labels').selectOption('both');assert.ok(await page.locator('.note-disc small').count()>0);
   await geometry(page,`${label} settings`);await page.keyboard.press('Escape');
   await page.screenshot({path:path.join(output,`${label}-settings.png`),fullPage:true});
@@ -213,6 +233,7 @@ async function interact(page,label,touch) {
   assert.equal(await page.locator('#setting-melodicContour').count(),0);
   await page.locator('#setting-generationType').selectOption('melody');
   await page.getByLabel('Melody contour',{exact:true}).selectOption('ascending');
+  await page.locator('#practice-constraints > summary').click();
   await page.locator('#setting-repeatNotes').uncheck();
   await page.locator('#setting-eventCount').fill('8');
   await page.locator('#setting-eventCount').press('Tab');
@@ -223,7 +244,7 @@ async function interact(page,label,touch) {
   assert.equal(generated.events.length,8);
   const pitches=generated.events.map(e=>generated.settings['open'+e.notes[0].stringId.slice(1)]+e.notes[0].fret);
   assert.ok(pitches.every((m,i)=>!i||m>pitches[i-1]));
-  assert.equal(await page.locator('[data-mode="melody"]').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.getByLabel('Fretboard action').inputValue(),'melody');
   await page.locator('[data-pos="s5:12"]').click();
   assert.equal(await page.locator('.toast.error').count(),0);
   const edited=await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
@@ -233,7 +254,7 @@ async function interact(page,label,touch) {
   await page.locator('[data-action="undo"]').click();
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2'))),generated);
   await page.reload();await page.waitForSelector('.fret');
-  await page.locator('[data-action="settings"]').click();
+  await page.locator('#studio-practice').click();
   assert.equal(await page.getByLabel('Melody contour',{exact:true}).inputValue(),'ascending');
   // Chord-motion panel is intentionally absent for an all-melody pattern.
   await geometry(page,`${label} melody contour`,6);
@@ -249,8 +270,9 @@ async function interact(page,label,touch) {
   assert.equal(await page.locator('.fret').count(),444);
   await geometry(page,`${label} twelve strings`);
   await page.locator('[data-action="add"][data-kind="rest"]').click();
+  await page.locator('#studio-notes').click();
   assert.ok(await page.locator('.math-panel .empty').isVisible());await geometry(page,`${label} rest`);
-  report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','matrix keyboard','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop','theory tabs','Projects/practice-card download','settings/random flags','practice-range numeric/keyboard/drag/cancel/undo/persistence','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
+  report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','single comparator with keyboard focus','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop','theory tabs','Projects/practice-card download','settings/random flags','practice-range numeric/keyboard/drag/cancel/undo/persistence','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
 }
 try {
   for(const [width,height,touch] of [[2560,1440,false],[1920,1080,false],[1440,1000,false],[1280,900,false],[1100,900,false],[1024,768,false],[850,1000,false],[768,1024,true],[650,900,false],[570,900,true],[390,844,true],[360,800,true],[320,800,true]]) {
@@ -270,6 +292,13 @@ try {
     }
     await page.screenshot({path:path.join(output,`${label}-after.png`),fullPage:true});
     report.viewports.push(entry);
+    for(const id of ['notes','key','practice','instrument']) {
+      await page.locator('#studio-'+id).click();
+      await geometry(page,label+' '+id);
+      assert.equal(await page.locator('.studio-section:visible').count(),1);
+      if([1440,390].includes(width))await page.screenshot({path:path.join(output,`${label}-${id}.png`),fullPage:true});
+    }
+    await page.locator('#studio-instrument').click();
     if([1440,390].includes(width))await interact(page,label,touch);
     assert.deepEqual(errors,[],`${label}: browser/network errors`);
     console.log(`PASS ${label}: ${after.pageHeight}px, fretboard ${after.board.width}x${after.board.height}px`);

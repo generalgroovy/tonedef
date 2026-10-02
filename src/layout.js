@@ -2,9 +2,9 @@
 export const PANELS = [
   ['fretboard', 'Fretboard', '.fretboard-panel', 12],
   ['timeline', 'Pattern', '.timeline-panel', 12],
-  ['inspector', 'Notes & intervals', '.inspector', 4],
-  ['math', 'Interval mathematics', '.math-panel', 4],
-  ['tools', 'Theory tools', '.music-tools', 4],
+  ['inspector', 'Selected event', '.inspector', 4],
+  ['math', 'Compare two notes', '.math-panel', 4],
+  ['tools', 'Key map', '.music-tools', 4],
   ['transitions', 'Between chords', '.transition-panel', 12],
   ['settings', 'Instrument & practice settings', '#settings-panel', 12],
 ];

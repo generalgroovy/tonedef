@@ -37,15 +37,17 @@ test('Pitch axis uses actual distances and groups unisons without losing occurre
   assert.equal(pitchGeometry([127]).groups[0].x, 24);
   assert.deepEqual(pitchGeometry([]).groups, []);
 });
-test('Matrix spells compound intervals but shows signed half-step distances first', () => {
+test('A single directional comparison preserves compound intervals without a duplicate table', () => {
   const notes = [{name:'C3',midi:48}, {name:'E4',midi:64}];
   const html = intervalWorkspace(notes, defaultSettings(), [0,1]);
   assert.match(html, /\+16/); assert.match(html, /M10/);
-  assert.match(html, /-16/); assert.match(html, /2\.5198/);
-  assert.match(html, /data-interval-from="0" data-interval-to="1" tabindex="0"/);
+  assert.match(html, /Major tenth/); assert.match(html, /2\.5198/);
+  assert.match(html, /data-interval-end="0"/); assert.doesNotMatch(html, /<table/);
+  const reverse = intervalWorkspace(notes, defaultSettings(), [1,0]);
+  assert.match(reverse, /-16/); assert.match(reverse, /Descending/); assert.match(reverse, /0\.3969/);
   assert.match(intervalWorkspace([], defaultSettings()), /Select notes/);
 });
-test('Matrix selection is clamped and does not mutate notes or settings', () => {
+test('Comparator selection is clamped and does not mutate notes or settings', () => {
   const notes = [{name:'A4',midi:69}], settings = defaultSettings();
   const before = JSON.stringify({notes,settings});
   const html = intervalWorkspace(notes, settings, [-2,99]);

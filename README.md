@@ -8,12 +8,12 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 
 ## Start practicing
 
-1. Select an event in **Pattern**. Tap a fret to edit its notes. **Chord** keeps one note per string; **Melody** edits one note per event. Enable **Append** to record a sequence.
-2. Open **Settings** to choose tuning, strings, key and generation constraints. Select the Melody pattern type to reveal **Melody contour**: Random, Ascending, Descending or Arch.
-3. Open **Practice range** above the fretboard to set each string’s first and last allowed physical fret. Drag either handle, tap the track, use arrow keys (Shift = five frets; Home/End = limit), or enter numbers. **Use visible frets** copies the current window; **Reset ranges** removes per-string restrictions.
-4. Press **Generate** to use the saved seed. **Randomize** changes only settings whose randomization flags are checked. Lock timeline events that must survive regeneration.
-5. Press **Play** and practice along. **Stop** releases playback and restores the editing selection. Tempo counts quarter notes; metronome, loop, volume and sound are in Settings.
-6. Use **Projects** to save a named copy, export JSON, export tab or download a Markdown practice card.
+1. Choose **Build a chord**, **Write a melody**, **Play notes** or **Edit the key** above the fretboard. Click notes; hold and drag to slide or bend. The instruction below the neck follows your action.
+2. Select a **Pattern** card to edit it. **Edit selected event** reveals duration, picking, reorder, duplicate, lock and delete. Enable **Append** when writing a sequence.
+3. Open **Notes & intervals** for note positions, chord interpretation and one directional From/To comparison. **Key map** opens the circle of fifths and scale analysis. **Colors** above the neck controls the reference, labels and palette.
+4. Open **Practice** to set generation rules and per-string ranges. **Generate pattern** uses the saved seed; **Randomize checked** changes only enabled settings. Locked events survive generation. **Instrument** holds tuning, strings, frets, sound and volume.
+5. Press **Play**; the same button becomes **Stop**. Tempo, loop and metronome sit beside the pattern. Use **Projects** to save a copy, import/export JSON, export tab or download a practice card.
+6. The focused view opens one section at a time. **Layout → Customize panels** restores draggable, resizable and hideable panels with their saved arrangement.
 
 Projects opens with the name field focused. Save confirmations and import errors stay inside the dialog; **Import JSON** also works from the keyboard. A rejected import leaves the current project unchanged.
 
@@ -25,16 +25,16 @@ An impossible generation request leaves your work unchanged. Widen the range, re
 
 | Control | Behavior |
 | --- | --- |
-| Edit notes | Tap to audition and toggle; drag to preview without editing |
-| Explore | Play without changing the pattern |
+| Build a chord / Write a melody | Tap to audition and toggle; drag to preview without editing |
+| Play notes | Play without changing the pattern |
 | Hold and drag | Horizontal slide on a physical string; vertical bend up to two semitones |
-| Edit key / right-click / Shift+F10 | Change key membership without changing selected notes |
+| Edit the key / right-click / Shift+F10 | Change key membership without changing selected notes |
 | Arrow keys; Enter or Space | Move fret focus; edit the focused note |
-| Explore keyboard | Hold Space/Enter and use arrows for slide/bend; release or Escape stops |
+| Play notes keyboard | Hold Space/Enter and use arrows for slide/bend; release or Escape stops |
 | Undo / Redo | Restore project edits, including generation and settings |
-| Workspace | Show, hide, arrange, resize or reset panels |
+| Layout → Customize panels | Show, hide, arrange, resize or reset panels |
 
-Large filled notes are selected, medium colored notes are in the key and small notes are outside it. Labels accompany interval colors. The interval matrix, pitch wheel and chord-motion panel describe the current selection; chord motion compares sorted pitches, not inferred independent voices.
+Large filled notes are selected, medium colored notes are in the key and small notes are outside it. Labels accompany interval colors. The directional interval comparison, pitch wheel and chord-motion panel describe the current selection; chord motion compares sorted pitches, not inferred independent voices.
 
 ## Saved work and recovery
 
@@ -74,12 +74,13 @@ npm run build
 
 The optional browser suite is `node scripts/check-layout.mjs`. It needs Playwright 1.57.0 and its Chromium browser; `TONEDEF_PLAYWRIGHT_PATH` can point to an isolated installation's `index.mjs`. CI runs it separately from the dependency-free application tests.
 
-The 1.4.0 release passed 44 automated test groups, 13 browser widths and a live hosted smoke. See the dated [release record](docs/DEPLOYMENT.md); these results do not imply human listening or physical touch-device acceptance.
+See the dated [release record](docs/DEPLOYMENT.md) for local, CI and live verification. Automated audio checks and emulated touch do not imply human listening or physical-device acceptance.
 
 ## Scope and reference
 
 Supports 1–12 strings, octave-aware/re-entrant tuning, capo, up to 36 frets, 128 edited events and 64 generated events. Edited chords allow 12 notes; generated voicings allow six. JSON imports are limited to 500 KB. Twelve-tone equal temperament, A4 = 440 Hz; fret numbers are absolute physical frets. Fret-span limits are reach heuristics, not ergonomic guarantees. Microphone assessment, MIDI-file export and cloud sync are not implemented.
 
+- [Current focused interface and complete control map](docs/MINIMAL-STUDIO.md)
 - [Consolidation and contour behavior](docs/CONSOLIDATION.md)
 - [Expressive fretboard](docs/EXPRESSIVE-FRETBOARD.md) and [sound/playback](docs/GUITAR-PLAYBACK.md)
 - [Rebuild contract](docs/REBUILD.md) and [workspace behavior](docs/GUI-WORKSPACE.md)

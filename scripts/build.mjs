@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 await mkdir("dist", { recursive: true });
-const assets = ["index.html", "styles.css", "compact.css", "workspace.css", "favicon.svg"];
+const assets = ["index.html", "styles.css", "compact.css", "workspace.css", "studio.css", "favicon.svg"];
 const files = [
   ...assets,
   ...(await readdir("src"))
