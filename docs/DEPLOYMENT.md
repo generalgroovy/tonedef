@@ -1,5 +1,36 @@
 # Deployment and rollback
 
+## Release 1.8.0, verified 2026-10-04
+
+Learn and configurable Practice are live at
+[ToneDef](https://generalgroovy.github.io/tonedef/) and in the
+[portfolio app](https://generalgroovy.web.app/play/tonedef/) from application
+revision `e02e9178288364f0deab6d80503bbc08c4e191a1`.
+
+- Learn provides Notes, Steps, Scales and Modes, short prompts, audible pitch previews and matching fretboard highlights. Definitions stay under Info; the simple fretboard does not edit saved music.
+- Practice exposes fixed or explicitly randomized key, scale, count, string pool and notes-per-string groups. More choices contains recipes, sequences, rhythms, per-string ranges and bounded randomization. Successful New pattern advances the seed; failure preserves the project; locks and Undo remain exact.
+- Learn/Practice keep choices, neck and pattern together at laptop sizes; mobile stacks them. Chord cards summarize note counts. Studio retains the full editor and directional comparator; Arrange retains custom layouts. Large contents scroll within their areas.
+- The latest 1.7 release was merged before publication, retaining comparator, narrow-header and sounding-reference fixes. Existing projects and custom layouts are preserved.
+- 84 automated tests, syntax checks and the production build passed locally and in CI.
+- [Candidate browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37197002000), [main browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37197084339), and [verification/Pages publication](https://github.com/generalgroovy/tonedef/actions/runs/37197084287) succeeded.
+- Browser coverage includes three fresh Learn/Practice contexts (1366 × 768, 390 × 844 and 320 × 800, with touch emulation on the latter two) and 15 Studio/Arrange viewport configurations. Checks include all seven modes, previews, randomization, grouping, locks, Undo, instrument protection, persistence, 44px primary targets, focus, overflow, editing, expression, playback references, comparison, per-string ranges and the complete settings inventory.
+- All 23 runtime files plus `build.json` matched the clean committed build over certificate-validated HTTPS. Runtime SHA-256: `1d6f994c44e8397bbc1f5201973796b5531c77b23cd65be3afeec8c3b358d869`.
+- The portfolio passed 648 site checks and 500 embed checks. After target-scoped publication, all 152 public files, 20 former German routes and 20 retired-project redirects passed live checks. Other project records and embedded snapshots were preserved.
+- Live browser navigation, pitch preview and Play/Stop passed with existing saved music intact. The final portfolio view shows all three main areas at 1366 × 768, including compact cards for an older chord pattern, without console warnings or errors.
+
+[Browser report](evidence/learning-layout.json) ·
+[Public byte receipt](evidence/learning-public-runtime.json) ·
+[Live screenshot](evidence/learning-live.png)
+
+An earlier range-drag test attempted to gesture outside the viewport; it now
+centers the handle before measuring and dragging. The final passing runs above
+also include the later chord-card simplification. Browser cache propagation can
+temporarily retain an earlier rendering in an already-open tab; the byte audit
+and final portfolio rendering were independently verified. These checks do not
+establish learning effectiveness with a five-year-old, human listening quality,
+or physical touch-device acceptance. Documentation-only commits may follow the
+application revision; `build.json` identifies the deployed runtime.
+
 ## Historical release: 1.7.0, verified 2026-10-02
 
 The [focused studio](MINIMAL-STUDIO.md) is live at
