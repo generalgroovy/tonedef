@@ -210,23 +210,24 @@ export const defaultPracticeOptions = () => ({
   notesPerStringMin: 1, notesPerStringMax: 4,
 });
 export function practiceOptionsProblem(options) {
+  const labels = {keyRandom:'Random key', modeRandom:'Random scale', countRandom:'Random count', stringsRandom:'Random strings', notesPerStringRandom:'Random group size', countMin:'Fewest notes', countMax:'Most notes', stringsMin:'Fewest strings', stringsMax:'Most strings', notesPerString:'Notes per string', notesPerStringMin:'Fewest per string', notesPerStringMax:'Most per string'};
   if (!options || typeof options !== "object" || Array.isArray(options))
     return "Practice options must be an object.";
   for (const key of ["keyRandom", "modeRandom", "countRandom", "stringsRandom", "notesPerStringRandom"])
-    if (typeof options[key] !== "boolean") return `${key} must be on or off.`;
+    if (typeof options[key] !== "boolean") return `${labels[key]} must be on or off.`;
   for (const [key, min, max] of [
     ["countMin", 1, 64], ["countMax", 1, 64],
     ["stringsMin", 1, 12], ["stringsMax", 1, 12],
     ["notesPerString", 0, 16], ["notesPerStringMin", 1, 16], ["notesPerStringMax", 1, 16],
   ]) if (!Number.isInteger(options[key]) || options[key] < min || options[key] > max)
-    return `${key} must be an integer between ${min} and ${max}.`;
+    return `${labels[key]} must be a whole number from ${min} to ${max}.`;
   for (const name of ["count", "strings", "notesPerString"])
     if (options[`${name}Min`] > options[`${name}Max`])
-      return `${name}: the first random value cannot exceed the last.`;
+      return `${labels[name+'Min']} cannot exceed ${labels[name+'Max'].toLowerCase()}.`;
   if (!Array.isArray(options.stringIds) || !options.stringIds.length ||
       options.stringIds.length > 12 || new Set(options.stringIds).size !== options.stringIds.length ||
       options.stringIds.some(id => typeof id !== "string" || !/^s(?:[0-9]|1[01])$/.test(id)))
-    return "Choose at least one distinct practice string (S1–S12).";
+    return "Choose at least one practice string, without duplicates.";
   return null;
 }
 export function emptyEvent(kind = "chord", duration = 384) {
@@ -255,6 +256,12 @@ export function defaultProject() {
     events: [],
     selectedId: null,
   };
+}
+/** Display numbering follows the drawn neck: top string is 1 (high E on guitar).
+ * Physical IDs and saved range indices retain their original order. */
+export function stringNumber(settings, idOrIndex) {
+  const index = typeof idOrIndex === 'string' ? Number(idOrIndex.slice(1)) : idOrIndex;
+  return settings.stringCount - index;
 }
 export function stringsOf(s) {
   return Array.from({ length: s.stringCount }, (_, i) => ({

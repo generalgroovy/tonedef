@@ -261,12 +261,13 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) input[type="checkb
 .simple-menu[open] { z-index: 30; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
 .simple-menu[open] > button { display: block; width: 100%; }
 .simple-menu[open] { position: absolute; top: 8px; right: 16px; min-width: 140px; box-shadow: 0 10px 30px #0008; }
-.simple-grid { display: grid; grid-template-columns: 330px minmax(0,1fr); grid-template-areas: 'exercise fretboard' 'exercise timeline'; grid-template-rows: minmax(370px,1fr) 200px; height: calc(100dvh - 100px); gap: 12px; margin-top: 8px; }
+.simple-grid { display: grid; grid-template-columns: 330px minmax(0,1fr); grid-template-areas: 'exercise fretboard' 'exercise timeline'; grid-template-rows: minmax(390px,1fr) 180px; height: calc(100dvh - 100px); gap: 12px; margin-top: 8px; }
 .simple-panel { min-width: 0; min-height: 0; border: 1px solid #3e4a57; border-radius: 12px; background: var(--panel); overflow: auto; scrollbar-gutter: stable; }
 .simple-panel[data-panel="exercise"] { grid-area: exercise; }
 .simple-panel[data-panel="fretboard"] { grid-area: fretboard; }
 .simple-panel[data-panel="timeline"] { grid-area: timeline; }
 .simple-panel > h1,.simple-panel > h2 { font-size: 1rem; padding: 12px 16px 0; }
+.simple-panel[data-panel="exercise"] > h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; padding: 0; }
 .simple-panel > .panel { border: 0; padding: 12px 16px; background: none; }
 .simple-panel .setting { padding: 0; margin: 0; gap: 5px; }
 .simple-panel .setting > label { max-width: none; font-size: .9rem; }
@@ -290,8 +291,15 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) input[type="checkb
 .learning-pitch strong { font-size: 1.1rem; }
 .learning-pitch small { font-size: .72rem; color: var(--muted); }
 .learning-pitch.is-home { border: 2px solid var(--accent); }
-.learning-step { flex: 0 0 36px; font-size: .65rem; line-height: 1.35; text-align: center; color: var(--muted); }
+.learning-step { flex: 0 0 40px; font-size: .75rem; line-height: 1.35; text-align: center; color: var(--muted); }
 .learning-modes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+.learning-topics { margin-top: 0; }
+.learning-controls:has(> :only-child) { grid-template-columns: minmax(0,1fr); }
+.learning-controls:has(> :only-child) .setting { display: grid; grid-template-columns: 1fr 100px; align-items: center; }
+.learning-pitch.is-changed { border-style: dashed; border-color: var(--accent); }
+.learning-pitch[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
+#learn-listen { width: 100%; margin: 12px 0 2px; }
+.learning-info .setting { margin: 12px 0; }
 .learning-hint { font-size: .875rem; line-height: 1.5; }
 .learning-mode-recipes > div { margin: 10px 0; }
 .learning-mode-recipes dd { margin: 3px 0; color: var(--muted); }
@@ -309,6 +317,14 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) input[type="checkb
 .string-choices button small { font-size: .7rem; color: var(--muted); }
 .practice-new { width: 100%; font-size: 1rem; font-weight: 650; margin: 4px 0; }
 .practice-bounds { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.practice-bounds { margin: 0 0 10px; }
+.practice-bounds label { display: grid; gap: 5px; }
+.practice-key { margin-top: 10px; }
+.practice-error,.practice-conflict { border-left: 3px solid #f0bc83; padding: 8px 10px; font-size: .85rem; line-height: 1.5; }
+.practice-error { color: #ffdbb6; }
+.practice-conflict p { margin: 0 0 8px; }
+.simple-panel :is(input,select):disabled { opacity: .6; cursor: not-allowed; }
+.simple-panel[data-panel="exercise"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 #practice-more > :is(.setting,label) { display: flex; flex-direction: column; align-items: stretch; margin: 10px 0; }
 .simple-panel .board-bar { justify-content: space-between; font-size: .9rem; color: var(--muted); margin-bottom: 8px; }
 .simple-panel .fretboard { background: #44372c; background-image: none; box-shadow: none; }
@@ -324,7 +340,7 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) input[type="checkb
 .simple-pattern-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: .85rem; color: var(--muted); }
 #pattern-info { margin-top: 4px; }
 body:is([data-workspace="learn"],[data-workspace="practice"]) footer > span { display: none; }
-@media (max-width: 1099px), (max-height: 739px) {
+@media (max-width: 1099px), (max-height: 699px) {
   .simple-grid { height: auto; grid-template-columns: minmax(0,1fr); grid-template-areas: 'exercise' 'fretboard' 'timeline'; grid-template-rows: auto; }
   .simple-panel { overflow: visible; }
   .simple-panel .fretboard { min-width: max-content; }
@@ -357,7 +373,7 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) footer > span { di
 .simple-panel .learning-pitch small { white-space: nowrap; }
 .simple-panel[data-panel="timeline"] > .panel { padding-top: 8px; padding-bottom: 6px; }
 .string-choices { grid-template-columns: repeat(auto-fit,minmax(44px,1fr)); gap: 2px; }
-@media (min-width:1100px) and (min-height:740px) {
+@media (min-width:1100px) and (min-height:700px) {
   .simple-grid { height: calc(100dvh - 76px); }
 }
 .practice-result { font-size: .8rem; color: var(--muted); margin: 4px 0; line-height: 1.4; }

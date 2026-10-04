@@ -157,6 +157,48 @@ test("Zero-volume playback creates no oscillator", () => {
   assert.equal(player.context.oscillators.length, 0);
 });
 
+test('Lesson playback uses an isolated finite sequence and leaves instrument and pattern settings intact', async () => {
+  const originalSet = globalThis.setInterval, originalClear = globalThis.clearInterval;
+  let pump;
+  globalThis.setInterval = fn => { pump = fn; return 7; };
+  globalThis.clearInterval = () => {};
+  try {
+    const steps = [], player = new Player(id => steps.push(id));
+    player.context = new Context();
+    const project = example(), before = clone(project);
+    project.settings.waveform = 'triangle';
+    project.settings.loop = true; project.settings.metronome = true;
+    const settings = clone(project.settings);
+    await player.playSequence([60,62],project.settings);
+    assert.equal(player.context.oscillators.length,1,'No metronome or saved chord is scheduled');
+    player.context.currentTime = 0.08; pump();
+    assert.equal(steps.at(-1),'learn-0');
+    player.context.currentTime = 0.7; pump();
+    assert.equal(player.context.oscillators.length,2);
+    assert.equal(player.context.oscillators[1].starts[0],0.07+60/90);
+    player.context.currentTime = 1.5; pump();
+    assert.equal(player.running,false);
+    assert.equal(player.timer,null);
+    assert.equal(player.voices.size,0);
+    assert.deepEqual(project.settings,settings);
+    assert.deepEqual(project.events,before.events);
+  } finally {
+    globalThis.setInterval=originalSet; globalThis.clearInterval=originalClear;
+  }
+});
+
+test('Stopping a lesson during audio initialization prevents delayed playback', async () => {
+  const player = new Player(); player.context = new Context();
+  player.context.state = 'suspended';
+  let resume;
+  player.context.resume = () => new Promise(resolve => { resume=resolve; });
+  const pending = player.playSequence([60,62,64],example().settings);
+  player.stop(); resume(); await pending;
+  assert.equal(player.running,false);
+  assert.equal(player.timer,null);
+  assert.equal(player.voices.size,0);
+});
+
 test("Imported IDs cannot inject markup and compound beat numbering uses eighths", () => {
   const p = example();
   p.events[0].id = 'x" onclick="alert(1)';

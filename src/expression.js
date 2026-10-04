@@ -17,17 +17,18 @@ export function slidePitch(points, x) {
   return sorted.at(-1).midi;
 }
 
-export function installExpression({ settings, tool, blocked, describe, error, hideHelp }) {
+export function installExpression({ settings, tool, blocked, describe, error, hideHelp, onPitch = () => {}, beforeStart = () => {}, simple = () => false }) {
   const player = new Player();
   let active = null, suppressed = null, limitTimer;
   const output = () => document.querySelector('#expression-readout');
   function show(g) {
+    onPitch(g.pitch);
     document.querySelectorAll('.fret.sounding').forEach(n => n.classList.remove('sounding'));
     const closest = g.points.reduce((best, p) => Math.abs(p.midi - g.pitch) < Math.abs(best.midi - g.pitch) ? p : best);
     (g.mode === 'bend' ? g.button : closest.button).classList.add('sounding');
     if (output()) {
       const cents = Math.round((g.pitch - g.base) * 100);
-      output().textContent = `${describe(Math.round(g.pitch))} · ${g.mode || 'Pluck'}${g.mode ? ` ${cents >= 0 ? '+' : ''}${cents} cents` : ''}${settings().volume === 0 ? ' · muted' : ''}`;
+      output().textContent = `${describe(Math.round(g.pitch))}${simple() ? '' : ` · ${g.mode || 'Pluck'}${g.mode ? ` ${cents >= 0 ? '+' : ''}${cents} cents` : ''}`}${settings().volume === 0 ? ' · muted' : ''}`;
     }
     g.voice?.pitch(g.pitch);
   }
@@ -42,9 +43,10 @@ export function installExpression({ settings, tool, blocked, describe, error, hi
     if (g.pointer !== undefined && g.button.hasPointerCapture(g.pointer)) g.button.releasePointerCapture(g.pointer);
     document.querySelectorAll('.fret.sounding').forEach(n => n.classList.remove('sounding'));
     document.querySelector('#fretboard')?.classList.remove('expressing');
-    if (output()) output().textContent += cancel ? ' · cancelled' : ' · released';
+    if (output() && !simple()) output().textContent += cancel ? ' · cancelled' : ' · released';
   }
   function start(button, pointer, x, y, keyboard = false) {
+    beforeStart();
     finish(true);
     const s = settings(), [stringId, fret] = button.dataset.pos.split(':');
     const points = [...button.closest('.string-row').querySelectorAll('[data-pos]')].map(n => {

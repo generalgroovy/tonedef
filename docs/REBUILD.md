@@ -1,6 +1,6 @@
 # Rebuild ToneDef from these documents
 
-Apply [Exercise workspace 1.8](EXERCISE-WORKSPACE.md) first for the current presentation, sequence/rhythm schema, recipes, complete-path fallback and melody interval context. It supersedes older fixed/default-layout descriptions below; the prior musical contracts still apply unless explicitly updated.
+Apply [Exercise workspace 1.9](EXERCISE-WORKSPACE.md) first for the current presentation, isolated lesson previews, conventional display numbering, conditional Practice controls, sequence/rhythm schema, recipes and complete-path generation. It supersedes older fixed/default-layout descriptions below; the prior musical contracts still apply unless explicitly updated.
 
 For melodic contour generation, backward-compatible imports and Markdown practice
 cards, also apply [Guitar-project consolidation](CONSOLIDATION.md).

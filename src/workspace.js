@@ -233,16 +233,19 @@ function mountSimple(grid) {
   const board = document.querySelector('.fretboard-panel');
   board.querySelector('#fretboard')?.setAttribute('aria-label','Guitar neck. Arrow keys move; hold Enter or Space to hear a note.');
   const toolbar = board.querySelector('.board-bar');
-  const hear = toolbar.querySelector('.hear-toggle');
   toolbar.replaceChildren();
-  const instruction = document.createElement('span'); instruction.textContent = 'Tap a note to hear it'; toolbar.append(instruction);
-  if (hear) toolbar.append(hear);
+  const instruction = document.createElement('span'); instruction.textContent = 'Tap or hold a note'; toolbar.append(instruction);
+  if (document.querySelector('#setting-volume')?.value === '0') {
+    const sound = document.createElement('button'); sound.dataset.action = 'unmute'; sound.textContent = 'Turn sound on'; toolbar.append(sound);
+  }
   board.querySelector('.interval-legend')?.remove();
   board.querySelector('.gesture-help')?.remove();
   board.querySelectorAll('[data-help]').forEach(node => node.removeAttribute('data-help'));
   board.querySelectorAll('.note-disc small').forEach(node=>node.remove());
   if (mode === 'learn') { const strip = document.querySelector('.learning-strip'); if (strip) board.insertBefore(strip,board.querySelector('.board-scroll')); }
-  const output = board.querySelector('#expression-readout'); if (output) output.setAttribute('aria-live','polite');
+  const output = board.querySelector('#expression-readout');
+  if (output) { output.setAttribute('aria-live','polite'); toolbar.append(output); }
+  board.querySelector('.fretboard-guide')?.remove();
   const keep = [
     ['exercise', mode === 'learn' ? 'Try it' : 'Make a pattern', '.exercise-panel'],
     ['fretboard','Play the guitar','.fretboard-panel'],
@@ -253,6 +256,7 @@ function mountSimple(grid) {
   document.querySelector('#settings-panel')?.remove();
   for (const [id,label,content] of nodes) {
     const panel = document.createElement('section'); panel.className = 'simple-panel'; panel.dataset.panel = id;
+    if (id === 'exercise') panel.tabIndex = 0;
     panel.setAttribute('aria-labelledby',`panel-title-${id}`);
     const heading = document.createElement(id === 'fretboard' ? 'h1' : 'h2'); heading.id = `panel-title-${id}`; heading.textContent = label;
     content.querySelector(':scope > h1.sr-only')?.remove();

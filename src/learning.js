@@ -84,8 +84,35 @@ function stepLabel(distance) {
   return distance === 1 ? "half step" : distance === 2 ? "whole step" : `${distance} half steps`;
 }
 
+function lessonIntervals(settings, topic) {
+  if (topic === "steps") return [0, 1, 2];
+  const scale = currentScale(settings.tonic, settings.keyMask);
+  const collection = scale?.intervals ?? Array.from({ length: 12 }, (_, interval) => interval)
+    .filter((interval) => settings.keyMask & (1 << mod(settings.tonic + interval)));
+  return [...collection, ...(collection.includes(0) ? [12] : [])];
+}
+
+/** The displayed pitches, in order. Audition callers must not replace project notes. */
+export function learningPitches(input, topic = "notes") {
+  const settings = safeSettings(input);
+  return lessonIntervals(settings, topic).map((interval) => 60 + settings.tonic + interval);
+}
+
+function modeChanges(scale, settings) {
+  if (!SCALE_DEFS.slice(0, 7).includes(scale)) return [];
+  const majorSettings = { ...settings, keyMask: maskFor(settings.tonic, majorIntervals) };
+  return scale.intervals.flatMap((interval, index) => {
+    const degree = scale.degrees[index];
+    if (interval === majorIntervals[degree]) return [];
+    const before = spellPitch(60 + settings.tonic + majorIntervals[degree], majorSettings);
+    const after = spellPitch(60 + settings.tonic + interval, settings);
+    return [{ index, before: pretty(before.replace(/-?\d+$/, "")), after: pretty(after.replace(/-?\d+$/, "")) }];
+  });
+}
+
 function pitchStrip(intervals, scale, settings, topic) {
   const home = 60 + settings.tonic;
+  const changed = new Set(topic === "modes" ? modeChanges(scale, settings).map((entry) => entry.index) : []);
   return `<div class="learning-strip" role="group" aria-label="Tap notes to hear them">${intervals.map((interval, index) => {
     const midi = home + interval;
     const name = spellPitch(midi, settings);
@@ -94,16 +121,16 @@ function pitchStrip(intervals, scale, settings, topic) {
     const caption = isHome
       ? interval === 0 ? "Home" : "Home ↑"
       : topic === "notes" ? "" : topic === "steps" ? `+${interval} ${interval === 1 ? "fret" : "frets"}` : degree;
-    const accessible = `Play ${spokenName(name)}${isHome ? interval === 0 ? ", home" : ", higher home" : topic === "scales" || topic === "modes" ? `, degree ${degree.replaceAll("♭", "flat ").replaceAll("♯", "sharp ")}` : ""}`;
+    const accessible = `Play ${spokenName(name)}${isHome ? interval === 0 ? ", home" : ", higher home" : topic === "scales" || topic === "modes" ? `, degree ${degree.replaceAll("♭", "flat ").replaceAll("♯", "sharp ")}` : ""}${changed.has(index) ? ", changed from major" : ""}`;
     const distance = index > 0 ? interval - intervals[index - 1] : 0;
     const bridge = index > 0 && topic !== "notes"
       ? `<span class="learning-step" data-half-steps="${distance}">${esc(stepLabel(distance))}</span>`
       : "";
-    return `${bridge}<button type="button" class="learning-pitch${isHome ? " is-home" : ""}" id="learn-pitch-${index}" data-learn-pitch="${midi}" data-learn-degree="${esc(degree)}" aria-label="${esc(accessible)}"><strong>${esc(pretty(name.replace(/-?\d+$/, "")))}</strong>${caption ? `<small>${esc(caption)}</small>` : ""}</button>`;
+    return `${bridge}<button type="button" class="learning-pitch${isHome ? " is-home" : ""}${changed.has(index) ? " is-changed" : ""}" id="learn-pitch-${index}" data-learn-pitch="${midi}" data-learn-degree="${esc(degree)}" aria-label="${esc(accessible)}"><strong>${esc(pretty(name.replace(/-?\d+$/, "")))}</strong>${caption ? `<small>${esc(caption)}</small>` : ""}</button>`;
   }).join("")}</div>`;
 }
 
-function info(topic, scale) {
+function info(topic, scale, collectionControl = "") {
   const definitions = {
     notes: "A sharp (♯) raises a note by one half step. A flat (♭) lowers it by one half step. An octave repeats a note name at a higher or lower pitch.",
     steps: "A half step is also called a semitone. A whole step is two half steps. Count frets along one string; changing strings also changes the open note.",
@@ -116,25 +143,41 @@ function info(topic, scale) {
   const specialScale = topic === "scales" && scale?.name === "Melodic minor (ascending)"
     ? "<p>This view keeps the ascending melodic-minor collection in both directions. Classical melodic minor commonly uses natural minor when descending.</p>"
     : "";
-  return `<details class="learning-info" id="learning-info"><summary>Info</summary><p>${esc(definitions[topic])}</p>${specialScale}${modeRecipes}</details>`;
+  return `<details class="learning-info" id="learning-info"><summary>Info</summary><p>${esc(definitions[topic])}</p>${collectionControl}${specialScale}${modeRecipes}</details>`;
 }
 
-/** Returns escaped lesson HTML; no mutation, playback or project edits. */
-export function learningView(input, topic = "notes") {
+/** Returns escaped lesson HTML. Optional controls are trusted application markup. */
+export function learningView(input, topic = "notes", { keyFields = "", collectionControl = "" } = {}) {
   const lesson = LEARNING_TOPICS.find((entry) => entry.id === topic) || LEARNING_TOPICS[0];
   const settings = safeSettings(input);
   const scale = currentScale(settings.tonic, settings.keyMask);
   const modeIndex = SCALE_DEFS.slice(0, 7).indexOf(scale);
   const homeName = pretty(spellPitch(60 + settings.tonic, settings).replace(/-?\d+$/, ""));
-  const collection = scale?.intervals ?? Array.from({ length: 12 }, (_, interval) => interval)
-    .filter((interval) => settings.keyMask & (1 << mod(settings.tonic + interval)));
-  const intervals = lesson.id === "steps" ? [0, 1, 2] : [...collection, ...(collection.includes(0) ? [12] : [])];
+  const intervals = learningPitches(settings, lesson.id).map((midi) => midi - 60 - settings.tonic);
   const topics = `<div class="learning-topics" role="group" aria-label="Learn guitar theory">${LEARNING_TOPICS.map((entry) => `<button type="button" id="learn-topic-${entry.id}" data-learn-topic="${entry.id}" aria-pressed="${lesson.id === entry.id}">${esc(entry.label)}</button>`).join("")}</div>`;
   const modes = lesson.id === "modes"
-    ? `<div class="learning-modes" role="group" aria-label="Compare modes with the same home note">${SCALE_DEFS.slice(0, 7).map((mode, index) => `<button type="button" id="learn-scale-${index}" data-learn-scale="${index}" aria-label="${esc(mode.name)}" aria-pressed="${modeIndex === index}">${esc(modeNames[index])}</button>`).join("")}</div>${modeIndex < 0 ? '<p class="learning-hint">Choose a mode to compare it with this scale.</p>' : ""}`
+    ? `<div class="learning-modes" role="group" aria-label="Compare modes with the same home note">${SCALE_DEFS.slice(0, 7).map((mode, index) => `<button type="button" id="learn-scale-${index}" data-learn-scale="${index}" aria-label="${esc(mode.name)}" aria-pressed="${modeIndex === index}">${esc(modeNames[index])}</button>`).join("")}</div>`
+    : "";
+  const visibleControls = keyFields + (lesson.id === "scales" ? collectionControl : "");
+  const controls = visibleControls ? `<div class="simple-key-fields learning-controls">${visibleControls}</div>` : "";
+  const context = [
+    ...(!keyFields ? [`<strong>${esc(homeName)} · Home</strong>`] : []),
+    ...(lesson.id !== "steps" && (lesson.id === "modes" ? modeIndex < 0 || !keyFields : !collectionControl)
+      ? [`<span>${esc(scale?.name ?? "Custom scale")}</span>`] : []),
+  ];
+  const changes = modeChanges(scale, settings);
+  const explanation = lesson.id !== "modes" ? lesson.explanation : modeIndex < 0
+    ? "Choose a mode to compare it with this scale. Your pattern stays the same."
+    : modeIndex === 0 ? `${homeName} major is the starting point. Other modes change some of its notes.`
+    : `Compared with ${homeName} major: ${changes.map(({ before, after }) => `${before} becomes ${after}`).join("; ")}.`;
+  const prompt = lesson.id === "scales" && intervals.length && !intervals.includes(0)
+    ? "Play these notes, then try them in reverse."
+    : lesson.prompt;
+  const listen = ["scales", "modes"].includes(lesson.id)
+    ? `<button type="button" id="learn-listen" data-action="learn-listen"${intervals.length ? "" : " disabled"}>Hear scale</button>`
     : "";
   const strip = intervals.length
     ? pitchStrip(intervals, scale, settings, lesson.id)
     : '<p class="learning-empty">Choose a scale to hear its notes.</p>';
-  return `${topics}<p class="learning-task">${esc(lesson.prompt)}</p><p class="learning-explanation">${esc(lesson.explanation)}</p>${modes}<p class="learning-context"><strong>${esc(homeName)} · Home</strong>${lesson.id !== "steps" ? ` <span>${esc(scale?.name ?? "Custom scale")}</span>` : ""}</p>${strip}${lesson.id === "steps" ? '<p class="learning-hint">Home → last note: 2 frets · whole step.</p>' : ""}${info(lesson.id, scale)}`;
+  return `${topics}${controls}<p class="learning-task">${esc(prompt)}</p><p class="learning-explanation">${esc(explanation)}</p>${modes}${context.length ? `<p class="learning-context">${context.join(" ")}</p>` : ""}${listen}${strip}${info(lesson.id, scale, ["notes", "steps"].includes(lesson.id) ? collectionControl : "")}`;
 }

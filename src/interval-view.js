@@ -1,3 +1,4 @@
+import { stringNumber } from './model.js';
 import { mod, intervalBetween, pretty } from './theory.js';
 
 const esc = (value) => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
@@ -34,7 +35,7 @@ export function intervalWorkspace(notes, settings, pair = [0, 1]) {
   const interval = intervalBetween(a.name, b.name);
   const quality = {P:'Perfect', M:'Major', m:'Minor', A:'Augmented', d:'Diminished'}[interval.quality] ?? interval.quality;
   const number = ['','unison','second','third','fourth','fifth','sixth','seventh','octave','ninth','tenth','eleventh','twelfth','thirteenth','fourteenth','fifteenth'][interval.number] ?? `${interval.number}th`;
-  const select = (end, selected) => `<label>${end ? 'To' : 'From'}<select id="interval-${end ? 'to' : 'from'}" data-interval-end="${end}">${notes.map((n, i) => `<option value="${i}" ${i === selected ? 'selected' : ''}>${esc(pretty(n.name))}${n.eventIndex ? ` · Event ${n.eventIndex}` : n.context ? ` · ${esc(n.context)}` : n.stringId ? ` · String ${Number(n.stringId.slice(1))+1}` : ''}</option>`).join('')}</select></label>`;
+  const select = (end, selected) => `<label>${end ? 'To' : 'From'}<select id="interval-${end ? 'to' : 'from'}" data-interval-end="${end}">${notes.map((n, i) => `<option value="${i}" ${i === selected ? 'selected' : ''}>${esc(pretty(n.name))}${n.eventIndex ? ` · Event ${n.eventIndex}` : n.context ? ` · ${esc(n.context)}` : n.stringId ? ` · String ${stringNumber(settings,n.stringId)}` : ''}</option>`).join('')}</select></label>`;
   const geometry = pitchGeometry([a.midi, b.midi]);
   const ticks = Array.from({length: geometry.max - geometry.min + 1}, (_, i) => {
     const x = 24 + i / (geometry.max - geometry.min) * 432;

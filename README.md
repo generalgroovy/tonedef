@@ -8,13 +8,15 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 
 ## Start here
 
-**Learn** opens first. Try Notes, Steps, Scales, then Modes. Tap a note to hear it and highlight its places on the neck. Mode comparisons keep the same home note, so you can hear which notes change. Short prompts lead each activity; definitions stay under Info.
+**Learn** opens first. Choose Notes, Steps, Scales or Modes, then tap a note to hear it and find it on the neck. Only the choices needed by that lesson appear. **Hear scale** plays the displayed notes without changing your pattern. Modes keep the same home note and name the notes that change from major. Definitions stay under Info.
 
-**Practice** keeps the choices, fretboard and pattern together. Choose a home note and scale, note count, strings, and notes per string, then **New pattern**. Check **Random** only beside the choices you want to vary. **Play** follows the cards; **Keep note** protects the selected card on the next generation. Undo restores the previous pattern and all its settings.
+**Practice** keeps the choices, fretboard and pattern together. Choose a pattern type, home note and scale, length, strings, and notes per string, then **New pattern**. Check **Random** only beside the choices you want to vary: its fixed control dims and any random limits appear beside it. String buttons remain the available pool. **Play pattern** follows the cards; **Keep step** protects a selected note, chord or rest. Undo restores the previous pattern and all its settings.
 
-**More choices** holds recipes, note order, rhythm, per-string fret ranges and random limits. A group of two plays two sounding notes per chosen string, from low to high, then cycles; the last group may be shorter. **Any** allows free string changes. Optional rests count toward pattern length but do not consume string-group slots. String numbers follow ToneDef's physical order, low to high in standard tuning.
+**More choices** holds recipes, note order, rhythm and per-string fret ranges. Its summary names active rules; controls appear only for the pattern type and rhythm that use them. A group of two plays two sounding notes per chosen string, from low to high on a standard guitar, then cycles; the last group may be shorter. **Any** allows free string changes. Optional rests count toward pattern length but do not consume string-group slots. Grouping supports 1–16 notes per string. Chords play strings together; a saved incompatible grouping rule gets an explicit correction, with Undo.
 
-The simple fretboard plays without changing music. **Studio** provides the full editor and analysis; **Arrange** restores your saved movable panels. **More → Settings** opens the instrument. **More → Projects** saves, imports and exports projects; **Backup** downloads editable JSON.
+String **1** is the top string on the displayed neck (high E on a standard guitar); **6** is low E. The low-to-high practice row therefore reads **6 → 1**. This display correction leaves physical IDs, tuning, saved notes and fret ranges unchanged.
+
+The simple fretboard always auditions without changing music, even if Studio's Hear clicks preference is off. Master volume still applies; **Turn sound on** appears when it is zero. Scale previews stop on Escape, navigation, changing the key, or starting another sound. **Studio** provides the full editor and analysis; **Arrange** restores your saved movable panels. **More → Settings** opens the instrument. **More → Projects** saves, imports and exports projects; **Backup** downloads editable JSON.
 
 At laptop sizes, the main choices, neck and pattern share the screen. Small screens stack them, with the neck and longer patterns scrolling horizontally. Large targets, keyboard support and short instructions make a gentle starting point; suitability for a particular young learner still needs observation with that learner.
 
@@ -30,7 +32,7 @@ At laptop sizes, the main choices, neck and pattern share the screen. Small scre
 **Studio** keeps all eight core areas visible together on a laptop. Larger contents scroll within their area; ↗ expands it and Escape returns. Small screens stack the areas with independent neck panning. **Arrange** retains saved panel arrangements and resize controls.
 Projects opens with the name field focused. Save confirmations and import errors stay inside the dialog; **Import JSON** also works from the keyboard. A rejected import leaves the current project unchanged.
 
-Per-string bounds intersect the visible fret window, capo, key, pitch and open-string settings. Even effective open strings must fit their range. Bounds attach to physical string numbers and remain saved when tuning or string count changes; off-instrument frets are unavailable. They constrain new generation, including randomized variants, without moving existing or locked notes.
+Per-string bounds intersect the visible fret window, capo, key, pitch and open-string settings. Even effective open strings must fit their range. Bounds attach to physical string IDs and remain saved when tuning or string count changes; off-instrument frets are unavailable. They constrain new generation, including randomized variants, without moving existing or locked notes.
 
 An impossible generation request leaves your work unchanged. Widen the range, reduce the length, allow repeats or relax the leap limit. Free-melody Arch rises and falls; structured Arch retraces the motif at its midpoint. Thirds and groups follow collection positions, so an ascending motif can contain local downward steps. Rests do not advance the melodic sequence. Rhythm cycles include rest slots; locked events retain their exact durations.
 

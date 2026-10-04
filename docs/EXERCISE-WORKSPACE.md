@@ -1,4 +1,31 @@
-# Exercise workspace — ToneDef 1.8
+# Exercise workspace — ToneDef 1.9
+
+## Clarity refinements in 1.9
+
+Learn places topics first and shows one relevant collection chooser. Notes/Steps
+keep it under Info, Scales shows it directly, and Modes uses only its seven
+buttons. Mode comparisons name actual altered pitches relative to the same-root
+major scale. Changed degree buttons have a dashed outline and accessible text.
+
+Hear scale uses `learningPitches()` and a separate `Player.playSequence()` at
+90 notes per minute, with no loop or metronome. It never creates project events.
+Escape, blur/hidden tab, render/navigation, pattern playback (including Space),
+and other note auditions cancel it, including pending audio initialization.
+Play pattern explicitly plays saved events. Lesson and fretboard auditions share
+pitch feedback; synthetic/assistive clicks update the same polite readout.
+Simple views override audition locally without changing Studio's saved preference.
+
+Randomized Practice fields are disabled while their inline bounds are active;
+string buttons still choose the pool. Pattern type is visible, grouping supports
+the model's full 0–16 range, and unused type/rhythm controls are absent. Saved
+chord/grouping conflicts require an explicit undoable correction. Failure messages
+stay by New pattern while that project snapshot is unchanged. The matching recipe
+and an active-rules summary show what governs generation.
+
+Displayed strings count from the top of the drawn neck: standard guitar high E
+is 1 and low E is 6. `stringNumber()` provides all visible/exported labels; saved
+IDs s0…s11, fret-range indices, generation order and musical values do not change.
+The master volume is respected; a zero volume exposes Turn sound on in simple views.
 
 ## Learn and Practice first
 
@@ -13,13 +40,15 @@ editing, chord mathematics, pitch wheels and full instrument controls live in
 **Practice** exposes home/scale, note count, a string pool, notes per string,
 New pattern, speed and repeat. Random key, scale, count, strings and group size
 are independent opt-ins. More choices holds recipes, rhythm, melodic order,
-per-string fret ranges, random bounds and reach/rest constraints. The generated
+per-string fret ranges and reach/rest constraints. Random bounds appear beside
+the enabled random choice. The generated
 string subset and group size appear after successful generation. That receipt is
 session-only; project options and actual notes persist. Impossible requests leave
 the project unchanged, including its seed. One Undo restores a whole generation.
 
-At 1366 × 768, the choices, neck and pattern share the viewport; extra controls
-can scroll inside their panel. Below 1100px width or 740px height, they stack.
+At 1280 × 720 and 1366 × 768, the choices, neck and pattern share the viewport;
+extra controls can scroll inside their panel. Below 1100px width or 700px height,
+they stack.
 Main learner targets are at least 44px. No age-based gate or separate child data
 is used. Software checks cover interaction and readability, not proof of learning
 or suitability for every child; observe real learners before making those claims.

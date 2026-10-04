@@ -140,14 +140,24 @@ export class Player {
       );
   }
   async play(project) {
+    return this.playPlan(playbackPlan(project), project.settings);
+  }
+  async playSequence(midis, settings) {
+    const duration = 60 / 90;
+    const pitches = midis.filter(midi => Number.isFinite(midi) && midi >= 0 && midi <= 127);
+    const plan = {
+      events: pitches.map((midi, index) => ({ id: `learn-${index}`, start: index * duration, duration, notes: [{midi, offset: 0}] })),
+      duration: pitches.length * duration, beatTicks: PPQ, barTicks: PPQ * 4, secondsPerTick: duration / PPQ,
+    };
+    return this.playPlan(plan, {...settings, loop: false, metronome: false});
+  }
+  async playPlan(plan, s) {
     this.stop();
     const revision = this.revision;
     await this.ready();
     if (revision !== this.revision) return;
-    const plan = playbackPlan(project);
     if (!plan.events.length || !plan.duration) return;
     this.running = true;
-    const s = project.settings;
     this.origin = this.context.currentTime + 0.07;
     let cursor = 0,
       cycle = 0,

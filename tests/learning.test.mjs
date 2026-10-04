@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { LEARNING_TOPICS, learningView } from "../src/learning.js";
+import { LEARNING_TOPICS, learningView, learningPitches } from "../src/learning.js";
 import { SCALE_DEFS, maskFor, parseNote } from "../src/theory.js";
 
 const settings = (tonic = 0, mode = 0) => ({
@@ -88,8 +88,92 @@ test("Steps teaches adjacent frets and the two-fret whole step without altering 
   assert.deepEqual(input, before);
   assert.deepEqual(pitches(html), [64, 65, 66]);
   assert.deepEqual(steps(html), [1, 1]);
-  assert.match(html, /Home → last note: 2 frets · whole step/);
+  assert.match(html, /2 frets are a whole step/);
   assert.match(html, /On one string: 1 fret is a half step/);
+});
+
+test("Topic controls appear once, with collection choice only where it helps", () => {
+  const controls = {
+    keyFields: '<label for="lesson-home">Home note</label><select id="lesson-home"></select>',
+    collectionControl: '<label for="lesson-collection">Scale / mode</label><select id="lesson-collection"></select>',
+  };
+  const input = settings(0, 1), before = structuredClone(input);
+  for (const topic of LEARNING_TOPICS.map((entry) => entry.id)) {
+    const html = learningView(input, topic, controls);
+    assert.ok(html.indexOf('class="learning-topics"') < html.indexOf('id="lesson-home"'), "Choose a topic before its settings");
+    assert.equal([...html.matchAll(/id="lesson-home"/g)].length, 1);
+    assert.equal([...html.matchAll(/id="lesson-collection"/g)].length, topic === "modes" ? 0 : 1);
+    assert.ok(!html.includes('class="learning-context"'), "Controls do not repeat the same home or collection in a second row");
+    if (topic === "notes" || topic === "steps") {
+      assert.ok(html.indexOf('id="learning-info"') < html.indexOf('id="lesson-collection"'));
+      assert.ok(!html.includes('id="learn-listen"'));
+    } else {
+      if (topic === "scales") assert.ok(html.indexOf('id="lesson-collection"') < html.indexOf('id="learning-info"'));
+      assert.match(html, /id="learn-listen" data-action="learn-listen">Hear scale<\/button>/);
+    }
+    assert.deepEqual(input, before, "Changing lesson presentation never selects a different collection");
+  }
+  const custom = learningView({ ...input, keyMask: maskFor(0, [0, 1, 7]) }, "modes", controls);
+  assert.match(custom, /class="learning-context"><span>Custom scale<\/span>/);
+  assert.match(custom, /Choose a mode to compare/);
+  assert.ok(!custom.includes('aria-pressed="true">Dorian'));
+});
+
+test("Mode comparisons name the changed notes and mark their exact degrees across roots", () => {
+  const changedIndices = [[], [2, 6], [1, 2, 5, 6], [3], [6], [2, 5, 6], [1, 2, 4, 5, 6]];
+  const cChanges = [
+    "C major is the starting point.",
+    "Compared with C major: E becomes E♭; B becomes B♭.",
+    "Compared with C major: D becomes D♭; E becomes E♭; A becomes A♭; B becomes B♭.",
+    "Compared with C major: F becomes F♯.",
+    "Compared with C major: B becomes B♭.",
+    "Compared with C major: E becomes E♭; A becomes A♭; B becomes B♭.",
+    "Compared with C major: D becomes D♭; E becomes E♭; G becomes G♭; A becomes A♭; B becomes B♭.",
+  ];
+  for (let mode = 0; mode < 7; mode++) {
+    assert.ok(learningView(settings(0, mode), "modes").includes(cChanges[mode]));
+    for (let tonic = 0; tonic < 12; tonic++) {
+      const input = settings(tonic, mode), before = structuredClone(input);
+      const html = learningView(input, "modes");
+      const marked = [...html.matchAll(/class="learning-pitch[^\"]* is-changed" id="learn-pitch-(\d+)"[^>]*aria-label="([^\"]+)"/g)];
+      assert.deepEqual(marked.map((match) => Number(match[1])), changedIndices[mode]);
+      for (const match of marked) assert.ok(match[2].endsWith(", changed from major"));
+      assert.equal([...html.matchAll(/class="learning-explanation"/g)].length, 1);
+      assert.deepEqual(input, before);
+    }
+  }
+  assert.match(learningView(settings(1, 1), "modes"), /Compared with D♭ major: F becomes F♭; C becomes C♭\./);
+  assert.match(learningView({ ...settings(6, 3), tonicSpelling: "F#" }, "modes"), /Compared with F♯ major: B becomes B♯\./);
+  assert.match(learningView(settings(10, 1), "modes"), /Compared with B♭ major: D becomes D♭; A becomes A♭\./);
+  assert.ok(!learningView(settings(0, 1), "scales").includes("is-changed"), "Comparison markers belong to the Modes task");
+  assert.ok(!learningView(settings(0, 7), "modes").includes("is-changed"), "A pentatonic collection is not presented as one of the seven modes");
+});
+
+test("Lesson playback pitches match the displayed collection without changing the input", () => {
+  const examples = [
+    ...Array.from({ length: 12 }, (_, tonic) => Array.from({ length: 7 }, (_, mode) => settings(tonic, mode))).flat(),
+    settings(0, 7),
+    { ...settings(), keyMask: maskFor(0, [2, 7]) },
+    { ...settings(), keyMask: 0 },
+  ];
+  for (const input of examples) {
+    const before = structuredClone(input);
+    for (const topic of LEARNING_TOPICS.map((entry) => entry.id)) {
+      const expected = pitches(learningView(input, topic));
+      assert.deepEqual(learningPitches(input, topic), expected);
+      const altered = learningPitches(input, topic);
+      altered.push(999);
+      assert.deepEqual(learningPitches(input, topic), expected, "Each request returns independent playback data");
+    }
+    assert.deepEqual(input, before);
+  }
+  for (const topic of ["scales", "modes"]) {
+    const empty = { ...settings(), keyMask: 0 };
+    assert.deepEqual(learningPitches(empty, topic), []);
+    assert.match(learningView(empty, topic), /id="learn-listen" data-action="learn-listen" disabled/);
+  }
+  assert.deepEqual(learningPitches(null), learningPitches(settings()));
+  assert.deepEqual(learningPitches(settings(), "unknown"), learningPitches(settings(), "notes"));
 });
 
 test("Custom and non-modal collections are shown honestly rather than replaced by major", () => {
@@ -101,6 +185,7 @@ test("Custom and non-modal collections are shown honestly rather than replaced b
   const noHome = learningView({ ...settings(), keyMask: maskFor(0, [2, 7]) }, "scales");
   assert.deepEqual(pitches(noHome), [62, 67]);
   assert.match(noHome, /Custom scale/);
+  assert.match(noHome, /Play these notes, then try them in reverse/);
   const empty = learningView({ ...settings(), keyMask: 0 }, "scales");
   assert.deepEqual(pitches(empty), []);
   assert.match(empty, /Choose a scale to hear its notes/);
