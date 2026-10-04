@@ -1,6 +1,33 @@
 # Deployment and rollback
 
-## Release 1.8.0, verified 2026-10-04
+## Release 1.9.0, verified 2026-10-04
+
+The simplified learning and practice interface is live at
+[ToneDef](https://generalgroovy.github.io/tonedef/) and in the
+[portfolio app](https://generalgroovy.web.app/play/tonedef/) from application
+revision `2d4733d96c1ef74d44c722d4ef9f225914f0d211`.
+
+- Learn shows the choices relevant to Notes, Steps, Scales or Modes. Modes names the notes that change from the same-root major scale. Hear scale previews the displayed pitches independently of the saved pattern; Play pattern follows the saved cards.
+- Practice shows random bounds beside each enabled Random choice and disables the corresponding fixed value. String buttons remain an editable selection pool. Notes-per-string groups support 1–16. Chord patterns hide irrelevant grouping controls and offer an explicit, undoable correction for conflicting saved grouping rules.
+- Generation errors remain beside New pattern until the settings change or generation is retried. Keep step uses plain language. Previewing notes works in Learn/Practice even when Studio's Hear clicks preference is off; an explicitly muted project offers Turn sound on.
+- All displayed string numbers use the usual guitar convention: high E is string 1 and low E is string 6. Physical string IDs, stored tuning, range associations and generation order are preserved.
+- The three main areas fit at 1280 × 720 and 1366 × 768. Extra choices scroll within the left area; long patterns scroll within the pattern area. Phones stack the areas. The layout does not promise every advanced control or pattern card is simultaneously visible.
+- All 96 automated tests, syntax checks and the production build passed. [Candidate browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37198859860), [main browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37199012973), and [verification/Pages publication](https://github.com/generalgroovy/tonedef/actions/runs/37199012945) passed.
+- Browser regression covers four fresh learner contexts (1366 × 768, 1280 × 720, 390 × 844 and 320 × 800; touch emulation for the latter two) and 15 Studio/Arrange viewport configurations. It checks lesson cancellation, keyboard and assistive activation, mode contrast, fixed/random choices, grouping correction and Undo, durable failure recovery, saved preferences, instrument protection and the existing full editor workflows.
+- All 23 runtime files plus `build.json` matched the clean committed build over certificate-validated HTTPS. Runtime SHA-256: `e505ead14d14259086f295e077c30fb5984761b181ac993c77e0ee527521aa77`.
+- The portfolio passed 648 site checks and 501 embed checks. Target-scoped Firebase publication completed, then all 152 public files, 20 former German routes and 20 retired-project redirects passed live checks. Other projects' records and embedded snapshots were preserved.
+- Live browser checks confirmed Hear scale/Stop scale, topic navigation, conventional numbering and the three-area 1280 × 720 layout with the existing four-chord pattern intact. No browser warnings/errors were recorded. Local UI checks also confirmed the muted-state recovery action and its single-step Undo.
+
+[Browser report](evidence/clarity-layout.json) ·
+[Public byte receipt](evidence/clarity-public-runtime.json) ·
+[Live screenshot](evidence/clarity-live.png)
+
+These checks establish software behavior and rendered layout, not learning
+effectiveness with young children, human listening quality or physical touch
+hardware acceptance. Documentation-only commits may follow the application
+revision; `build.json` identifies the deployed runtime.
+
+## Historical release: 1.8.0, verified 2026-10-04
 
 Learn and configurable Practice are live at
 [ToneDef](https://generalgroovy.github.io/tonedef/) and in the

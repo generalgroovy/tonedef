@@ -1,0 +1,205 @@
+{
+  "checkedAt": "2026-10-04T11:34:15.098836+00:00",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "version": "1.9.0",
+  "sourceRevision": "2d4733d96c1ef74d44c722d4ef9f225914f0d211",
+  "contentSha256": "e505ead14d14259086f295e077c30fb5984761b181ac993c77e0ee527521aa77",
+  "files": [
+    "compact.css",
+    "favicon.svg",
+    "index.html",
+    "src/analysis-context.js",
+    "src/app.js",
+    "src/audio.js",
+    "src/exercises.js",
+    "src/expression.js",
+    "src/generation-worker.js",
+    "src/generator.js",
+    "src/help.js",
+    "src/interval-view.js",
+    "src/layout.js",
+    "src/learning.js",
+    "src/model.js",
+    "src/practice-options.js",
+    "src/practice-ranges.js",
+    "src/practice-view.js",
+    "src/practice.js",
+    "src/theory.js",
+    "src/workspace.js",
+    "styles.css",
+    "workspace.css"
+  ],
+  "transport": "HTTPS with standard certificate validation",
+  "checked": 24,
+  "passed": 24,
+  "results": [
+    {
+      "file": "compact.css",
+      "status": 200,
+      "bytes": 17167,
+      "sha256": "30554b4b98b473837284bc0ad7e90b02f2a44573ad80923c2d949fee1e26a83b",
+      "passed": true
+    },
+    {
+      "file": "favicon.svg",
+      "status": 200,
+      "bytes": 239,
+      "sha256": "7d5e60cf93b6c8a9e86b5ba4c4fda307f091643eba30d51949e679cde4717e92",
+      "passed": true
+    },
+    {
+      "file": "index.html",
+      "status": 200,
+      "bytes": 977,
+      "sha256": "e142dc228bd5985555264c29b04b30045a891fdb7b977feb15a1882695c5dabc",
+      "passed": true
+    },
+    {
+      "file": "src/analysis-context.js",
+      "status": 200,
+      "bytes": 905,
+      "sha256": "8b593d806a4adf2a843d7dc62a4701564e1022f13dd37f5a381419eef447c591",
+      "passed": true
+    },
+    {
+      "file": "src/app.js",
+      "status": 200,
+      "bytes": 78274,
+      "sha256": "9725d4abf789faaedcc39b94f3ce8d082154e4a8488a3aebcf60e8b8e1fd8e18",
+      "passed": true
+    },
+    {
+      "file": "src/audio.js",
+      "status": 200,
+      "bytes": 8642,
+      "sha256": "cbfc4be6206550649460de954878e879d25624db75bd74c43953287d64f71a40",
+      "passed": true
+    },
+    {
+      "file": "src/exercises.js",
+      "status": 200,
+      "bytes": 4536,
+      "sha256": "7f00d18966eff6948d933664f0af9a29036f353fdc5dcc16bc51ed236f6653b6",
+      "passed": true
+    },
+    {
+      "file": "src/expression.js",
+      "status": 200,
+      "bytes": 6304,
+      "sha256": "9b9ea3d8b8af21383f376975614c9f5af48e71a2804cb19dcc50948cf06dcf7e",
+      "passed": true
+    },
+    {
+      "file": "src/generation-worker.js",
+      "status": 200,
+      "bytes": 550,
+      "sha256": "8885cc2dd1eaa1bdd60910af75018ebd35b69255286a8d9f1f8ff7acc7401c27",
+      "passed": true
+    },
+    {
+      "file": "src/generator.js",
+      "status": 200,
+      "bytes": 18981,
+      "sha256": "f833a2688ac9ecd252ae4c3ab642ff1368160c54693428cbd8590fc103c07470",
+      "passed": true
+    },
+    {
+      "file": "src/help.js",
+      "status": 200,
+      "bytes": 3547,
+      "sha256": "e77b1df3d13fcfe0e85cdad45bccb4e657f8145b7b05ed75e6a9f2ef6803e174",
+      "passed": true
+    },
+    {
+      "file": "src/interval-view.js",
+      "status": 200,
+      "bytes": 4804,
+      "sha256": "1732cc2f3140be0af899070c0d1398fa4280e8d4aa1cbf9b64cee4797c143444",
+      "passed": true
+    },
+    {
+      "file": "src/layout.js",
+      "status": 200,
+      "bytes": 2288,
+      "sha256": "e3b6b8b17f5ac728208c3976ffb9acb1cf96a1e1e14c83ddf19a46633a14f76f",
+      "passed": true
+    },
+    {
+      "file": "src/learning.js",
+      "status": 200,
+      "bytes": 10564,
+      "sha256": "ee01437c5de0548c936a14a8d43ab0a76b7f19b4e558c62c2d791a4f6c0f2c8d",
+      "passed": true
+    },
+    {
+      "file": "src/model.js",
+      "status": 200,
+      "bytes": 23759,
+      "sha256": "7aaec12f9e97b6deb9abf071483266e2f53a07f738ff0b91a9eff801b5f90170",
+      "passed": true
+    },
+    {
+      "file": "src/practice-options.js",
+      "status": 200,
+      "bytes": 3905,
+      "sha256": "586af831fafcd42e31b2c9d58f9af7c82ea8344348e380e0168df4e1ec28cb86",
+      "passed": true
+    },
+    {
+      "file": "src/practice-ranges.js",
+      "status": 200,
+      "bytes": 7899,
+      "sha256": "f1557bcd233b11b7fc48afc1851cedb07d315d2966b379be03d247ad15d64de6",
+      "passed": true
+    },
+    {
+      "file": "src/practice-view.js",
+      "status": 200,
+      "bytes": 6382,
+      "sha256": "3f9c44250f60984d3ec30678643764d0f9312f615768ac6ba276fa2e3cb3e2a5",
+      "passed": true
+    },
+    {
+      "file": "src/practice.js",
+      "status": 200,
+      "bytes": 3331,
+      "sha256": "275b111954fbbeeb812759d036d65ac14c4b23d6e809da469e4e77f9e46f25f9",
+      "passed": true
+    },
+    {
+      "file": "src/theory.js",
+      "status": 200,
+      "bytes": 11278,
+      "sha256": "ba464fcdaa5d79810c48ff3eedc3bb5dcbe069f8421af027eb09e2ee5101361b",
+      "passed": true
+    },
+    {
+      "file": "src/workspace.js",
+      "status": 200,
+      "bytes": 17461,
+      "sha256": "c117bea8c1dfea84d5634eb48aaca4a48990bffd1d986a4f93d5c854a1e72379",
+      "passed": true
+    },
+    {
+      "file": "styles.css",
+      "status": 200,
+      "bytes": 36048,
+      "sha256": "c1115f773b77dbfb924f47212dd651e8787868d2d6fa389aafdae42c064d5947",
+      "passed": true
+    },
+    {
+      "file": "workspace.css",
+      "status": 200,
+      "bytes": 30294,
+      "sha256": "e6e3e3db7ef051eac8213ffa8e4dff1e01531e429dc2b9f0dd878b0c5682ccc7",
+      "passed": true
+    },
+    {
+      "file": "build.json",
+      "status": 200,
+      "bytes": 729,
+      "sha256": "3ab3ef4884d090a4331a00090992fc0c14df8c08a34d1ffadff3db044d6a3c87",
+      "passed": true
+    }
+  ]
+}
