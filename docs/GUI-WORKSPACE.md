@@ -1,4 +1,4 @@
-# Current workspace — ToneDef 1.6
+# Current workspace — ToneDef 1.8
 
 [Learning and Practice contract](EXERCISE-WORKSPACE.md) specifies the current default Learn view, Practice controls, and eight-area Studio. **Arrange** retains the adjustable workspace described below. The saved layout schema now also includes the exercise panel (default span 4); older panel preferences are preserved and the missing panel appended.
 

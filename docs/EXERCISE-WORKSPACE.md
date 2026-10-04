@@ -1,4 +1,4 @@
-# Exercise workspace — ToneDef 1.6
+# Exercise workspace — ToneDef 1.8
 
 ## Learn and Practice first
 
@@ -97,7 +97,7 @@ from advanced Randomize flagged, which may alter any enabled setting.
 
 Key map shows a compact major-key grid in fifths order in the desktop overview.
 Expand it for the full circle and relative minors, or choose Pitch wheel to edit
-collection tones. Detailed interval mathematics remains available in Intervals.
+collection tones. From/To comparison and detailed frequency calculations remain available in Intervals.
 For a melody, that view compares a maximum of four nearby sounding melody events
 and labels their original event numbers. Rests are skipped. The fretboard and
 note inspector continue to edit only the selected event.

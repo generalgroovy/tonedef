@@ -1,0 +1,717 @@
+{
+  "sourceRevision": "8659f4ab0ee167a0e0b51c7fbfd2589f65013e89",
+  "baselineRevision": "3de8f1d0a6b0d2d37153012f296949d501544278",
+  "viewports": [
+    {
+      "width": 2560,
+      "touch": false,
+      "after": {
+        "pageHeight": 1440,
+        "scrollWidth": 2560,
+        "viewportWidth": 2560,
+        "fontSize": "16px",
+        "header": {
+          "width": 1600,
+          "height": 70,
+          "top": 0
+        },
+        "board": {
+          "width": 1550,
+          "height": 470,
+          "top": 71
+        },
+        "fret": {
+          "width": 114,
+          "height": 52,
+          "top": 163
+        },
+        "timeline": {
+          "width": 1550,
+          "height": 171,
+          "top": 557
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 1920,
+      "touch": false,
+      "after": {
+        "pageHeight": 1080,
+        "scrollWidth": 1920,
+        "viewportWidth": 1920,
+        "fontSize": "16px",
+        "header": {
+          "width": 1600,
+          "height": 70,
+          "top": 0
+        },
+        "board": {
+          "width": 1550,
+          "height": 470,
+          "top": 71
+        },
+        "fret": {
+          "width": 114,
+          "height": 52,
+          "top": 163
+        },
+        "timeline": {
+          "width": 1550,
+          "height": 171,
+          "top": 557
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 1440,
+      "touch": false,
+      "after": {
+        "pageHeight": 1000,
+        "scrollWidth": 1440,
+        "viewportWidth": 1440,
+        "fontSize": "16px",
+        "header": {
+          "width": 1440,
+          "height": 70,
+          "top": 0
+        },
+        "board": {
+          "width": 1390,
+          "height": 470,
+          "top": 71
+        },
+        "fret": {
+          "width": 101,
+          "height": 52,
+          "top": 163
+        },
+        "timeline": {
+          "width": 1390,
+          "height": 171,
+          "top": 557
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      },
+      "before": {
+        "pageHeight": 1799,
+        "scrollWidth": 1440,
+        "viewportWidth": 1440,
+        "fontSize": "16px",
+        "header": {
+          "width": 1440,
+          "height": 43,
+          "top": 0
+        },
+        "board": {
+          "width": 1399,
+          "height": 549,
+          "top": 196
+        },
+        "fret": {
+          "width": 102,
+          "height": 52,
+          "top": 382
+        },
+        "timeline": {
+          "width": 1399,
+          "height": 106,
+          "top": 812
+        },
+        "inspector": {
+          "width": 447,
+          "height": 256,
+          "top": 984
+        },
+        "math": {
+          "width": 447,
+          "height": 409,
+          "top": 984
+        },
+        "wheel": {
+          "width": 447,
+          "height": 485,
+          "top": 984
+        }
+      },
+      "pageHeightReductionPercent": 44
+    },
+    {
+      "width": 1280,
+      "touch": false,
+      "after": {
+        "pageHeight": 900,
+        "scrollWidth": 1280,
+        "viewportWidth": 1280,
+        "fontSize": "16px",
+        "header": {
+          "width": 1280,
+          "height": 70,
+          "top": 0
+        },
+        "board": {
+          "width": 1230,
+          "height": 470,
+          "top": 71
+        },
+        "fret": {
+          "width": 89,
+          "height": 52,
+          "top": 163
+        },
+        "timeline": {
+          "width": 1230,
+          "height": 171,
+          "top": 557
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 1100,
+      "touch": false,
+      "after": {
+        "pageHeight": 900,
+        "scrollWidth": 1100,
+        "viewportWidth": 1100,
+        "fontSize": "16px",
+        "header": {
+          "width": 1100,
+          "height": 70,
+          "top": 0
+        },
+        "board": {
+          "width": 1050,
+          "height": 470,
+          "top": 71
+        },
+        "fret": {
+          "width": 75,
+          "height": 52,
+          "top": 163
+        },
+        "timeline": {
+          "width": 1050,
+          "height": 171,
+          "top": 557
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 1024,
+      "touch": false,
+      "after": {
+        "pageHeight": 846,
+        "scrollWidth": 1024,
+        "viewportWidth": 1024,
+        "fontSize": "16px",
+        "header": {
+          "width": 1024,
+          "height": 70,
+          "top": 0
+        },
+        "board": {
+          "width": 974,
+          "height": 470,
+          "top": 71
+        },
+        "fret": {
+          "width": 69,
+          "height": 52,
+          "top": 163
+        },
+        "timeline": {
+          "width": 974,
+          "height": 171,
+          "top": 557
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 850,
+      "touch": false,
+      "after": {
+        "pageHeight": 1000,
+        "scrollWidth": 850,
+        "viewportWidth": 850,
+        "fontSize": "16px",
+        "header": {
+          "width": 850,
+          "height": 70,
+          "top": 0
+        },
+        "board": {
+          "width": 800,
+          "height": 516,
+          "top": 71
+        },
+        "fret": {
+          "width": 56,
+          "height": 52,
+          "top": 209
+        },
+        "timeline": {
+          "width": 800,
+          "height": 171,
+          "top": 603
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 768,
+      "touch": true,
+      "after": {
+        "pageHeight": 1024,
+        "scrollWidth": 768,
+        "viewportWidth": 768,
+        "fontSize": "16px",
+        "header": {
+          "width": 768,
+          "height": 70,
+          "top": 0
+        },
+        "board": {
+          "width": 718,
+          "height": 568,
+          "top": 71
+        },
+        "fret": {
+          "width": 52,
+          "height": 52,
+          "top": 211
+        },
+        "timeline": {
+          "width": 718,
+          "height": 175,
+          "top": 655
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 650,
+      "touch": false,
+      "after": {
+        "pageHeight": 1116,
+        "scrollWidth": 650,
+        "viewportWidth": 650,
+        "fontSize": "16px",
+        "header": {
+          "width": 650,
+          "height": 108,
+          "top": 0
+        },
+        "board": {
+          "width": 628,
+          "height": 615,
+          "top": 109
+        },
+        "fret": {
+          "width": 52,
+          "height": 52,
+          "top": 281
+        },
+        "timeline": {
+          "width": 628,
+          "height": 209,
+          "top": 740
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 570,
+      "touch": true,
+      "after": {
+        "pageHeight": 1126,
+        "scrollWidth": 570,
+        "viewportWidth": 570,
+        "fontSize": "16px",
+        "header": {
+          "width": 570,
+          "height": 108,
+          "top": 0
+        },
+        "board": {
+          "width": 548,
+          "height": 625,
+          "top": 109
+        },
+        "fret": {
+          "width": 52,
+          "height": 52,
+          "top": 291
+        },
+        "timeline": {
+          "width": 548,
+          "height": 209,
+          "top": 750
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 390,
+      "touch": true,
+      "after": {
+        "pageHeight": 1149,
+        "scrollWidth": 390,
+        "viewportWidth": 390,
+        "fontSize": "16px",
+        "header": {
+          "width": 390,
+          "height": 108,
+          "top": 0
+        },
+        "board": {
+          "width": 368,
+          "height": 640,
+          "top": 109
+        },
+        "fret": {
+          "width": 52,
+          "height": 52,
+          "top": 291
+        },
+        "timeline": {
+          "width": 368,
+          "height": 209,
+          "top": 765
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      },
+      "before": {
+        "pageHeight": 3415,
+        "scrollWidth": 390,
+        "viewportWidth": 390,
+        "fontSize": "16px",
+        "header": {
+          "width": 390,
+          "height": 94,
+          "top": 0
+        },
+        "board": {
+          "width": 361,
+          "height": 754,
+          "top": 372
+        },
+        "fret": {
+          "width": 50,
+          "height": 52,
+          "top": 706
+        },
+        "timeline": {
+          "width": 361,
+          "height": 318,
+          "top": 1201
+        },
+        "inspector": {
+          "width": 361,
+          "height": 349,
+          "top": 1602
+        },
+        "math": {
+          "width": 361,
+          "height": 435,
+          "top": 2026
+        },
+        "wheel": {
+          "width": 361,
+          "height": 525,
+          "top": 2536
+        }
+      },
+      "pageHeightReductionPercent": 66
+    },
+    {
+      "width": 360,
+      "touch": true,
+      "after": {
+        "pageHeight": 1190,
+        "scrollWidth": 360,
+        "viewportWidth": 360,
+        "fontSize": "16px",
+        "header": {
+          "width": 360,
+          "height": 149,
+          "top": 0
+        },
+        "board": {
+          "width": 338,
+          "height": 640,
+          "top": 150
+        },
+        "fret": {
+          "width": 52,
+          "height": 52,
+          "top": 332
+        },
+        "timeline": {
+          "width": 338,
+          "height": 209,
+          "top": 806
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    },
+    {
+      "width": 320,
+      "touch": true,
+      "after": {
+        "pageHeight": 1255,
+        "scrollWidth": 320,
+        "viewportWidth": 320,
+        "fontSize": "16px",
+        "header": {
+          "width": 320,
+          "height": 149,
+          "top": 0
+        },
+        "board": {
+          "width": 298,
+          "height": 640,
+          "top": 150
+        },
+        "fret": {
+          "width": 52,
+          "height": 52,
+          "top": 332
+        },
+        "timeline": {
+          "width": 298,
+          "height": 274,
+          "top": 806
+        },
+        "inspector": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "math": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        },
+        "wheel": {
+          "width": 0,
+          "height": 0,
+          "top": 0
+        }
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "viewport": "1440-desktop",
+      "checks": [
+        "edit/undo",
+        "fret keyboard",
+        "signed octave/ratio",
+        "single comparator with keyboard focus",
+        "non-mutating views",
+        "hover/focus/tap help + Escape",
+        "timeline",
+        "play/stop",
+        "theory tabs",
+        "Projects/practice-card download",
+        "settings/random flags",
+        "practice-range numeric/keyboard/drag/cancel/undo/persistence",
+        "generation worker/melody contour/persistence",
+        "12 strings/36 frets/re-entrant tuning",
+        "empty/rest"
+      ]
+    },
+    {
+      "viewport": "390-touch",
+      "checks": [
+        "edit/undo",
+        "fret keyboard",
+        "signed octave/ratio",
+        "single comparator with keyboard focus",
+        "non-mutating views",
+        "hover/focus/tap help + Escape",
+        "timeline",
+        "play/stop",
+        "theory tabs",
+        "Projects/practice-card download",
+        "settings/random flags",
+        "practice-range numeric/keyboard/drag/cancel/undo/persistence",
+        "generation worker/melody contour/persistence",
+        "12 strings/36 frets/re-entrant tuning",
+        "empty/rest"
+      ]
+    }
+  ]
+}

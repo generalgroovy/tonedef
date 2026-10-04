@@ -4,7 +4,7 @@ import { namedNotes } from './model.js';
 // fretboard still edits only the selected event; this is a read-only view.
 export function intervalContext(project) {
   const selected = project.events.find(e => e.id === project.selectedId);
-  if (selected?.kind !== 'melody') return namedNotes(selected, project.settings);
+  if (selected?.kind !== 'melody') return namedNotes(selected, project.settings).toSorted((a,b)=>a.midi-b.midi);
   const melody = project.events.flatMap((event, index) => event.kind === 'melody' && event.notes.length
     ? [{ event, index }] : []);
   const position = melody.findIndex(({ event }) => event.id === selected.id);

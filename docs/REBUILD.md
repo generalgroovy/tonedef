@@ -1,11 +1,11 @@
 # Rebuild ToneDef from these documents
 
-Apply [Exercise workspace 1.6](EXERCISE-WORKSPACE.md) first for the current presentation, sequence/rhythm schema, recipes, complete-path fallback and melody interval context. It supersedes older fixed/default-layout descriptions below; the prior musical contracts still apply unless explicitly updated.
+Apply [Exercise workspace 1.8](EXERCISE-WORKSPACE.md) first for the current presentation, sequence/rhythm schema, recipes, complete-path fallback and melody interval context. It supersedes older fixed/default-layout descriptions below; the prior musical contracts still apply unless explicitly updated.
 
 For melodic contour generation, backward-compatible imports and Markdown practice
 cards, also apply [Guitar-project consolidation](CONSOLIDATION.md).
 
-For the current interface, also apply [Visual workspace](VISUAL-WORKSPACE.md) and the newer [GUI workspace supplement](GUI-WORKSPACE.md). The latter specifies version1.1.0, the independent panel preference schema, wooden fretboard, chord-line geometry, current stylesheet order and build assets; it supersedes earlier fixed-layout details while retaining the musical schema below.
+The prior [Focused studio](MINIMAL-STUDIO.md) records version 1.7; version 1.8 replaces its navigation with Learn, Practice and Studio, while retaining the directional comparator and sounding-reference correction. Historical presentation details remain in [Visual workspace](VISUAL-WORKSPACE.md) and the newer [GUI workspace supplement](GUI-WORKSPACE.md). The latter specifies version1.1.0, the independent panel preference schema, wooden fretboard, chord-line geometry, current stylesheet order and build assets; it supersedes earlier fixed-layout details while retaining the musical schema below.
 
 This contract is sufficient to reconstruct functional and visual behavior without source files. Byte-identical source recovery requires backups. REBUILD and DESIGN are authoritative; ACCEPTANCE holds proof and fixtures. The original implementation uses native ES modules with no runtime dependencies; Node >=22 is needed only for development/tests/build, verified with 24.18.0 and npm 11.13.0 on Windows.
 

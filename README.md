@@ -48,7 +48,7 @@ An impossible generation request leaves your work unchanged. Widen the range, re
 | Learn / Practice / Studio | Short learning activities, configurable patterns, or full editing and analysis |
 | Studio → Arrange | Your saved adjustable panel arrangement |
 
-Large filled notes are selected, medium colored notes are in the key and small notes are outside it. Labels accompany interval colors. The interval matrix compares the selected chord or up to four nearby sounding melody events, with event numbers shown. Key map and chord motion add context; chord motion compares sorted pitches, not inferred independent voices.
+Large filled notes are selected, medium colored notes are in the key and small notes are outside it. Labels accompany interval colors. The From/To interval comparison uses the selected chord or up to four nearby sounding melody events, with event numbers shown. Swap reverses the direction; detailed frequency calculations stay under a disclosure. Key map and chord motion add context; chord motion compares sorted pitches, not inferred independent voices.
 
 ## Saved work and recovery
 

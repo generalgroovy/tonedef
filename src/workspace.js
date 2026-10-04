@@ -221,6 +221,7 @@ function mountSimple(grid) {
   document.querySelector('.context-bar')?.remove();
   document.querySelector('.project-title')?.remove();
   const actions = document.querySelector('.header-actions');
+  actions.querySelector('[data-action="stop"]')?.remove();
   const more = document.createElement('details'); more.className = 'simple-menu'; more.id = 'simple-menu';
   const summary = document.createElement('summary'); summary.textContent = 'More'; more.append(summary);
   for (const action of ['redo','projects','settings','help']) {

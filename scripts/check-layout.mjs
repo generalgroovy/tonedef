@@ -293,6 +293,8 @@ async function overviewInteractions(page,label) {
   await page.locator('[data-action="stop"]').click();
   assert.equal(await page.locator('#playButton').getAttribute('aria-pressed'),'false');
   assert.deepEqual(await savedProject(page),locked,'Playback does not alter the exercise');
+  const melodyLabels=await page.locator('#interval-from option').allTextContents();
+  assert.deepEqual(melodyLabels.map(text=>Number(text.match(/ · Event (\d+)/)?.[1])),[1,2,3,4],'Melody comparison identifies nearby events by their original position');
   await page.locator('#practice-ranges > summary').click();
   await page.locator('[data-action="settings"]').click();
   assert.ok(await page.locator('[data-panel="settings"]').isVisible(),'Settings shortcut works in Overview');
@@ -369,15 +371,23 @@ async function interact(page,label,touch) {
   assert.notEqual(await page.evaluate(()=>document.activeElement.dataset.pos),position);
   await page.keyboard.press('Escape');
   const stored=await page.evaluate(()=>localStorage.getItem('tonedef.current.v2'));
-  await page.locator('#interval-cell-0-3').click();
+  assert.equal(await page.locator('.distance-matrix').count(),0,'Intervals use one focused From/To comparison');
+  await page.locator('#interval-from').focus();
+  await page.locator('#interval-from').selectOption('0');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'interval-from','From selection retains keyboard focus');
+  await page.locator('#interval-to').focus();
+  await page.locator('#interval-to').selectOption('3');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'interval-to','To selection retains keyboard focus');
+  await page.locator('#pitch-detail > summary').click();
   assert.match(await page.locator('.math-readout').innerText(),/\+12/);
   assert.match(await page.locator('.equation').innerText(),/2\.0000/);
-  await page.locator('#interval-cell-3-0').click();
+  await page.locator('#interval-swap').focus();
+  await page.keyboard.press('Enter');
   assert.match(await page.locator('.math-readout').innerText(),/-12/);
   assert.match(await page.locator('.equation').innerText(),/0\.5000/);
-  await page.locator('#interval-cell-3-0').focus();await page.keyboard.press('ArrowRight');
-  assert.equal(await page.evaluate(()=>document.activeElement.id),'interval-cell-3-1');
-  await page.keyboard.press('Enter');assert.equal(await page.locator('#interval-cell-3-1').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.locator('#interval-from').inputValue(),'3');
+  assert.equal(await page.locator('#interval-to').inputValue(),'0');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'interval-swap','Swapping direction retains keyboard focus');
   await page.keyboard.press('Escape');
   await page.locator('#half-step-labels').click();assert.equal(await page.locator('.half-step-label').count(),0);
   await page.locator('#half-step-labels').click();assert.ok(await page.locator('.half-step-label').count()>0);
@@ -389,13 +399,17 @@ async function interact(page,label,touch) {
   await page.keyboard.press('Escape');assert.ok(await page.locator('#ui-tooltip').isHidden());
   await page.evaluate(()=>document.activeElement.blur());
   await help.focus();assert.ok(await page.locator('#ui-tooltip').isVisible());await page.keyboard.press('Escape');
+  await page.locator('#setting-colorReference').selectOption('chord');
   await page.locator('[data-event]').nth(1).click();assert.equal(await page.locator('[data-event]').nth(1).getAttribute('aria-pressed'),'true');
+  assert.match(await page.locator('.reference-readout').textContent(),/A chord root/);
   const editPositions = await page.locator('.fret.selected').evaluateAll(nodes=>nodes.map(n=>n.dataset.pos));
   await page.locator('#playButton').click();
   await page.waitForFunction(()=>document.querySelector('.board-context').textContent.startsWith('Playing · '));
   assert.equal(await page.locator('.board-context').textContent(), 'Playing · '+await page.locator('.event-card.playing strong').textContent());
   assert.ok(await page.locator('.fret:disabled').count()>0);
+  assert.match(await page.locator('.reference-readout').textContent(),/C chord root/,'Playback reference follows the sounding chord');
   await page.locator('[data-action="stop"]').click();assert.equal(await page.locator('#playButton').getAttribute('aria-pressed'),'false');
+  assert.match(await page.locator('.reference-readout').textContent(),/A chord root/,'Stopping restores the selected chord reference');
   assert.deepEqual(await page.locator('.fret.selected').evaluateAll(nodes=>nodes.map(n=>n.dataset.pos)),editPositions);
   assert.equal(await page.locator('.fret:disabled').count(),0);
   for(const tab of ['chromatic','fifths']) {await page.locator(`[data-tools-tab="${tab}"]`).click();assert.equal(await page.locator(`[data-tools-tab="${tab}"]`).getAttribute('aria-pressed'),'true');}
@@ -512,9 +526,24 @@ async function interact(page,label,touch) {
   assert.equal(await page.locator('.string-row').count(),12);
   assert.equal(await page.locator('.fret').count(),444);
   await geometry(page,`${label} twelve strings`);
+  // Every advanced setting and its opt-in randomization flag remains reachable.
+  await page.locator('[data-mode="melody"]').click();
+  await page.locator('#setting-colorReference').selectOption('pinned');
+  await page.locator('#setting-generationType').selectOption('melody');
+  await page.locator('#exercise-random > summary').click();
+  await page.locator('#show-random').check();
+  const inventory=await page.evaluate(async()=>{
+    const {SCHEMA}=await import('./src/model.js');
+    const controls=[...document.querySelectorAll('[data-setting]')].map(node=>node.dataset.setting);
+    controls.push('keyMask',...[...document.querySelectorAll('[data-tuning]')].map(node=>'open'+node.dataset.tuning));
+    const flags=[...document.querySelectorAll('[data-random]')].map(node=>node.dataset.random);
+    return {keys:Object.keys(SCHEMA).sort(),controls:controls.sort(),flags:flags.sort()};
+  });
+  assert.deepEqual(inventory.controls,inventory.keys,'Every setting has exactly one control');
+  assert.deepEqual(inventory.flags,inventory.keys,'Every setting has exactly one randomization flag');
   await page.locator('[data-action="add"][data-kind="rest"]').click();
   assert.ok(await page.locator('.math-panel .empty').isVisible());await geometry(page,`${label} rest`);
-  report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','matrix keyboard','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop','theory tabs','Projects/practice-card download','settings/random flags','practice-range numeric/keyboard/drag/cancel/undo/persistence','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
+  report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','From/To comparator and keyboard swap','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop with sounding chord reference','theory tabs','Projects/practice-card download','every schema control/random flag once','practice-range numeric/keyboard/drag/cancel/undo/persistence','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
 }
 try {
   for(const [width,height,touch] of [[1366,768,false],[390,844,true],[320,800,true]]) {
