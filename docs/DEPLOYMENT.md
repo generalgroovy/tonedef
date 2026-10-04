@@ -1,6 +1,6 @@
 # Deployment and rollback
 
-## Published baseline: 1.4.0, verified 2026-09-27
+## Historical release: 1.4.0, verified 2026-09-27
 
 The guitar consolidation release is published at [ToneDef](https://generalgroovy.github.io/tonedef/) from application revision `ccb227c55b80bc0dab72a250dd7eb20c1ee1bc09`.
 

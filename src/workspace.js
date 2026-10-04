@@ -3,6 +3,10 @@ const KEY = 'tonedef.workspace.v1';
 let layout;
 try { layout = normalizeLayout(JSON.parse(localStorage.getItem(KEY))); } catch { layout = normalizeLayout(); }
 let editing = false, rerender = () => {}, notice = () => {};
+let mode = 'learn', focused = null;
+try { const saved = localStorage.getItem('tonedef.workspace.mode.v3'); if (['learn','practice','overview','custom'].includes(saved)) mode = saved; } catch {}
+export const workspaceMode = () => mode;
+export const simpleWorkspace = () => ['learn','practice'].includes(mode);
 let gesture = null;
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(layout)); }
@@ -21,6 +25,13 @@ function button(text, action, id, label) {
 export function mountWorkspace(render, notify) {
   rerender = render; notice = notify;
   const grid = document.querySelector('.workspace');
+  document.body.dataset.workspace = mode;
+  const switcher = document.createElement('div'); switcher.className = 'workspace-switch';
+  switcher.setAttribute('aria-label', 'Workspace view');
+  switcher.innerHTML = [['learn','Learn'],['practice','Practice'],['overview','Studio'], ...(!simpleWorkspace() ? [['custom','Arrange']] : [])].map(([value,label]) => `<button id="workspace-${value}" data-workspace-mode="${value}" aria-pressed="${mode === value}">${label}</button>`).join('');
+  document.querySelector('.header-actions').prepend(switcher);
+  if (simpleWorkspace()) { mountSimple(grid); return; }
+  if (mode === 'overview') { mountOverview(grid); return; }
   grid.classList.add('dock-grid'); grid.classList.toggle('layout-editing', editing);
   const controls = document.createElement('details'); controls.className = 'workspace-controls'; controls.id = 'workspace-controls';
   controls.innerHTML = '<summary>Workspace <span>Show, move & resize panels</span></summary><div class="workspace-options"></div>';
@@ -85,6 +96,9 @@ export function mountWorkspace(render, notify) {
   grid.querySelector('.theory-row')?.remove();
 }
 export function revealPanel(id) {
+  if (simpleWorkspace() && id === 'fretboard') return;
+  if (simpleWorkspace()) { mode = 'overview'; focused = null; rerender(); return; }
+  if (mode === 'overview') { focused = null; rerender(); return; }
   layout.panels[id].hidden = false; layout.panels[id].collapsed = false; save(); rerender();
 }
 document.addEventListener('change', e => {
@@ -93,6 +107,14 @@ document.addEventListener('change', e => {
   layout.panels[id].hidden = !e.target.checked; refresh(e.target.id);
 });
 document.addEventListener('click', e => {
+  const view = e.target.closest('[data-workspace-mode]');
+  if (view) {
+    mode = view.dataset.workspaceMode; focused = null;
+    try { localStorage.setItem('tonedef.workspace.mode.v3', mode); } catch { notice('View changed for this session; browser storage is unavailable.', true); }
+    rerender(); (document.getElementById(view.id) ?? document.getElementById(`workspace-${mode}`))?.focus({preventScroll:true}); return;
+  }
+  const expand = e.target.closest('[data-overview-expand]');
+  if (expand) { focused = focused === expand.dataset.overviewExpand ? null : expand.dataset.overviewExpand; rerender(); document.getElementById(expand.id)?.focus({preventScroll:true}); return; }
   if (e.target.closest('a[href="#fretboard"]')) revealPanel('fretboard');
   const b = e.target.closest('[data-layout-action]'); if (!b) return;
   const id = b.dataset.panelId, p = layout.panels[id], action = b.dataset.layoutAction;
@@ -143,6 +165,9 @@ function finish(e) {
 document.addEventListener('pointerup', finish);
 document.addEventListener('pointercancel', finish);
 document.addEventListener('keydown', e => {
+  if (mode === 'overview' && focused && e.key === 'Escape' && !document.querySelector('dialog[open]')) {
+    e.preventDefault(); const id = focused; focused = null; rerender(); document.getElementById(`overview-expand-${id}`)?.focus({preventScroll:true}); return;
+  }
   if (gesture && e.key === 'Escape') { e.preventDefault(); finish({type:'pointercancel'}); return; }
   const b = e.target.closest('.dock-resize'); if (!b || !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) return;
   e.preventDefault(); e.stopImmediatePropagation();
@@ -151,3 +176,85 @@ document.addEventListener('keydown', e => {
   else p.height = Math.max(240, Math.min(1200, (p.height ?? b.closest('[data-panel]').querySelector('.dock-body').clientHeight) + (e.key === 'ArrowDown' ? 40 : -40)));
   refresh(b.id);
 }, true);
+
+function mountOverview(grid) {
+  grid.className = 'workspace dock-grid overview-grid';
+  if (focused) grid.dataset.focused = focused;
+  const nodes = new Map(PANELS.map(([id, , selector]) => [id, document.querySelector(selector)]));
+  for (const [id, label] of PANELS) {
+    let content = nodes.get(id); if (!content) continue;
+    const outer = document.createElement('section'); outer.className = 'dock-panel'; outer.dataset.panel = id;
+    outer.setAttribute('aria-labelledby', `panel-title-${id}`);
+    const header = document.createElement('div'); header.className = 'dock-heading';
+    const heading = document.createElement(id === 'fretboard' ? 'h1' : 'h2'); heading.id = `panel-title-${id}`; heading.textContent = label; header.append(heading);
+    const expand = document.createElement('button'); expand.id = `overview-expand-${id}`; expand.dataset.overviewExpand = id;
+    expand.textContent = focused === id ? '↙' : '↗'; expand.setAttribute('aria-label', `${focused === id ? 'Return from' : 'Expand'} ${label}`);
+    expand.setAttribute('aria-expanded', String(focused === id)); header.append(expand);
+    content.querySelector(':scope > h1.sr-only')?.remove();
+    content.querySelectorAll(':scope > .section-title h1,:scope > .section-title h2,:scope > .section-title .eyebrow').forEach(n => n.remove());
+    const previous = content.querySelector(':scope > .section-title');
+    if (previous) { previous.classList.add('overview-panel-actions'); }
+    if (id === 'fretboard') {
+      const guide = content.querySelector('.fretboard-guide'); if (guide) header.insertBefore(guide, expand);
+      const toolbar = content.querySelector('.board-bar'); if (toolbar) header.insertBefore(toolbar, guide ?? expand);
+    }
+    if (id === 'timeline') {
+      const toolbar = content.querySelector('.pattern-toolbar'); if (toolbar) header.insertBefore(toolbar, expand);
+    }
+    if (id === 'math') {
+      const matrix = content.querySelector('.matrix-scroll');
+      if (matrix) for (const selector of ['.math-readout', '.equation']) { const node = content.querySelector(selector); if (node) content.insertBefore(node, matrix); }
+    }
+    if (id === 'settings') {
+      const holder = document.createElement('div'); holder.className = 'settings-panel';
+      holder.append(content.querySelector('.settings-content')); content.remove(); content = holder;
+    }
+    const body = document.createElement('div'); body.className = 'dock-body'; body.id = `panel-body-${id}`;
+    body.tabIndex = 0; body.setAttribute('role', 'region'); body.setAttribute('aria-label', `${label} contents`);
+    body.append(content); outer.append(header, body); grid.append(outer);
+  }
+  grid.querySelector('.theory-row')?.remove();
+}
+
+function mountSimple(grid) {
+  grid.className = 'workspace simple-grid';
+  document.querySelector('.context-bar')?.remove();
+  document.querySelector('.project-title')?.remove();
+  const actions = document.querySelector('.header-actions');
+  const more = document.createElement('details'); more.className = 'simple-menu'; more.id = 'simple-menu';
+  const summary = document.createElement('summary'); summary.textContent = 'More'; more.append(summary);
+  for (const action of ['redo','projects','settings','help']) {
+    const node = actions.querySelector(`[data-action="${action}"]`); if (node) more.append(node);
+  }
+  actions.append(more);
+  const backup = document.querySelector('footer [data-action="export-json"]'); if (backup) more.append(backup);
+  document.querySelector('footer')?.remove();
+  const board = document.querySelector('.fretboard-panel');
+  board.querySelector('#fretboard')?.setAttribute('aria-label','Guitar neck. Arrow keys move; hold Enter or Space to hear a note.');
+  const toolbar = board.querySelector('.board-bar');
+  const hear = toolbar.querySelector('.hear-toggle');
+  toolbar.replaceChildren();
+  const instruction = document.createElement('span'); instruction.textContent = 'Tap a note to hear it'; toolbar.append(instruction);
+  if (hear) toolbar.append(hear);
+  board.querySelector('.interval-legend')?.remove();
+  board.querySelector('.gesture-help')?.remove();
+  board.querySelectorAll('[data-help]').forEach(node => node.removeAttribute('data-help'));
+  board.querySelectorAll('.note-disc small').forEach(node=>node.remove());
+  if (mode === 'learn') { const strip = document.querySelector('.learning-strip'); if (strip) board.insertBefore(strip,board.querySelector('.board-scroll')); }
+  const output = board.querySelector('#expression-readout'); if (output) output.setAttribute('aria-live','polite');
+  const keep = [
+    ['exercise', mode === 'learn' ? 'Try it' : 'Make a pattern', '.exercise-panel'],
+    ['fretboard','Play the guitar','.fretboard-panel'],
+    ['timeline','Your pattern','.timeline-panel'],
+  ];
+  const nodes = keep.map(([id,label,selector]) => [id,label,document.querySelector(selector)]);
+  grid.replaceChildren();
+  document.querySelector('#settings-panel')?.remove();
+  for (const [id,label,content] of nodes) {
+    const panel = document.createElement('section'); panel.className = 'simple-panel'; panel.dataset.panel = id;
+    panel.setAttribute('aria-labelledby',`panel-title-${id}`);
+    const heading = document.createElement(id === 'fretboard' ? 'h1' : 'h2'); heading.id = `panel-title-${id}`; heading.textContent = label;
+    content.querySelector(':scope > h1.sr-only')?.remove();
+    panel.append(heading,content); grid.append(panel);
+  }
+}

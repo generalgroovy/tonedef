@@ -1,12 +1,13 @@
 // Presentation preferences are deliberately separate from the musical project.
 export const PANELS = [
+  ['exercise', 'Exercise', '.exercise-panel', 4],
   ['fretboard', 'Fretboard', '.fretboard-panel', 12],
   ['timeline', 'Pattern', '.timeline-panel', 12],
   ['inspector', 'Notes & intervals', '.inspector', 4],
-  ['math', 'Interval mathematics', '.math-panel', 4],
-  ['tools', 'Theory tools', '.music-tools', 4],
-  ['transitions', 'Between chords', '.transition-panel', 12],
-  ['settings', 'Instrument & practice settings', '#settings-panel', 12],
+  ['math', 'Intervals', '.math-panel', 4],
+  ['tools', 'Key map', '.music-tools', 4],
+  ['transitions', 'Chord motion', '.transition-panel', 12],
+  ['settings', 'Instrument', '#settings-panel', 12],
 ];
 export function normalizeLayout(input = {}) {
   const ids = PANELS.map(p => p[0]);

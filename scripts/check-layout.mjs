@@ -11,7 +11,7 @@ const { chromium } = await import(process.env.TONEDEF_PLAYWRIGHT_PATH ? pathToFi
 const root = path.resolve('dist'), output = path.resolve('test-results/compact-ui');
 await mkdir(output, {recursive:true});
 const manifest = JSON.parse(await readFile(path.join(root,'build.json'),'utf8'));
-for (const file of ['compact.css','workspace.css','src/layout.js','src/expression.js','src/workspace.js','src/help.js','src/interval-view.js','src/app.js']) {
+for (const file of ['compact.css','workspace.css','src/layout.js','src/exercises.js','src/analysis-context.js','src/learning.js','src/practice-options.js','src/practice-view.js','src/expression.js','src/workspace.js','src/help.js','src/interval-view.js','src/app.js']) {
   assert.ok(manifest.files.includes(file));
   assert.equal(await readFile(path.join(root,file),'utf8'), await readFile(file,'utf8'));
 }
@@ -48,7 +48,7 @@ const measure=page=>page.evaluate(()=>{
   return {pageHeight:document.documentElement.scrollHeight,scrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,fontSize:getComputedStyle(document.body).fontSize,
     header:box('.topbar'),board:box('.fretboard-panel'),fret:box('.fret'),timeline:box('.timeline-panel'),inspector:box('.inspector'),math:box('.math-panel'),wheel:box('.music-tools')};
 });
-async function geometry(page,label,panelCount=7) {
+async function geometry(page,label,panelCount=8) {
   await settle(page);const m=await measure(page);
   assert.ok(m.scrollWidth<=m.viewportWidth+1,`${label}: page overflow ${m.scrollWidth}/${m.viewportWidth}`);
   assert.ok(m.fret.width>=44&&m.fret.height>=44,`${label}: fret target >=44px`);
@@ -59,21 +59,281 @@ async function geometry(page,label,panelCount=7) {
   const workspaceWidth=await page.locator('.workspace').evaluate(e=>e.getBoundingClientRect().width);
   assert.ok(Math.abs(width-workspaceWidth)<=1,`${label}: dock fills available width`);
   assert.equal(await page.locator('.dock-panel').count(),panelCount,`${label}: applicable areas retained`);
+  const overview = await page.locator('[data-workspace-mode="overview"]').getAttribute('aria-pressed') === 'true';
+  if (overview) {
+    assert.equal(await page.locator('.dock-panel[hidden],.dock-body[hidden]').count(),0,`${label}: Overview keeps every area open`);
+    assert.equal(await page.locator('[data-layout-action="collapse"]').count(),0,`${label}: Overview has no panel collapse controls`);
+    if (page.viewportSize().width >= 1100 && page.viewportSize().height >= 680) {
+      const outside = await page.locator('.dock-panel').evaluateAll(es => es.filter(e => {
+        const r=e.getBoundingClientRect();return r.top < -1 || r.bottom > innerHeight+1 || r.width <= 0 || r.height <= 0;
+      }).map(e=>({panel:e.dataset.panel,top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom})));
+      assert.deepEqual(outside,[],`${label}: all eight panel frames are visible together`);
+      assert.ok(m.pageHeight <= page.viewportSize().height+1,`${label}: Overview does not require page scrolling`);
+    }
+  }
   return m;
 }
+const savedProject = page => page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
+const instrumentOf = project => Object.fromEntries(Object.entries(project.settings).filter(([key]) =>
+  ['stringCount','fretCount','capo','fretMin','fretMax','practiceRanges'].includes(key) || /^(open|enabled)\d+$/.test(key)));
+async function simpleGeometry(page,label) {
+  await settle(page);
+  const m=await measure(page);
+  assert.ok(m.scrollWidth<=m.viewportWidth+1,`${label}: no horizontal page overflow`);
+  assert.equal(m.fontSize,'16px',`${label}: readable base text`);
+  assert.ok(m.fret.width>=44&&m.fret.height>=44,`${label}: playable fret targets >=44px`);
+  const outside=await page.locator('.topbar,.context-bar,.simple-panel').evaluateAll(nodes=>nodes.filter(node=>{
+    const r=node.getBoundingClientRect();return r.width && (r.left< -1||r.right>innerWidth+1);
+  }).map(node=>node.dataset.panel||node.className));
+  assert.deepEqual(outside,[],`${label}: learner containers stay within viewport`);
+  const small=await page.locator('[data-workspace-mode],[data-learn-topic],[data-learn-scale],[data-learn-pitch],[data-practice-string],#practice-new').evaluateAll(nodes=>nodes.filter(node=>{
+    const r=node.getBoundingClientRect();return r.width && (r.width<44||r.height<44);
+  }).map(node=>({id:node.id,width:node.getBoundingClientRect().width,height:node.getBoundingClientRect().height})));
+  assert.deepEqual(small,[],`${label}: primary learning and practice targets >=44px`);
+  assert.equal(await page.locator('.math-panel:visible,.inspector:visible,.music-tools:visible,.transition-panel:visible,.reference-row:visible').count(),0,`${label}: advanced analysis stays in Studio`);
+  const duplicates=await page.locator('[id]').evaluateAll(nodes=>{
+    const counts=new Map();for(const node of nodes)counts.set(node.id,(counts.get(node.id)||0)+1);
+    return [...counts].filter(([,count])=>count>1).map(([id])=>id);
+  });
+  assert.deepEqual(duplicates,[],`${label}: every visible control has an unambiguous ID`);
+  return m;
+}
+async function generate(page,action='generate') {
+  await page.locator(`[data-action="${action}"]`).click();
+  await page.waitForFunction(()=>!document.querySelector('[data-action="generate"]').disabled,null,{timeout:20000});
+  assert.equal(await page.locator('.toast.error').count(),0,`${action}: generation succeeds`);
+  return savedProject(page);
+}
+async function generatePractice(page) {
+  await page.locator('#practice-new').click();
+  await page.waitForFunction(()=>document.querySelector('#practice-new')?.disabled===false,null,{timeout:20000});
+  assert.equal(await page.locator('.toast.error').count(),0,'Practice worker succeeds');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'practice-new','New pattern restores keyboard focus');
+  return savedProject(page);
+}
+async function learnerInteractions(page,label,touch) {
+  assert.equal(await page.locator('[data-workspace-mode="learn"]').getAttribute('aria-pressed'),'true','Fresh visitors begin in Learn');
+  assert.equal(await page.locator('[data-workspace-mode="custom"]').count(),0,'Arranging stays out of the beginner navigation');
+  assert.equal(await page.locator('#learn-topic-notes').getAttribute('aria-pressed'),'true','The first lesson is Notes');
+  await simpleGeometry(page,`${label} Learn`);
+  const firstScreen=await page.locator('#app').innerText();
+  assert.doesNotMatch(firstScreen,/\b(?:MIDI|ticks?|12-TET|reference)\b/i,'Learn avoids technical reference clutter');
+  await page.screenshot({path:path.join(output,`${label}-learn.png`),fullPage:true});
+  // Commit the displayed home note so the initially unsaved example has a stable,
+  // inspectable identity. Lesson navigation itself must not edit that project.
+  await page.locator('#setting-tonic').selectOption(await page.locator('#setting-tonic').inputValue());
+  const original=await savedProject(page);
+  assert.ok(original,'The displayed project is saved after a context edit');
+  for(const topic of ['steps','scales','modes','notes','modes']) {
+    await page.locator(`#learn-topic-${topic}`).click();
+    assert.equal(await page.locator(`#learn-topic-${topic}`).getAttribute('aria-pressed'),'true');
+    assert.equal(await page.evaluate(()=>document.activeElement.id),`learn-topic-${topic}`,'Lesson navigation retains focus');
+    assert.deepEqual(await savedProject(page),original,'Lesson navigation preserves music and settings');
+    if(topic==='steps') {
+      assert.equal(await page.locator('[data-learn-pitch]').count(),3);
+      assert.deepEqual(await page.locator('[data-half-steps]').evaluateAll(nodes=>nodes.map(node=>Number(node.dataset.halfSteps))),[1,1]);
+    }
+  }
+  const expectedMasks=await page.evaluate(async()=>{
+    const {maskFor,SCALE_DEFS}=await import('./src/theory.js');
+    const p=JSON.parse(localStorage.getItem('tonedef.current.v2'));
+    return SCALE_DEFS.slice(0,7).map(scale=>maskFor(p.settings.tonic,scale.intervals));
+  });
+  for(let index=0;index<7;index++) {
+    await page.locator(`[data-learn-scale="${index}"]`).click();
+    const chosen=await savedProject(page);
+    assert.equal(chosen.settings.keyMask,expectedMasks[index],'Each mode applies its own interval recipe around home');
+    assert.equal(chosen.settings.tonic,original.settings.tonic,'Mode comparison keeps the same home note');
+    assert.deepEqual(chosen.events,original.events,'Mode comparison leaves the existing pattern intact');
+    assert.deepEqual(instrumentOf(chosen),instrumentOf(original),'Mode comparison leaves the guitar intact');
+    assert.equal(await page.locator(`[data-learn-scale="${index}"]`).getAttribute('aria-pressed'),'true');
+    assert.equal(await page.evaluate(()=>document.activeElement.id),`learn-scale-${index}`,'Mode comparison retains focus');
+  }
+  await page.locator('[data-learn-scale="0"]').click();
+  const beforePreview=await savedProject(page);
+  const pitch=page.locator('[data-learn-pitch]').first();
+  if(touch) await pitch.tap(); else await pitch.click();
+  assert.equal(await pitch.getAttribute('aria-pressed'),'true','The chosen lesson note is visibly identified');
+  assert.ok(await page.locator('.fret.learning-match').count()>0,'The lesson note is linked to matching positions on the neck');
+  assert.ok((await page.locator('#expression-readout').textContent()).trim(),'The note preview has a readable pitch label');
+  assert.deepEqual(await savedProject(page),beforePreview,'Hearing a lesson note does not alter the project');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'learn-pitch-0','Pitch preview retains focus');
+  if(touch) await page.locator('[data-pos="s0:0"]').tap(); else await page.locator('[data-pos="s0:0"]').click();
+  assert.deepEqual(await savedProject(page),beforePreview,'The beginner fretboard auditions rather than editing existing notes');
+  await simpleGeometry(page,`${label} Modes`);
+  await page.screenshot({path:path.join(output,`${label}-modes.png`),fullPage:true});
+  await page.locator('#workspace-practice').click();
+  assert.equal(await page.locator('#workspace-practice').getAttribute('aria-pressed'),'true');
+  assert.deepEqual(await savedProject(page),beforePreview,'Opening Practice does not replace existing music');
+  assert.equal(await page.locator('#practice-more').getAttribute('open'),null,'Extra choices start closed');
+  for(const key of ['keyRandom','modeRandom','countRandom','stringsRandom','notesPerStringRandom']) {
+    assert.equal(await page.locator(`#practice-${key}`).isChecked(),false,`${key}: randomization requires an explicit choice`);
+  }
+  const available=await page.locator('[data-practice-string]:enabled').evaluateAll(nodes=>nodes.map(node=>node.dataset.practiceString));
+  assert.ok(available.length>=2,'The starting guitar has at least two strings');
+  for(const id of available) assert.equal(await page.locator(`#practice-string-${id}`).getAttribute('aria-pressed'),'true','Available strings begin selected');
+  await page.locator('#setting-tonic').selectOption('0');
+  await page.locator('#collection').selectOption('0');
+  await page.locator('#setting-eventCount').fill('8');await page.locator('#setting-eventCount').press('Tab');
+  for(const id of available.slice(2)) await page.locator(`#practice-string-${id}`).click();
+  await page.locator('#practice-notesPerString').focus();
+  await page.locator('#practice-notesPerString').selectOption('2');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'practice-notesPerString','Group selection retains focus');
+  await page.locator('#practice-more > summary').click();
+  await page.locator('#setting-generationType').selectOption('melody');
+  await page.locator('#setting-sequencePattern').selectOption('free');
+  await page.locator('#setting-melodicContour').selectOption('random');
+  const fixed=await savedProject(page);
+  assert.deepEqual(fixed.events,original.events,'Choosing practice constraints does not replace existing music');
+  const generated=await generatePractice(page);
+  assert.equal(generated.events.length,8);
+  assert.equal(generated.settings.tonic,0);
+  assert.equal(generated.settings.keyMask,fixed.settings.keyMask);
+  assert.deepEqual(instrumentOf(generated),instrumentOf(fixed),'Practice never randomizes the instrument');
+  assert.deepEqual(generated.events.map(event=>event.notes[0]?.stringId),Array.from({length:8},(_,index)=>available[Math.floor(index/2)%2]),'Two-note groups cycle through only the selected strings');
+  for(const event of generated.events) {
+    assert.equal(event.kind,'melody');
+    assert.equal(event.notes.length,1);
+    const note=event.notes[0],midi=generated.settings['open'+note.stringId.slice(1)]+note.fret;
+    assert.ok(generated.settings.keyMask & (1<<((midi%12+12)%12)),'Practice uses the fixed key');
+  }
+  await page.locator('[data-event]').first().click();
+  await page.locator('[data-action="lock-event"]').click();
+  const locked=await savedProject(page),kept=locked.events.find(event=>event.id===locked.selectedId);
+  assert.equal(kept.locked,true);
+  const regenerated=await generatePractice(page);
+  assert.deepEqual(regenerated.events.find(event=>event.id===kept.id),kept,'New pattern preserves a kept note exactly');
+  assert.notEqual(regenerated.settings.seed,locked.settings.seed,'New pattern advances the seed');
+  await page.locator('[data-action="undo"]').click();
+  assert.deepEqual(await savedProject(page),locked,'One Undo restores the pattern, selection, options and seed');
+  await page.locator('[data-action="lock-event"]').click();
+  for(const key of ['keyRandom','modeRandom','countRandom','stringsRandom','notesPerStringRandom']) await page.locator(`#practice-${key}`).check();
+  await page.locator('#practice-random-bounds > summary').click();
+  for(const [id,value] of [['countMin',5],['countMax',5],['stringsMin',1],['stringsMax',1],['notesPerStringMin',3],['notesPerStringMax',3]]) {
+    await page.locator(`#practice-${id}`).fill(String(value));await page.locator(`#practice-${id}`).press('Tab');
+  }
+  const optedIn=await savedProject(page),randomized=await generatePractice(page);
+  assert.equal(randomized.events.length,5,'Random note count obeys its exact configured bounds');
+  const usedStrings=[...new Set(randomized.events.flatMap(event=>event.notes.map(note=>note.stringId)))];
+  assert.equal(usedStrings.length,1,'Random strings obey their exact configured count');
+  assert.ok(available.slice(0,2).includes(usedStrings[0]),'Random string choice stays inside the selected pool');
+  assert.deepEqual(randomized.practice,optedIn.practice,'Generation retains the user’s randomization configuration');
+  assert.deepEqual(instrumentOf(randomized),instrumentOf(optedIn),'Random choices preserve tuning, enabled strings, capo and ranges');
+  const mutable=new Set(['seed','tonic','tonicSpelling','keyMask','eventCount']);
+  for(const [key,value] of Object.entries(optedIn.settings)) if(!mutable.has(key)) assert.deepEqual(randomized.settings[key],value,`Practice randomization preserves ${key}`);
+  await page.locator('[data-action="undo"]').click();
+  assert.deepEqual(await savedProject(page),optedIn,'Undo restores all data after randomized generation');
+  await page.locator('#practice-more > summary').click();
+  await simpleGeometry(page,`${label} Practice`);
+  await page.screenshot({path:path.join(output,`${label}-practice.png`),fullPage:true});
+  await page.reload();await page.waitForSelector('#practice-new');
+  assert.equal(await page.locator('#workspace-practice').getAttribute('aria-pressed'),'true','The chosen view survives reload');
+  assert.deepEqual(await savedProject(page),optedIn,'Practice configuration and music survive reload');
+  await page.locator('[data-workspace-mode="learn"]').click();
+  assert.deepEqual(await savedProject(page),optedIn,'Returning to Learn preserves practice work');
+  report.interactions.push({viewport:label,checks:['fresh Learn default','no advanced reference clutter','44px learning/practice controls','Notes/Steps/Scales/Modes navigation','seven parallel-mode masks','non-mutating note and fretboard preview','explicit randomization opt-ins','fixed key/count/string pool','notes-per-string grouping','Keep note','new-pattern seed advance','one-step complete Undo','bounded random count and strings','instrument protection','view/configuration persistence','keyboard focus']});
+}
+async function overviewInteractions(page,label) {
+  assert.equal(await page.locator('[data-workspace-mode="overview"]').getAttribute('aria-pressed'),'true','Studio shows every analysis area');
+  // The initial example is intentionally unsaved until a user edits it.
+  await page.locator('#project-title').fill('Overview exercise check');
+  await page.locator('#project-title').press('Tab');
+  const original = await savedProject(page);
+  await page.locator('#exercise-recipe').focus();
+  await page.locator('#exercise-recipe').selectOption('triplet-groups');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'exercise-recipe','Recipe remains keyboard focused after rendering');
+  const configured = await savedProject(page);
+  assert.deepEqual(configured.events,original.events,'Choosing a recipe leaves existing music intact');
+  for (const key of ['stringCount','fretCount','capo','fretMin','fretMax','practiceRanges','tonic','keyMask','seed']) {
+    assert.deepEqual(configured.settings[key],original.settings[key],`Recipe preserves ${key}`);
+  }
+  assert.equal(await page.locator('#setting-sequencePattern').inputValue(),'groups3');
+  assert.equal(await page.locator('#setting-rhythmPattern').inputValue(),'triplets');
+  await page.locator('#setting-sequencePattern').focus();
+  await page.locator('#setting-sequencePattern').selectOption('thirds');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'setting-sequencePattern','Sequence selection preserves focus');
+  await page.locator('#setting-rhythmPattern').focus();
+  await page.locator('#setting-rhythmPattern').selectOption('eighth-quarter');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'setting-rhythmPattern','Rhythm selection preserves focus');
+  await page.locator('#practice-ranges > summary').click();
+  await page.locator('#range-value-0-min').fill('3');
+  await page.locator('#range-value-0-min').press('Tab');
+  await page.locator('#range-value-0-max').fill('9');
+  await page.locator('#range-value-0-max').press('Tab');
+  const generated = await generate(page);
+  assert.equal(generated.events.length,12);
+  assert.equal(generated.settings.sequencePattern,'thirds');
+  assert.equal(generated.settings.rhythmPattern,'eighth-quarter');
+  assert.deepEqual(generated.settings.practiceRanges[0],{min:3,max:9});
+  for (const [i,event] of generated.events.entries()) {
+    assert.equal(event.kind,'melody');
+    assert.equal(event.duration,i%2===0?48:96);
+    for (const note of event.notes) {
+      const index=Number(note.stringId.slice(1)),s=generated.settings,range=s.practiceRanges[index];
+      assert.ok(note.fret>=Math.max(s.fretMin,range.min)&&note.fret<=Math.min(s.fretMax,range.max),'Generated note respects physical string range');
+      assert.ok(s['enabled'+index],'Generated string is enabled');
+      const midi=s['open'+index]+note.fret;
+      assert.ok(Boolean(s.keyMask & (1<<((midi%12+12)%12))),'Generated note belongs to the chosen collection');
+    }
+  }
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'generate-exercise','Generating restores its action focus');
+  await page.locator('[data-event]').first().click();
+  await page.locator('[data-action="lock-event"]').click();
+  const locked = await savedProject(page),lockedEvent=locked.events.find(event=>event.id===locked.selectedId);
+  assert.equal(lockedEvent.locked,true);
+  const varied=await generate(page,'variation');
+  assert.notEqual(varied.settings.seed,locked.settings.seed,'Variation advances the seed');
+  assert.deepEqual({...varied.settings,seed:locked.settings.seed},locked.settings,'Variation preserves all constraints and instrument settings');
+  assert.deepEqual(varied.events.find(event=>event.id===lockedEvent.id),lockedEvent,'Variation preserves the locked event exactly');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'vary-exercise','Variation restores its action focus');
+  await page.locator('[data-action="undo"]').click();
+  assert.deepEqual(await savedProject(page),locked,'One Undo restores the complete pre-variation project');
+  await page.locator('#playButton').click();
+  await page.waitForFunction(()=>document.querySelector('.board-context').textContent.startsWith('Playing · '));
+  await page.locator('[data-action="stop"]').click();
+  assert.equal(await page.locator('#playButton').getAttribute('aria-pressed'),'false');
+  assert.deepEqual(await savedProject(page),locked,'Playback does not alter the exercise');
+  await page.locator('#practice-ranges > summary').click();
+  await page.locator('[data-action="settings"]').click();
+  assert.ok(await page.locator('[data-panel="settings"]').isVisible(),'Settings shortcut works in Overview');
+  await page.locator('#overview-expand-fretboard').click();
+  assert.equal(await page.locator('#overview-expand-fretboard').getAttribute('aria-expanded'),'true');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#overview-expand-fretboard').getAttribute('aria-expanded'),'false','Escape returns from a focused panel');
+  assert.deepEqual(await savedProject(page),locked,'Expanding a panel leaves the exercise intact');
+  await geometry(page,`${label} generated Overview`);
+  await page.screenshot({path:path.join(output,`${label}-exercise.png`),fullPage:true});
+  report.interactions.push({viewport:label,checks:['Overview all eight panels','recipe preserves existing music and instrument','sequence/rhythm field focus','per-string generation bounds','recipe generation worker','event lock','seed-only Variation','one-step Undo','play/stop','Overview Settings shortcut','expand/Escape without music changes']});
+}
 async function interact(page,label,touch) {
+  // Custom arranging is deliberately offered inside Studio, away from Learn.
+  await page.locator('[data-workspace-mode="overview"]').click();
+  await page.locator('[data-workspace-mode="custom"]').click();
   const originalNotes = await page.locator('.fret.selected').count();
   assert.equal(await page.locator('.shape-line').count(),originalNotes-1);
   await page.locator('#workspace-controls > summary').click();
   await page.locator('#layout-edit-').click();
+  const initialOrder = await page.locator('.dock-panel').evaluateAll(es => es.map(e => e.dataset.panel));
+  const timelineIndex = initialOrder.indexOf('timeline');
+  assert.ok(timelineIndex > 0, 'Timeline starts after another panel');
+  const expectedOrder = [...initialOrder];
+  [expectedOrder[timelineIndex - 1], expectedOrder[timelineIndex]] = [expectedOrder[timelineIndex], expectedOrder[timelineIndex - 1]];
   await page.locator('#layout-earlier-timeline').click();
-  assert.equal(await page.locator('.dock-panel').first().getAttribute('data-panel'),'timeline');
+  assert.deepEqual(await page.locator('.dock-panel').evaluateAll(es=>es.map(e=>e.dataset.panel)),expectedOrder);
   await page.locator('#layout-resize-fretboard').press('ArrowLeft');
   await page.locator('#layout-resize-fretboard').press('ArrowDown');
   const resized = await page.locator('#panel-body-fretboard').getAttribute('style');
   await page.locator('#layout-collapse-fretboard').click();
   await page.reload(); await page.waitForSelector('.dock-panel');
-  assert.equal(await page.locator('.dock-panel').first().getAttribute('data-panel'),'timeline');
+  assert.deepEqual(await page.locator('.dock-panel').evaluateAll(es=>es.map(e=>e.dataset.panel)),expectedOrder);
+  assert.ok(await page.locator('#panel-body-fretboard').isHidden());
+  assert.equal(await page.locator('#panel-body-fretboard').getAttribute('style'),resized);
+  const savedArrangement = await page.evaluate(()=>localStorage.getItem('tonedef.workspace.v1'));
+  await page.locator('[data-workspace-mode="overview"]').click();
+  await geometry(page,`${label} Overview after arranging`);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('tonedef.workspace.v1')),savedArrangement,'Overview does not overwrite the custom arrangement');
+  await page.locator('[data-workspace-mode="custom"]').click();
+  assert.deepEqual(await page.locator('.dock-panel').evaluateAll(es=>es.map(e=>e.dataset.panel)),expectedOrder);
   assert.ok(await page.locator('#panel-body-fretboard').isHidden());
   assert.equal(await page.locator('#panel-body-fretboard').getAttribute('style'),resized);
   await page.locator('#workspace-controls > summary').click();
@@ -202,7 +462,9 @@ async function interact(page,label,touch) {
   await page.locator('[data-action="ranges-reset"]').click();
   await page.locator('#practice-ranges > summary').click();
   await page.locator('[data-action="settings"]').click();
+  await page.locator('#exercise-random > summary').click();
   await page.locator('#show-random').check();assert.ok(await page.locator('[data-random]').count()>10);
+  await page.locator('#instrument-detail > summary').click();
   await page.locator('#setting-labels').selectOption('both');assert.ok(await page.locator('.note-disc small').count()>0);
   await geometry(page,`${label} settings`);await page.keyboard.press('Escape');
   await page.screenshot({path:path.join(output,`${label}-settings.png`),fullPage:true});
@@ -212,7 +474,8 @@ async function interact(page,label,touch) {
   await geometry(page,`${label} generated`);
   assert.equal(await page.locator('#setting-melodicContour').count(),0);
   await page.locator('#setting-generationType').selectOption('melody');
-  await page.getByLabel('Melody contour',{exact:true}).selectOption('ascending');
+  await page.locator('#setting-melodicContour').selectOption('ascending');
+  await page.locator('#exercise-constraints > summary').click();
   await page.locator('#setting-repeatNotes').uncheck();
   await page.locator('#setting-eventCount').fill('8');
   await page.locator('#setting-eventCount').press('Tab');
@@ -234,9 +497,10 @@ async function interact(page,label,touch) {
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2'))),generated);
   await page.reload();await page.waitForSelector('.fret');
   await page.locator('[data-action="settings"]').click();
-  assert.equal(await page.getByLabel('Melody contour',{exact:true}).inputValue(),'ascending');
-  // Chord-motion panel is intentionally absent for an all-melody pattern.
-  await geometry(page,`${label} melody contour`,6);
+  assert.equal(await page.locator('#setting-melodicContour').inputValue(),'ascending');
+  // Empty chord motion keeps its place and explains how to populate it.
+  assert.match(await page.locator('.transition-panel .empty').textContent(),/two chords/);
+  await geometry(page,`${label} melody contour`);
   await page.screenshot({path:path.join(output,`${label}-contour.png`),fullPage:true});
   // Test dense instrument and re-entrant pitches without changing the user's files.
   await page.evaluate(async()=>{
@@ -253,12 +517,32 @@ async function interact(page,label,touch) {
   report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','matrix keyboard','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop','theory tabs','Projects/practice-card download','settings/random flags','practice-range numeric/keyboard/drag/cancel/undo/persistence','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
 }
 try {
-  for(const [width,height,touch] of [[2560,1440,false],[1920,1080,false],[1440,1000,false],[1280,900,false],[1100,900,false],[1024,768,false],[850,1000,false],[768,1024,true],[650,900,false],[570,900,true],[390,844,true],[360,800,true],[320,800,true]]) {
+  for(const [width,height,touch] of [[1366,768,false],[390,844,true],[320,800,true]]) {
+    const context=await browser.newContext({viewport:{width,height},hasTouch:touch,deviceScaleFactor:1,reducedMotion:'reduce'});
+    const page=await context.newPage(),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    page.on('response',response=>{if(response.status()>=400)errors.push(`${response.status()} ${response.url()}`);});
+    const label=`${width}x${height}-learner${touch?'-touch':''}`;
+    await page.goto(origin+'/tonedef/',{waitUntil:'networkidle'});await page.waitForSelector('.fret');
+    await learnerInteractions(page,label,touch);
+    assert.deepEqual(errors,[],`${label}: browser/network errors`);
+    console.log(`PASS ${label}: Learn, Practice and configured generation`);
+    await context.close();
+  }
+  for(const [width,height,touch] of [[2560,1440,false],[1920,1080,false],[1440,1000,false],[1440,900,false],[1366,768,false],[1280,900,false],[1100,900,false],[1024,768,false],[850,1000,false],[768,1024,true],[650,900,false],[570,900,true],[390,844,true],[360,800,true],[320,800,true]]) {
     const options={viewport:{width,height},hasTouch:touch,deviceScaleFactor:1,reducedMotion:'reduce'};
     const context=await browser.newContext(options),page=await context.newPage(),errors=[];
     page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
-    const label=`${width}${touch?'-touch':'-desktop'}`;
+    const label=`${width}x${height}${touch?'-touch':'-desktop'}`;
     await page.goto(origin+'/tonedef/',{waitUntil:'networkidle'});await page.waitForSelector('.fret');
+    // Keep the original advanced-workspace fixture explicit now that new learners
+    // start with a short single-note scale instead of the progression example.
+    await page.evaluate(async()=>{
+      const {example}=await import('./src/model.js');
+      localStorage.setItem('tonedef.current.v2',JSON.stringify(example('progression')));
+    });
+    await page.reload();await page.waitForSelector('.fret');
+    await page.locator('[data-workspace-mode="overview"]').click();
     const after=await geometry(page,label),entry={width,touch,after};
     if([1440,390].includes(width)) {
       const oldContext=await browser.newContext(options),oldPage=await oldContext.newPage();
@@ -270,7 +554,8 @@ try {
     }
     await page.screenshot({path:path.join(output,`${label}-after.png`),fullPage:true});
     report.viewports.push(entry);
-    if([1440,390].includes(width))await interact(page,label,touch);
+    if ((width===1440&&height===900)||width===1366) await overviewInteractions(page,label);
+    if((width===1440&&height===1000)||width===390)await interact(page,label,touch);
     assert.deepEqual(errors,[],`${label}: browser/network errors`);
     console.log(`PASS ${label}: ${after.pageHeight}px, fretboard ${after.board.width}x${after.board.height}px`);
     await context.close();

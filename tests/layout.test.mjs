@@ -13,6 +13,33 @@ test('panel reordering retains each panel and has deterministic before/after sem
   assert.deepEqual(movePanel(['a','b','c'],'c','a'),['c','a','b']);
   assert.deepEqual(movePanel(['a','b'],'a','missing'),['a','b']);
 });
+test('seven-panel saved workspaces retain their arrangement when Exercise is introduced', () => {
+  const oldOrder = ['timeline', 'fretboard', 'math', 'tools', 'inspector', 'transitions', 'settings'];
+  const stored = {version: 1, order: oldOrder, panels: {
+    fretboard: {span: 8, height: 480, hidden: false, collapsed: true},
+    math: {span: 4, height: 320, hidden: true, collapsed: false},
+  }};
+  const before = structuredClone(stored);
+  const migrated = normalizeLayout(stored);
+  assert.equal(PANELS.length, 8);
+  assert.deepEqual(migrated.order, [...oldOrder, 'exercise']);
+  assert.deepEqual(migrated.panels.fretboard, stored.panels.fretboard);
+  assert.deepEqual(migrated.panels.math, stored.panels.math);
+  assert.equal(migrated.panels.exercise.hidden, false);
+  assert.equal(migrated.panels.exercise.collapsed, false);
+  assert.deepEqual(stored, before, 'migration does not mutate the stored arrangement');
+  assert.deepEqual(normalizeLayout(migrated), migrated, 'repeated loading is stable');
+});
+test('saved layout contains every known panel exactly once and ignores obsolete panel preferences', () => {
+  const migrated = normalizeLayout({order: ['exercise', 'exercise', 'removed-panel'], panels: {
+    exercise: {span: 9, height: 410, hidden: true, collapsed: true},
+    'removed-panel': {span: 8, hidden: true},
+  }});
+  assert.equal(migrated.order[0], 'exercise');
+  assert.deepEqual(new Set(migrated.order), new Set(PANELS.map(([id]) => id)));
+  assert.deepEqual(Object.keys(migrated.panels).sort(), PANELS.map(([id]) => id).sort());
+  assert.deepEqual(migrated.panels.exercise, {span: 9, height: 410, hidden: true, collapsed: true});
+});
 test('chord connection follows physical order, marks skipped strings, never joins melody', () => {
   const strings = [{id:'high'},{id:'middle'},{id:'low'}];
   const event = {kind:'chord',notes:[{stringId:'low',fret:0},{stringId:'high',fret:3}]};

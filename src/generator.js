@@ -15,6 +15,7 @@ import {
   midiOf,
   settingsProblem,
 } from "./model.js";
+import { generatedDuration } from "./exercises.js";
 /** Mulberry32. Explicit uint32 operations make the saved seed portable. */
 export function seededRandom(seed) {
   let a = seed >>> 0;
@@ -117,16 +118,33 @@ function chordTargets(settings) {
 // Solve the whole contour before choosing notes so a random first note cannot
 // strand an otherwise feasible ascent. Domains contain MIDI pitches, not every
 // duplicate fret position: at most 64 layers x 128 pitches x 128 transitions.
-function contourNotes(project, pool, rand) {
+function melodyLayers(project, pool, rand, options) {
   const s = project.settings, result = new Map(), layers = [];
-  const pitches = [...new Set(pool.map(n => n.midi))];
+  let soundingIndex = 0;
   for (let index = 0; index < s.eventCount; index++) {
     const locked = project.events[index]?.locked ? project.events[index] : null;
+    const stringId = options?.notesPerString > 0
+      ? options.stringIds[Math.floor(soundingIndex / options.notesPerString) % options.stringIds.length]
+      : null;
     if (locked) {
-      if (locked.notes.length) layers.push({ index, pitches: [midiOf(locked.notes[0], s)], locked: true });
+      if (locked.notes.length) {
+        if (stringId && (locked.notes.length !== 1 || locked.notes[0].stringId !== stringId))
+          throw Error(`Locked event ${index + 1} does not fit the notes-per-string order. Change the chosen strings or grouping, or unlock that event. Nothing changed.`);
+        const pitch = midiOf(locked.notes[0], s);
+        layers.push({ index, pitch, pitches: [pitch], locked: true });
+        soundingIndex++;
+      }
     } else if (rand() < s.restRate / 100) result.set(index, null);
-    else layers.push({ index, pitches });
+    else {
+      const positions = stringId ? pool.filter(note => note.stringId === stringId) : pool;
+      layers.push({ index, positions, pitches: [...new Set(positions.map(note => note.midi))], locked: false });
+      soundingIndex++;
+    }
   }
+  return { result, layers };
+}
+function contourNotes(project, pool, rand, options) {
+  const s = project.settings, { result, layers } = melodyLayers(project, pool, rand, options);
   const pivot = Math.floor(layers.length / 2);
   const fits = (from, to, index) => {
     const delta = to - from;
@@ -144,28 +162,98 @@ function contourNotes(project, pool, rand) {
   layers.forEach((layer, index) => {
     const choices = layer.pitches.filter(pitch => previous === null || fits(previous, pitch, index));
     const pitch = pick(choices, rand);
-    if (!layer.locked) result.set(layer.index, pick(pool.filter(n => n.midi === pitch), rand));
+    if (!layer.locked) result.set(layer.index, pick(layer.positions.filter(n => n.midi === pitch), rand));
     previous = pitch;
   });
   return result;
 }
-export function generate(p) {
+// A motif is defined in collection positions, not semitones or fret/string order.
+// Testing the complete translated phrase avoids greedy choices that strand a
+// later locked anchor. At most 2 directions x 128 starts x 64 sounding events.
+function sequenceNotes(project, pool, rand, options) {
+  const s = project.settings, { result, layers } = melodyLayers(project, pool, rand, options);
+  if (!layers.length) return result;
+  const collection = Array.from({ length: 128 }, (_, midi) => midi)
+    .filter(midi => !s.inKey || s.keyMask & (1 << mod(midi)));
+  for (const layer of layers) layer.legal = new Set(layer.pitches);
+  const motif = s.sequencePattern === "thirds" ? [0, 2]
+    : s.sequencePattern === "groups3" ? [0, 1, 2]
+      : s.sequencePattern === "groups4" ? [0, 1, 2, 3] : [0];
+  const pivot = Math.floor(layers.length / 2);
+  const offsets = layers.map((_, index) => {
+    const step = s.melodicContour === "arch" && index > pivot ? 2 * pivot - index : index;
+    return Math.floor(step / motif.length) + motif[step % motif.length];
+  });
+  const directions = s.melodicContour === "random" ? [1, -1]
+    : [s.melodicContour === "descending" ? -1 : 1];
+  const paths = [];
+  for (const direction of directions) {
+    for (let start = 0; start < collection.length; start++) {
+      const pitches = offsets.map(offset => collection[start + offset * direction]);
+      if (layers.every((layer, index) => {
+        const pitch = pitches[index], previous = pitches[index - 1];
+        return pitch !== undefined && (layer.locked ? pitch === layer.pitch : layer.legal.has(pitch)) &&
+          (!index || (Math.abs(pitch - previous) <= s.maxLeap && (s.repeatNotes || pitch !== previous)));
+      })) paths.push(pitches);
+    }
+  }
+  if (!paths.length)
+    throw Error("No complete melody fits this sequence, locked notes and leap/range constraints. Widen the string or pitch ranges, shorten the exercise, change direction or unlock an incompatible anchor. Nothing changed.");
+  const pitches = pick(paths, rand);
+  layers.forEach((layer, index) => {
+    if (!layer.locked) result.set(layer.index, pick(layer.positions.filter(note => note.midi === pitches[index]), rand));
+  });
+  return result;
+}
+class GreedyPathError extends Error {}
+
+// Keep established seeded output whenever it already satisfies every transition.
+// Only failed legacy free/arpeggio walks use this bounded complete-path fallback.
+function completeMelodyNotes(project, pool, rand, arpeggio, options) {
+  const s = project.settings, { result, layers } = melodyLayers(project, pool, rand, options);
+  if (arpeggio) for (const layer of layers) if (!layer.locked)
+    layer.pitches = layer.pitches.filter(pitch => mod(pitch) === arpeggio[layer.index % arpeggio.length]);
+  const fits = (from, to) => Math.abs(to - from) <= s.maxLeap && (s.repeatNotes || from !== to);
+  for (let index = layers.length - 2; index >= 0; index--) {
+    layers[index].pitches = layers[index].pitches.filter(from =>
+      layers[index + 1].pitches.some(to => fits(from, to)));
+  }
+  if (layers.length && !layers[0].pitches.length)
+    throw Error("No complete melody fits these locked notes, available pitches and leap/repetition constraints. Widen the range, allow repeats, increase the maximum leap or unlock an incompatible anchor. Nothing changed.");
+  let previous = null;
+  for (const layer of layers) {
+    const pitch = pick(layer.pitches.filter(candidate => previous === null || fits(previous, candidate)), rand);
+    if (!layer.locked) result.set(layer.index, pick(layer.positions.filter(note => note.midi === pitch), rand));
+    previous = pitch;
+  }
+  return result;
+}
+
+function generateAttempt(p, complete = false, options) {
   validateProject(p);
   const next = clone(p),
     s = next.settings,
     rand = seededRandom(s.seed);
-  const pool = positionChoices(s);
-  if (!pool.length)
-    throw Error(
-      "No available notes. Widen the fret or pitch range, enable a string, or add key tones.",
-    );
+  const pool = positionChoices(s).filter(note => !options || options.stringIds.includes(note.stringId));
   if (p.events.slice(s.eventCount).some((e) => e.locked))
     throw Error(
       "The requested length would remove a locked event. Increase pattern events or unlock it.",
     );
   const type = s.generationType;
-  const contour = type === "melody" && s.melodicContour !== "random"
-    ? contourNotes(p, pool, rand) : null;
+  if (options) {
+    if (options.notesPerString && !["melody", "arpeggio"].includes(type))
+      throw Error("Notes per string needs a melody or arpeggio. Choose one of those pattern types or use free string choice. Nothing changed.");
+    for (const event of p.events) if (event.locked && event.notes.some(note => !options.stringIds.includes(note.stringId)))
+      throw Error("A locked note is on an unselected practice string. Include its string or unlock the event. Nothing changed.");
+  }
+  if (!pool.length)
+    throw Error(
+      "No available notes. Widen the fret or pitch range, enable a string, or add key tones.",
+    );
+  let contour = type === "melody" && s.sequencePattern !== "free"
+    ? sequenceNotes(p, pool, rand, options)
+    : type === "melody" && s.melodicContour !== "random"
+      ? contourNotes(p, pool, rand, options) : null;
   const targets = chordTargets(s);
   const progressionRoots = [0, 9, 5, 7].map((i) => mod(s.tonic + i));
   let previous = null;
@@ -176,20 +264,24 @@ export function generate(p) {
     if (!target) throw Error("No supported arpeggio fits these key tones.");
     arpeggio = target.pitches;
   }
+  if (complete || (options && !contour && ["melody", "arpeggio"].includes(type)))
+    contour = completeMelodyNotes(p, pool, rand, arpeggio, options);
   const events = [];
   for (let i = 0; i < s.eventCount; i++) {
     const protectedEvent = p.events[i];
     if (protectedEvent?.locked) {
+      const pitch = protectedEvent.notes[0] ? midiOf(protectedEvent.notes[0], s) : null;
+      if (!contour && ["melody", "arpeggio"].includes(type) && pitch !== null && previous !== null &&
+          (Math.abs(pitch - previous) > s.maxLeap || (!s.repeatNotes && pitch === previous)))
+        throw new GreedyPathError("A protected note needs a different preceding melody path.");
       events.push(clone(protectedEvent));
-      previous = protectedEvent.notes[0]
-        ? midiOf(protectedEvent.notes[0], s)
-        : previous;
+      previous = pitch ?? previous;
       continue;
     }
     const event = {
       id: `g-${s.seed}-${i}`,
       kind: ["chord", "progression"].includes(type) ? "chord" : "melody",
-      duration: s.duration,
+      duration: generatedDuration(s, i),
       notes: [],
       locked: false,
       picking: s.picking,
@@ -215,7 +307,10 @@ export function generate(p) {
         );
       let voicing = null;
       for (const target of ordered) {
-        voicing = findVoicing(target.pitches, s, rand);
+        const voicingSettings = options ? { ...s, ...Object.fromEntries(
+          Array.from({ length: s.stringCount }, (_, index) => [`enabled${index}`, s[`enabled${index}`] && options.stringIds.includes(`s${index}`)]),
+        ) } : s;
+        voicing = findVoicing(target.pitches, voicingSettings, rand);
         if (voicing) break;
       }
       if (!voicing)
@@ -238,7 +333,7 @@ export function generate(p) {
         candidates = candidates.filter((n) => mod(n.midi) === desired);
       }
       if (!candidates.length)
-        throw Error(
+        throw new GreedyPathError(
           `No next note meets the leap/repetition constraints at event ${i + 1}. Try a larger leap or enable repeats.`,
         );
       const note = contour ? contour.get(i) : pick(candidates, rand);
@@ -267,6 +362,19 @@ export function generate(p) {
   next.events = events;
   next.selectedId = events[0]?.id ?? null;
   return validateProject(next);
+}
+export function generate(p, options) {
+  if (options && (!Array.isArray(options.stringIds) || !options.stringIds.length ||
+      options.stringIds.some(id => typeof id !== "string" || !/^s(?:[0-9]|1[01])$/.test(id)) ||
+      new Set(options.stringIds).size !== options.stringIds.length ||
+      !Number.isInteger(options.notesPerString) || options.notesPerString < 0 || options.notesPerString > 16))
+    throw Error("Invalid practice string selection or grouping. Nothing changed.");
+  try {
+    return generateAttempt(p, false, options);
+  } catch (error) {
+    if (!(error instanceof GreedyPathError)) throw error;
+    return generateAttempt(p, true, options);
+  }
 }
 export function randomize(p) {
   validateProject(p);

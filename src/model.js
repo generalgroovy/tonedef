@@ -99,6 +99,9 @@ export const SCHEMA = {
   melodicContour: choice("Melody contour", "Generation", "random", [
     "random", "ascending", "descending", "arch",
   ]),
+  sequencePattern: choice("Melodic sequence", "Generation", "free", [
+    "free", "steps", "thirds", "groups3", "groups4",
+  ]),
   lowPitch: number("Lowest MIDI pitch", "Generation", 24, 0, 127),
   highPitch: number("Highest MIDI pitch", "Generation", 88, 0, 127),
   chordVocabulary: choice("Chord vocabulary", "Generation", "triads", [
@@ -126,6 +129,9 @@ export const SCHEMA = {
     384,
     [24, 32, 48, 64, 96, 144, 192, 288, 384],
   ),
+  rhythmPattern: choice("Generated rhythm", "Rhythm", "steady", [
+    "steady", "eighth-quarter", "triplets", "syncopated",
+  ]),
   picking: choice("Picking", "Technique", "free", [
     "free",
     "up",
@@ -195,6 +201,34 @@ export function defaultSettings() {
   ), practiceRanges: defaultPracticeRanges() };
 }
 export const defaultPracticeRanges = () => Array.from({ length: 12 }, () => ({ min: 0, max: 36 }));
+export const defaultPracticeOptions = () => ({
+  keyRandom: false, modeRandom: false,
+  countRandom: false, countMin: 4, countMax: 16,
+  stringIds: Array.from({ length: 12 }, (_, index) => `s${index}`),
+  stringsRandom: false, stringsMin: 1, stringsMax: 6,
+  notesPerString: 0, notesPerStringRandom: false,
+  notesPerStringMin: 1, notesPerStringMax: 4,
+});
+export function practiceOptionsProblem(options) {
+  if (!options || typeof options !== "object" || Array.isArray(options))
+    return "Practice options must be an object.";
+  for (const key of ["keyRandom", "modeRandom", "countRandom", "stringsRandom", "notesPerStringRandom"])
+    if (typeof options[key] !== "boolean") return `${key} must be on or off.`;
+  for (const [key, min, max] of [
+    ["countMin", 1, 64], ["countMax", 1, 64],
+    ["stringsMin", 1, 12], ["stringsMax", 1, 12],
+    ["notesPerString", 0, 16], ["notesPerStringMin", 1, 16], ["notesPerStringMax", 1, 16],
+  ]) if (!Number.isInteger(options[key]) || options[key] < min || options[key] > max)
+    return `${key} must be an integer between ${min} and ${max}.`;
+  for (const name of ["count", "strings", "notesPerString"])
+    if (options[`${name}Min`] > options[`${name}Max`])
+      return `${name}: the first random value cannot exceed the last.`;
+  if (!Array.isArray(options.stringIds) || !options.stringIds.length ||
+      options.stringIds.length > 12 || new Set(options.stringIds).size !== options.stringIds.length ||
+      options.stringIds.some(id => typeof id !== "string" || !/^s(?:[0-9]|1[01])$/.test(id)))
+    return "Choose at least one distinct practice string (S1–S12).";
+  return null;
+}
 export function emptyEvent(kind = "chord", duration = 384) {
   return {
     id: uid(),
@@ -213,6 +247,7 @@ export function defaultProject() {
     generatorVersion: GENERATOR_VERSION,
     title: "A little movement",
     settings: defaultSettings(),
+    practice: defaultPracticeOptions(),
     randomize: Object.fromEntries(
       Object.keys(SCHEMA).map((id) => [id, ["seed", "restRate"].includes(id)]),
     ),
@@ -292,6 +327,12 @@ export function validateProject(p) {
     throw Error("Project title must contain at most 120 characters.");
   const problem = settingsProblem(p.settings ?? {});
   if (problem) throw Error(problem);
+  // Missing options remain legal for direct callers holding older v2 projects.
+  // Imports add defaults; validation never mutates its input.
+  if (p.practice !== undefined) {
+    const practiceProblem = practiceOptionsProblem(p.practice);
+    if (practiceProblem) throw Error(practiceProblem);
+  }
   if (!Array.isArray(p.events) || p.events.length > MAX_EVENTS)
     throw Error(`A project can contain at most ${MAX_EVENTS} events.`);
   if (typeof p.randomPattern !== "boolean")
@@ -387,10 +428,15 @@ export function importProject(text) {
     raw.selectedId ??= raw.events[0]?.id ?? null;
   }
   // Add only the new optional field; malformed existing fields still fail.
+  if (raw.version === 2 && !Object.hasOwn(raw, "practice")) raw.practice = defaultPracticeOptions();
   if (raw.version === 2 && raw.settings && raw.randomize) {
     if (!Object.hasOwn(raw.settings, "practiceRanges")) raw.settings.practiceRanges = defaultPracticeRanges();
     if (!Object.hasOwn(raw.settings, "melodicContour")) raw.settings.melodicContour = "random";
     if (!Object.hasOwn(raw.randomize, "melodicContour")) raw.randomize.melodicContour = false;
+    for (const [id, value] of [["sequencePattern", "free"], ["rhythmPattern", "steady"]]) {
+      if (!Object.hasOwn(raw.settings, id)) raw.settings[id] = value;
+      if (!Object.hasOwn(raw.randomize, id)) raw.randomize[id] = false;
+    }
   }
   return validateProject(raw);
 }

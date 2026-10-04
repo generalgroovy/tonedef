@@ -22,7 +22,12 @@ export function practiceCard(project) {
     `- Tuning (physical string 1 first): ${stringsOf(s).map(string => spellPitch(string.open, s)).join(", ")}`,
     `- Capo: physical fret ${s.capo}; tab uses absolute physical fret numbers`,
     `- String practice ranges (physical frets): ${stringsOf(s).map(string => `S${string.index + 1}: ${s.practiceRanges[string.index].min}–${s.practiceRanges[string.index].max}${string.enabled ? "" : " (off)"}`).join(", ")}`,
-    `- Generator settings: ${s.generationType}; seed ${s.seed}; melody contour ${s.melodicContour}`,
+    `- Generator settings: ${s.generationType}; seed ${s.seed}; melody contour ${s.melodicContour}; sequence ${s.sequencePattern}; rhythm ${s.rhythmPattern}`,
+    ...(project.practice ? [
+      `- Practice choices: ${project.practice.keyRandom ? "random" : "fixed"} key; ${project.practice.modeRandom ? "random" : "fixed"} scale; ${project.practice.countRandom ? `${project.practice.countMin}–${project.practice.countMax}` : s.eventCount} events`,
+      `- Eligible practice strings: ${project.practice.stringIds.filter(id => Number(id.slice(1)) < s.stringCount && s[`enabled${id.slice(1)}`]).map(id => `S${Number(id.slice(1)) + 1}`).join(", ")}; ${project.practice.stringsRandom ? "random subset" : "fixed selection"}`,
+      `- Notes per string: ${project.practice.notesPerStringRandom ? `${project.practice.notesPerStringMin}–${project.practice.notesPerStringMax} (random)` : project.practice.notesPerString || "free string choice"}; groups follow physical string order; rests do not consume a slot`,
+    ] : []),
     "", "## Practice notes", "",
     "- Date: ", "- Focus: ", "- Comfortable tempo: ", "- Next session: ", "",
     "- [ ] Play slowly enough to keep the rhythm even.",
