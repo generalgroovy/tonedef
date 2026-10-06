@@ -6,6 +6,14 @@ Learn guitar and bass theory by hearing notes, exploring the neck, and making yo
 
 ToneDef is the main guitar project. Useful melody contours from Guitar Practice Generator and practice cards from GeneralGroovy are included here; those older apps remain references.
 
+## Engineering overview
+
+- **Musical modelling:** seeded pattern generation combines scale, rhythm, string and fret constraints while preserving locked notes and events.
+- **Interactive audio:** a JavaScript fretboard and Web Audio playback connect musical structure to direct note, slide and bend controls.
+- **State and recovery:** version-compatible projects, validated JSON imports, undo/redo and browser-storage recovery preserve editable work.
+
+[Project overview](https://generalgroovy.web.app/apps/tonedef/) · [Architecture and rebuild guide](docs/REBUILD.md)
+
 ## Start here
 
 **Read the neck at a glance:** small neutral discs are outside the key; colored rings are in the key; filled squares are positions used in your pattern. The white outline follows the current step. A dashed square keeps an outside-key pattern note distinct. Every position remains playable.
