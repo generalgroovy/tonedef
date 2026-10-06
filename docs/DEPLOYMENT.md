@@ -1,6 +1,22 @@
 # Deployment and rollback
 
-## Release 1.9.0, verified 2026-10-04
+## Release 1.10.0, verified 2026-10-06 UTC
+
+[ToneDef](https://generalgroovy.github.io/tonedef/) is published from application revision `1d620ad5fc016853091b1000f0b564dd7f6cb551`. [Visual practice](VISUAL-PRACTICE.md) specifies the new behavior and rebuild contract.
+
+- The neck distinguishes outside-key notes, key tones, whole-pattern positions and the current step using size, shape, fill and outlines. Outside-key pattern notes remain visible with a dashed border. Chord connections and interval colors remain available; tonic markers no longer overlap interval numerals.
+- Practice length and speed have sliders alongside exact entry. Random bounds and per-string fret windows have draggable endpoints and a separate 44px whole-range grip. Translation preserves width. Escape/cancellation discards previews; one Undo restores a completed gesture. Keyboard and left-handed directions are covered.
+- Optional recall exercises cover note names, named intervals and ordered melody pitches. Hide hints removes visual and accessible answers; feedback and reference audio remain available. Session results never enter the saved project. Melody recall checks exact pitch, skips rests and explicitly rejects unsupported chord/unreachable patterns.
+- 101 automated tests passed, including interval targets in all 12 keys, octave-aware melody judging, exact physical membership and bounded range movement. Syntax and production build passed. [Candidate browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37536858809), [main browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37537218932), and [verification/Pages publication](https://github.com/generalgroovy/tonedef/actions/runs/37537218897) succeeded.
+- Browser coverage includes 21 primary configurations: two new desktop/touch gesture workflows, four learner workflows, and 15 Studio/Arrange layouts from 320 to 2560px. Checks include wrong/correct answers, hidden-hint restoration, keyboard activation, exact melody register, unchanged project data, value preview/commit/Undo/Escape, whole random/fret-window movement, crossing prevention, native touch cancellation, left-handed movement and persistence. Existing generation, audio, expressive gestures, imports, exports, locks, layout and 12-string regression also passed.
+- All 26 public runtime files and the build manifest matched committed source over certificate-validated HTTPS. Runtime SHA-256: `42d1b6e68598fcc1c9a2f767d22ccea1510608247acb537fad3a1be429dc32ae`.
+- Live browser smoke confirmed the new challenge, hidden/restored hints, speed 92 → 93 → Undo to 92, Play/Stop and current-chord highlighting. The existing five-step pattern was retained. No browser warnings or errors were recorded. Desktop and narrow layouts were visually inspected.
+
+[Browser report](evidence/visual-practice-layout.json) · [Public byte receipt](evidence/visual-practice-public-runtime.json) · [Live screenshot](evidence/visual-practice-live.jpg)
+
+This release publishes the canonical GitHub Pages app. The portfolio's separately pinned copy was not repackaged or deployed: its working copy had unrelated pending changes. A future portfolio update can package this exact reviewed revision using that project's documented single-project packager. Software and emulated-touch checks do not establish physical touch-device acceptance, subjective listening quality or learning outcomes. Documentation-only commits may follow the application revision without rebuilding the runtime.
+
+## Historical release: 1.9.0, verified 2026-10-04
 
 The simplified learning and practice interface is live at
 [ToneDef](https://generalgroovy.github.io/tonedef/) and in the
