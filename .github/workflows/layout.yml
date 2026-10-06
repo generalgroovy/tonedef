@@ -2,9 +2,9 @@ name: Visual workspace regression
 on:
   push:
     branches: [main, 'codex/**']
-    paths: ['*.css', 'index.html', 'src/**', 'tests/**', 'scripts/build.mjs', 'scripts/check-layout.mjs', '.github/workflows/layout.yml']
+    paths: ['*.css', 'index.html', 'src/**', 'tests/**', 'scripts/build.mjs', 'scripts/check-layout.mjs', 'scripts/visual-practice-checks.mjs', '.github/workflows/layout.yml']
   pull_request:
-    paths: ['*.css', 'index.html', 'src/**', 'tests/**', 'scripts/build.mjs', 'scripts/check-layout.mjs', '.github/workflows/layout.yml']
+    paths: ['*.css', 'index.html', 'src/**', 'tests/**', 'scripts/build.mjs', 'scripts/check-layout.mjs', 'scripts/visual-practice-checks.mjs', '.github/workflows/layout.yml']
   workflow_dispatch:
 permissions:
   contents: read
