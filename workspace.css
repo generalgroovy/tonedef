@@ -395,7 +395,7 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) footer > span { di
 .fretboard .fret.in-pattern .note-disc { width: 36px; min-width: 36px; height: 36px; border: 2px solid var(--note-color); border-radius: 9px; background: color-mix(in srgb,var(--note-color) 70%,white); color: var(--note-ink); font-size: .98rem; font-weight: 800; box-shadow: 0 2px 5px #130f0bd9; }
 .fretboard .fret.pattern-outside .note-disc { border: 2px dashed #211b18; }
 .fretboard .fret.current-note .note-disc { outline: 2px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 5px #1d1611; }
-.fretboard .fret.tonic .note-disc::after { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: currentColor; bottom: 1px; left: calc(50% - 2.5px); }
+.fretboard .fret.tonic .note-disc::after { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #fff6e8; border: 1px solid #242522; top: -3px; right: -2px; }
 .fretboard .fret .note-disc { position: relative; }
 .fretboard .fret.in-key { background: color-mix(in srgb,var(--note-color) 7%,transparent); }
 .fretboard .fret.in-pattern { background: color-mix(in srgb,var(--note-color) 24%,transparent); }
