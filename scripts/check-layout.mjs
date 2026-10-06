@@ -650,6 +650,7 @@ async function interact(page,label,touch) {
 try {
   for(const [width,height,touch] of [[1280,720,false],[390,844,true]]) {
     const context=await browser.newContext({viewport:{width,height},hasTouch:touch,deviceScaleFactor:1,reducedMotion:'reduce'});
+    context.setDefaultTimeout(10000);
     const page=await context.newPage(),errors=[],label=`${width}x${height}-visual-practice`;
     page.on('pageerror',error=>errors.push(error.message));
     await page.goto(origin+'/tonedef/',{waitUntil:'networkidle'});await page.waitForSelector('.fret');
