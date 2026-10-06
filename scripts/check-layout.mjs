@@ -653,7 +653,8 @@ try {
     const page=await context.newPage(),errors=[],label=`${width}x${height}-visual-practice`;
     page.on('pageerror',error=>errors.push(error.message));
     await page.goto(origin+'/tonedef/',{waitUntil:'networkidle'});await page.waitForSelector('.fret');
-    await visualPracticeChecks(page,{touch,output,label});
+    try { await visualPracticeChecks(page,{touch,output,label}); }
+    catch(error) { await page.screenshot({path:path.join(output,label+'-failure.png'),fullPage:true});throw error; }
     assert.deepEqual(errors,[],`${label}: browser errors`);
     report.interactions.push({viewport:label,checks:['three membership sizes and current step','outside-key pattern shape','recall wrong/correct/keyboard/hidden hints','melody register and project preservation','value drag preview/commit/Undo/Escape','whole random-bound drag/crossing/cancel','whole fret-window drag/Home/End/Undo','left-handed direction/persistence',...(touch?['native touch movement and cancellation']:[])]});
     console.log(`PASS ${label}`);await context.close();

@@ -72,6 +72,7 @@ export async function visualPracticeChecks(page,{touch,output,label}) {
   await page.locator('#recall-hear').click();
   assert.deepEqual(await saved(),original,'Exploration, guessing and reference audio leave the project unchanged');
   await page.locator('#recall > summary').click();
+  await page.locator('.simple-panel .timeline').waitFor({state:'visible'});
   assert.equal(await page.locator('.simple-panel .timeline').isVisible(),true);
   assert.match(await page.locator('.fret').first().getAttribute('aria-label'),/^E4,/);
 
