@@ -243,6 +243,10 @@ function mountSimple(grid) {
   board.querySelectorAll('[data-help]').forEach(node => node.removeAttribute('data-help'));
   board.querySelectorAll('.note-disc small').forEach(node=>node.remove());
   if (mode === 'learn') { const strip = document.querySelector('.learning-strip'); if (strip) board.insertBefore(strip,board.querySelector('.board-scroll')); }
+  const legend = board.querySelector('.note-state-legend');
+  if (legend) board.insertBefore(legend,board.querySelector('.board-scroll'));
+  const recall = board.querySelector('.recall'), exercise = document.querySelector('.exercise-panel');
+  if (recall) exercise.insertBefore(recall,mode === 'learn' ? exercise.querySelector('#learn-practice') : exercise.querySelector('#practice-info'));
   const output = board.querySelector('#expression-readout');
   if (output) { output.setAttribute('aria-live','polite'); toolbar.append(output); }
   board.querySelector('.fretboard-guide')?.remove();

@@ -8,11 +8,17 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 
 ## Start here
 
+**Read the neck at a glance:** small neutral discs are outside the key; colored rings are in the key; filled squares are positions used in your pattern. The white outline follows the current step. A dashed square keeps an outside-key pattern note distinct. Every position remains playable.
+
 **Learn** opens first. Choose Notes, Steps, Scales or Modes, then tap a note to hear it and find it on the neck. Only the choices needed by that lesson appear. **Hear scale** plays the displayed notes without changing your pattern. Modes keep the same home note and name the notes that change from major. Definitions stay under Info.
 
 **Practice** keeps the choices, fretboard and pattern together. Choose a pattern type, home note and scale, length, strings, and notes per string, then **New pattern**. Check **Random** only beside the choices you want to vary: its fixed control dims and any random limits appear beside it. String buttons remain the available pool. **Play pattern** follows the cards; **Keep step** protects a selected note, chord or rest. Undo restores the previous pattern and all its settings.
 
 **More choices** holds recipes, note order, rhythm and per-string fret ranges. Its summary names active rules; controls appear only for the pattern type and rhythm that use them. A group of two plays two sounding notes per chosen string, from low to high on a standard guitar, then cycles; the last group may be shorter. **Any** allows free string changes. Optional rests count toward pattern length but do not consume string-group slots. Grouping supports 1–16 notes per string. Chords play strings together; a saved incompatible grouping rule gets an explicit correction, with Undo.
+
+**Drag to shape practice:** slide length or speed, drag a range endpoint to resize it, or move its middle grip to shift both ends together. Exact numbers and keyboard arrows remain available. Escape cancels a drag; one Undo reverses it. Random bounds and per-string fret ranges share these controls.
+
+**Challenge yourself** adds optional recall in Learn and Practice. Find notes, work out named intervals, or recall a single-note melody in order. Hide hints to remove the answers from the neck and timeline, hear a target when needed, and get feedback after each attempt. Notes and intervals accept any octave; melody recall requires the exact pitch. Round results stay in the current session and never change your music. [Behavior and rebuild details](docs/VISUAL-PRACTICE.md).
 
 String **1** is the top string on the displayed neck (high E on a standard guitar); **6** is low E. The low-to-high practice row therefore reads **6 → 1**. This display correction leaves physical IDs, tuning, saved notes and fret ranges unchanged.
 

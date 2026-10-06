@@ -17,7 +17,7 @@ export function slidePitch(points, x) {
   return sorted.at(-1).midi;
 }
 
-export function installExpression({ settings, tool, blocked, describe, error, hideHelp, onPitch = () => {}, beforeStart = () => {}, simple = () => false }) {
+export function installExpression({ settings, tool, blocked, describe, error, hideHelp, onPitch = () => {}, onAttack = () => {}, beforeStart = () => {}, simple = () => false }) {
   const player = new Player();
   let active = null, suppressed = null, limitTimer;
   const output = () => document.querySelector('#expression-readout');
@@ -55,6 +55,7 @@ export function installExpression({ settings, tool, blocked, describe, error, hi
     });
     const base = midiOf({ stringId, fret: Number(fret) }, s);
     const g = active = { button, pointer, x, y, points, base, pitch: base, mode: '', keyboard, voice: null };
+    onAttack(base);
     hideHelp();
     document.querySelector('#fretboard')?.classList.add('expressing');
     show(g);

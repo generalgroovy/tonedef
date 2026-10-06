@@ -1,6 +1,7 @@
 // Real ES modules, storage, workers and Web Audio served over local HTTP.
 // Optional dev tooling: playwright@1.57.0; no application dependencies added.
 import assert from 'node:assert/strict';
+import {visualPracticeChecks} from './visual-practice-checks.mjs';
 import { createServer } from 'node:http';
 import { mkdir, readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
@@ -647,6 +648,16 @@ async function interact(page,label,touch) {
   report.interactions.push({viewport:label,checks:['edit/undo','fret keyboard','signed octave/ratio','From/To comparator and keyboard swap','non-mutating views','hover/focus/tap help + Escape','timeline','play/stop with sounding chord reference','theory tabs','Projects/practice-card download','every schema control/random flag once','practice-range numeric/keyboard/drag/cancel/undo/persistence','generation worker/melody contour/persistence','12 strings/36 frets/re-entrant tuning','empty/rest']});
 }
 try {
+  for(const [width,height,touch] of [[1280,720,false],[390,844,true]]) {
+    const context=await browser.newContext({viewport:{width,height},hasTouch:touch,deviceScaleFactor:1,reducedMotion:'reduce'});
+    const page=await context.newPage(),errors=[],label=`${width}x${height}-visual-practice`;
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(origin+'/tonedef/',{waitUntil:'networkidle'});await page.waitForSelector('.fret');
+    await visualPracticeChecks(page,{touch,output,label});
+    assert.deepEqual(errors,[],`${label}: browser errors`);
+    report.interactions.push({viewport:label,checks:['three membership sizes and current step','outside-key pattern shape','recall wrong/correct/keyboard/hidden hints','melody register and project preservation','value drag preview/commit/Undo/Escape','whole random-bound drag/crossing/cancel','whole fret-window drag/Home/End/Undo','left-handed direction/persistence',...(touch?['native touch movement and cancellation']:[])]});
+    console.log(`PASS ${label}`);await context.close();
+  }
   for(const [width,height,touch] of [[1366,768,false],[1280,720,false],[390,844,true],[320,800,true]]) {
     const context=await browser.newContext({viewport:{width,height},hasTouch:touch,deviceScaleFactor:1,reducedMotion:'reduce'});
     const page=await context.newPage(),errors=[];

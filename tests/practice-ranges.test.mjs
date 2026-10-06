@@ -75,6 +75,6 @@ test('direct manipulation clamps physical coordinates and preserves handedness, 
   assert.deepEqual(changedRange({ min: 2, max: 8 }, 'min', 8), { min: 8, max: 8 });
   for (const value of [-1, 37, NaN, 2.5, 9]) assert.throws(() => changedRange({ min: 2, max: 8 }, 'min', value));
   const html = practiceRangesView(defaultProject().settings);
-  assert.equal((html.match(/role="slider"/g) || []).length, 12);
+  assert.equal((html.match(/role="slider"/g) || []).length, 18); // Two ends plus a movable window per string.
   assert.equal((html.match(/type="number"/g) || []).length, 12);
 });

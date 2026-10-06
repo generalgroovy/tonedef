@@ -1,5 +1,7 @@
 # Rebuild ToneDef from these documents
 
+Apply [Visual practice 1.10](VISUAL-PRACTICE.md) for the current note hierarchy, draggable values and whole ranges, and optional recall exercises. It extends the 1.9 foundation below without changing the project schema or generation rules.
+
 Apply [Exercise workspace 1.9](EXERCISE-WORKSPACE.md) first for the current presentation, isolated lesson previews, conventional display numbering, conditional Practice controls, sequence/rhythm schema, recipes and complete-path generation. It supersedes older fixed/default-layout descriptions below; the prior musical contracts still apply unless explicitly updated.
 
 For melodic contour generation, backward-compatible imports and Markdown practice
