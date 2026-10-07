@@ -14,6 +14,10 @@ export async function learningPathChecks(page,{touch,label,output}) {
   });
   await page.reload();await page.waitForSelector('.fret');
   const original=await saved();
+  const stacked=await page.evaluate(()=>matchMedia('(max-width: 1100px), (max-height: 700px)').matches);
+  assert.equal(await page.locator('#learning-feedback').evaluate(n=>n.parentElement.classList.contains('fretboard-panel')),stacked,'The single feedback card follows the stacked layout');
+  assert.equal(await page.locator('#learning-feedback').count(),1);
+  if(stacked)await tap('.learning-jump');
   await tap('[data-pos="s1:3"]');
   assert.match(await page.locator('#learning-feedback').innerText(),/C3[\s\S]*C is home/);
   await tap('#learn-next');
@@ -37,6 +41,7 @@ export async function learningPathChecks(page,{touch,label,output}) {
   await page.screenshot({path:path.join(output,`${label}-interval-feedback.png`),fullPage:true});
 
   await tap('#learn-topic-chords');
+  await page.locator('#learn-chord-root').focus();
   await page.locator('#learn-chord-root').selectOption('6');
   assert.equal(await page.evaluate(()=>document.activeElement.id),'learn-chord-root');
   assert.match(await page.locator('.learning-chord').innerText(),/Bdim · diminished[\s\S]*0–3–6/);
@@ -85,6 +90,7 @@ export async function learningPathChecks(page,{touch,label,output}) {
   assert.equal(await page.locator('#coach-faster').innerText(),'Try 65 bpm →');
   assert.deepEqual(await saved(),pattern,'Self-assessment does not mutate project or Undo history');
   await tap('#coach-faster');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'coach-clean','Focus recovers when the speed-increase control disappears');
   assert.equal((await saved()).settings.tempo,65);
   assert.equal(await page.locator('.coach-progress .complete').count(),0);
   assert.match(await page.locator('.practice-aim').innerText(),/steady pulse/);

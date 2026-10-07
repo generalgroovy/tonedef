@@ -7,6 +7,15 @@ let mode = 'learn', focused = null;
 try { const saved = localStorage.getItem('tonedef.workspace.mode.v3'); if (['learn','practice','overview','custom'].includes(saved)) mode = saved; } catch {}
 export const workspaceMode = () => mode;
 export const simpleWorkspace = () => ['learn','practice'].includes(mode);
+const stackedLearning = window.matchMedia('(max-width: 1100px), (max-height: 700px)');
+function placeLearningFeedback() {
+  const feedback = document.getElementById('learning-feedback');
+  const board = document.querySelector('.fretboard-panel'), exercise = document.querySelector('.exercise-panel');
+  if (!feedback || !board || !exercise) return;
+  if (stackedLearning.matches) board.insertBefore(feedback, board.querySelector('.learning-strip') ?? board.querySelector('.board-scroll'));
+  else exercise.insertBefore(feedback, exercise.querySelector('#learning-info'));
+}
+stackedLearning.addEventListener('change',placeLearningFeedback);
 let gesture = null;
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(layout)); }
@@ -243,6 +252,7 @@ function mountSimple(grid) {
   board.querySelectorAll('[data-help]').forEach(node => node.removeAttribute('data-help'));
   board.querySelectorAll('.note-disc small').forEach(node=>node.remove());
   if (mode === 'learn') { const strip = document.querySelector('.learning-strip'); if (strip) board.insertBefore(strip,board.querySelector('.board-scroll')); }
+  placeLearningFeedback();
   const legend = board.querySelector('.note-state-legend');
   if (legend) board.insertBefore(legend,board.querySelector('.board-scroll'));
   const recall = board.querySelector('.recall'), exercise = document.querySelector('.exercise-panel');

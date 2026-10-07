@@ -305,6 +305,10 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) input[type="checkb
 .learning-pair-actions,.learning-next { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .learning-pair-actions button { flex: 1; }
 .learning-next button { width: 100%; }
+.learning-jump { display: none; }
+@media (max-width: 1100px), (max-height: 700px) {
+  .learning-jump { display: flex; align-items: center; min-height: 44px; margin: 6px 0; color: var(--accent); text-decoration: underline; }
+}
 .learning-chord-root { display: flex; flex-direction: column; gap: 5px; }
 .learning-chord { line-height: 1.5; }
 .learning-chord strong { font-size: 1.15rem; }
