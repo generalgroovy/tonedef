@@ -22,20 +22,20 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
   assert.equal(await page.locator('.outside-passage').count(),2);
   assert.equal(await page.locator('#playButton').innerText(),'▶ Play passage');
   assert.deepEqual(await saved(),original,'Choosing a passage never edits saved music');
-  await page.locator('#passage-band').press('ArrowRight');
+  await page.locator('#passage-range-band').press('ArrowRight');
   assert.equal(await page.locator('#passage-min').inputValue(),'3');assert.equal(await page.locator('#passage-max').inputValue(),'4');
-  await page.locator('#passage-band').press('Home');
+  await page.locator('#passage-range-band').press('Home');
   assert.equal(await page.locator('#passage-min').inputValue(),'1');assert.equal(await page.locator('#passage-max').inputValue(),'2');
   // The existing range gesture implementation is also exercised through this new owner.
-  await page.locator('#passage-band').scrollIntoViewIfNeeded();
-  const band=await page.locator('#passage-band').boundingBox(),track=await page.locator('[data-window="passage"]').boundingBox();
+  await page.locator('#passage-range-band').scrollIntoViewIfNeeded();
+  const band=await page.locator('#passage-range-band').boundingBox(),track=await page.locator('[data-window="passage"]').boundingBox();
   await page.mouse.move(band.x+band.width/2,band.y+band.height/2);await page.mouse.down();
   await page.mouse.move(band.x+band.width/2+track.width/3,band.y+band.height/2,{steps:6});
   await page.keyboard.press('Escape');await page.mouse.up();
   assert.equal(await page.locator('#passage-min').inputValue(),'1','Escape cancels the whole-passage drag');
   if(touch) {
     const client=await page.context().newCDPSession(page);
-    const b=await page.locator('#passage-band').boundingBox(),t=await page.locator('[data-window="passage"]').boundingBox();
+    const b=await page.locator('#passage-range-band').boundingBox(),t=await page.locator('[data-window="passage"]').boundingBox();
     const x=b.x+b.width/2,y=b.y+b.height/2;
     await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
     await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+t.width/3,y}]});
@@ -43,7 +43,7 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
     await client.detach();
     assert.equal(await page.locator('#passage-min').inputValue(),'2','Native touch moves the whole passage');
     assert.equal(await page.locator('#passage-max').inputValue(),'3');
-  } else {await page.locator('#passage-band').press('ArrowRight');}
+  } else {await page.locator('#passage-range-band').press('ArrowRight');}
   await tap('#practice-response');
   await tap('#playButton');
   await page.waitForFunction(()=>document.querySelector('#practice-stage')?.dataset.phase==='count-in');
