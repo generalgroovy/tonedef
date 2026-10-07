@@ -44,7 +44,15 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
     assert.equal(await page.locator('#passage-min').inputValue(),'2','Native touch moves the whole passage');
     assert.equal(await page.locator('#passage-max').inputValue(),'3');
   } else {await page.locator('#passage-range-band').press('ArrowRight');}
+  const inputTrace=[];
+  await page.exposeFunction('recordFocusedInput',entry=>inputTrace.push(entry));
+  await page.evaluate(()=>{
+    for(const type of ['pointerdown','pointerup','touchend','click'])document.addEventListener(type,event=>{
+      window.recordFocusedInput({type,id:event.target.id,mode:document.querySelector('#practice-response')?.getAttribute('aria-pressed')});
+    },true);
+  });
   await tap('#practice-response');
+  assert.equal(await page.locator('#practice-response').getAttribute('aria-pressed'),'true',JSON.stringify(inputTrace));
   await tap('#playButton');
   await page.waitForFunction(()=>document.querySelector('#practice-stage')?.dataset.phase==='count-in');
   assert.equal(await page.locator('#practice-phase').innerText(),'Get ready');
