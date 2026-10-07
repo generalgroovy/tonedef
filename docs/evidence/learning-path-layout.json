@@ -1,0 +1,1052 @@
+{
+  "sourceRevision": "a08f9603910375f8dbeca1ee37cee4ecc8ddb2d4",
+  "baselineRevision": "a56e15387d75e1ffa943fa9fc67efd8cfa91eab3",
+  "viewports": [
+    {
+      "width": 2560,
+      "touch": false,
+      "after": {
+        "pageHeight": 1440,
+        "scrollWidth": 2560,
+        "viewportWidth": 2560,
+        "fontSize": "16px",
+        "header": {
+          "width": 2560,
+          "height": 42,
+          "top": 0
+        },
+        "board": {
+          "width": 2037,
+          "height": 351,
+          "top": 132
+        },
+        "fret": {
+          "width": 152,
+          "height": 44,
+          "top": 158
+        },
+        "timeline": {
+          "width": 2037,
+          "height": 66,
+          "top": 488
+        },
+        "inspector": {
+          "width": 492,
+          "height": 256,
+          "top": 622
+        },
+        "math": {
+          "width": 492,
+          "height": 145,
+          "top": 622
+        },
+        "wheel": {
+          "width": 492,
+          "height": 246,
+          "top": 622
+        }
+      }
+    },
+    {
+      "width": 1920,
+      "touch": false,
+      "after": {
+        "pageHeight": 1080,
+        "scrollWidth": 1920,
+        "viewportWidth": 1920,
+        "fontSize": "16px",
+        "header": {
+          "width": 1920,
+          "height": 42,
+          "top": 0
+        },
+        "board": {
+          "width": 1520,
+          "height": 351,
+          "top": 132
+        },
+        "fret": {
+          "width": 112,
+          "height": 44,
+          "top": 158
+        },
+        "timeline": {
+          "width": 1520,
+          "height": 92,
+          "top": 488
+        },
+        "inspector": {
+          "width": 363,
+          "height": 256,
+          "top": 622
+        },
+        "math": {
+          "width": 363,
+          "height": 145,
+          "top": 622
+        },
+        "wheel": {
+          "width": 363,
+          "height": 246,
+          "top": 622
+        }
+      }
+    },
+    {
+      "width": 1440,
+      "touch": false,
+      "after": {
+        "pageHeight": 1000,
+        "scrollWidth": 1440,
+        "viewportWidth": 1440,
+        "fontSize": "16px",
+        "header": {
+          "width": 1440,
+          "height": 42,
+          "top": 0
+        },
+        "board": {
+          "width": 1132,
+          "height": 351,
+          "top": 132
+        },
+        "fret": {
+          "width": 82,
+          "height": 44,
+          "top": 158
+        },
+        "timeline": {
+          "width": 1132,
+          "height": 92,
+          "top": 488
+        },
+        "inspector": {
+          "width": 266,
+          "height": 256,
+          "top": 622
+        },
+        "math": {
+          "width": 266,
+          "height": 145,
+          "top": 622
+        },
+        "wheel": {
+          "width": 266,
+          "height": 246,
+          "top": 622
+        }
+      },
+      "before": {
+        "pageHeight": 1513,
+        "scrollWidth": 1440,
+        "viewportWidth": 1440,
+        "fontSize": "16px",
+        "header": {
+          "width": 1440,
+          "height": 65,
+          "top": 0
+        },
+        "board": {
+          "width": 1078,
+          "height": 500,
+          "top": 123
+        },
+        "fret": {
+          "width": 77,
+          "height": 46,
+          "top": 257
+        },
+        "timeline": {
+          "width": 1078,
+          "height": 258,
+          "top": 633
+        },
+        "inspector": {
+          "width": 320,
+          "height": 636,
+          "top": 123
+        },
+        "math": null,
+        "wheel": {
+          "width": 320,
+          "height": 437,
+          "top": 769
+        }
+      },
+      "pageHeightReductionPercent": 34
+    },
+    {
+      "width": 1440,
+      "touch": false,
+      "after": {
+        "pageHeight": 900,
+        "scrollWidth": 1440,
+        "viewportWidth": 1440,
+        "fontSize": "16px",
+        "header": {
+          "width": 1440,
+          "height": 42,
+          "top": 0
+        },
+        "board": {
+          "width": 1132,
+          "height": 351,
+          "top": 132
+        },
+        "fret": {
+          "width": 82,
+          "height": 44,
+          "top": 158
+        },
+        "timeline": {
+          "width": 1132,
+          "height": 92,
+          "top": 488
+        },
+        "inspector": {
+          "width": 266,
+          "height": 256,
+          "top": 622
+        },
+        "math": {
+          "width": 266,
+          "height": 145,
+          "top": 622
+        },
+        "wheel": {
+          "width": 266,
+          "height": 246,
+          "top": 622
+        }
+      },
+      "before": {
+        "pageHeight": 1513,
+        "scrollWidth": 1440,
+        "viewportWidth": 1440,
+        "fontSize": "16px",
+        "header": {
+          "width": 1440,
+          "height": 65,
+          "top": 0
+        },
+        "board": {
+          "width": 1078,
+          "height": 500,
+          "top": 123
+        },
+        "fret": {
+          "width": 77,
+          "height": 46,
+          "top": 257
+        },
+        "timeline": {
+          "width": 1078,
+          "height": 258,
+          "top": 633
+        },
+        "inspector": {
+          "width": 320,
+          "height": 636,
+          "top": 123
+        },
+        "math": null,
+        "wheel": {
+          "width": 320,
+          "height": 437,
+          "top": 769
+        }
+      },
+      "pageHeightReductionPercent": 41
+    },
+    {
+      "width": 1366,
+      "touch": false,
+      "after": {
+        "pageHeight": 768,
+        "scrollWidth": 1366,
+        "viewportWidth": 1366,
+        "fontSize": "16px",
+        "header": {
+          "width": 1366,
+          "height": 42,
+          "top": 0
+        },
+        "board": {
+          "width": 1067,
+          "height": 351,
+          "top": 132
+        },
+        "fret": {
+          "width": 77,
+          "height": 44,
+          "top": 158
+        },
+        "timeline": {
+          "width": 1067,
+          "height": 92,
+          "top": 488
+        },
+        "inspector": {
+          "width": 250,
+          "height": 256,
+          "top": 622
+        },
+        "math": {
+          "width": 250,
+          "height": 145,
+          "top": 622
+        },
+        "wheel": {
+          "width": 250,
+          "height": 246,
+          "top": 622
+        }
+      }
+    },
+    {
+      "width": 1280,
+      "touch": false,
+      "after": {
+        "pageHeight": 900,
+        "scrollWidth": 1280,
+        "viewportWidth": 1280,
+        "fontSize": "16px",
+        "header": {
+          "width": 1280,
+          "height": 42,
+          "top": 0
+        },
+        "board": {
+          "width": 981,
+          "height": 351,
+          "top": 132
+        },
+        "fret": {
+          "width": 70,
+          "height": 44,
+          "top": 158
+        },
+        "timeline": {
+          "width": 981,
+          "height": 92,
+          "top": 488
+        },
+        "inspector": {
+          "width": 228,
+          "height": 256,
+          "top": 622
+        },
+        "math": {
+          "width": 228,
+          "height": 160,
+          "top": 622
+        },
+        "wheel": {
+          "width": 228,
+          "height": 273,
+          "top": 622
+        }
+      }
+    },
+    {
+      "width": 1100,
+      "touch": false,
+      "after": {
+        "pageHeight": 900,
+        "scrollWidth": 1100,
+        "viewportWidth": 1100,
+        "fontSize": "16px",
+        "header": {
+          "width": 1100,
+          "height": 42,
+          "top": 0
+        },
+        "board": {
+          "width": 801,
+          "height": 351,
+          "top": 132
+        },
+        "fret": {
+          "width": 57,
+          "height": 44,
+          "top": 158
+        },
+        "timeline": {
+          "width": 801,
+          "height": 124,
+          "top": 488
+        },
+        "inspector": {
+          "width": 183,
+          "height": 267,
+          "top": 622
+        },
+        "math": {
+          "width": 183,
+          "height": 179,
+          "top": 622
+        },
+        "wheel": {
+          "width": 183,
+          "height": 292,
+          "top": 622
+        }
+      }
+    },
+    {
+      "width": 1024,
+      "touch": false,
+      "after": {
+        "pageHeight": 2945,
+        "scrollWidth": 1024,
+        "viewportWidth": 1024,
+        "fontSize": "16px",
+        "header": {
+          "width": 1024,
+          "height": 43,
+          "top": 0
+        },
+        "board": {
+          "width": 983,
+          "height": 411,
+          "top": 750
+        },
+        "fret": {
+          "width": 71,
+          "height": 52,
+          "top": 784
+        },
+        "timeline": {
+          "width": 983,
+          "height": 114,
+          "top": 1242
+        },
+        "inspector": {
+          "width": 983,
+          "height": 256,
+          "top": 1396
+        },
+        "math": {
+          "width": 983,
+          "height": 195,
+          "top": 1692
+        },
+        "wheel": {
+          "width": 983,
+          "height": 477,
+          "top": 1926
+        }
+      }
+    },
+    {
+      "width": 850,
+      "touch": false,
+      "after": {
+        "pageHeight": 3015,
+        "scrollWidth": 850,
+        "viewportWidth": 850,
+        "fontSize": "16px",
+        "header": {
+          "width": 850,
+          "height": 75,
+          "top": 0
+        },
+        "board": {
+          "width": 809,
+          "height": 411,
+          "top": 820
+        },
+        "fret": {
+          "width": 57,
+          "height": 52,
+          "top": 854
+        },
+        "timeline": {
+          "width": 809,
+          "height": 114,
+          "top": 1312
+        },
+        "inspector": {
+          "width": 809,
+          "height": 256,
+          "top": 1466
+        },
+        "math": {
+          "width": 809,
+          "height": 195,
+          "top": 1762
+        },
+        "wheel": {
+          "width": 809,
+          "height": 477,
+          "top": 1996
+        }
+      }
+    },
+    {
+      "width": 768,
+      "touch": true,
+      "after": {
+        "pageHeight": 3360,
+        "scrollWidth": 768,
+        "viewportWidth": 768,
+        "fontSize": "16px",
+        "header": {
+          "width": 768,
+          "height": 95,
+          "top": 0
+        },
+        "board": {
+          "width": 727,
+          "height": 411,
+          "top": 986
+        },
+        "fret": {
+          "width": 51,
+          "height": 52,
+          "top": 1020
+        },
+        "timeline": {
+          "width": 727,
+          "height": 126,
+          "top": 1478
+        },
+        "inspector": {
+          "width": 727,
+          "height": 341,
+          "top": 1644
+        },
+        "math": {
+          "width": 727,
+          "height": 215,
+          "top": 2025
+        },
+        "wheel": {
+          "width": 727,
+          "height": 513,
+          "top": 2279
+        }
+      }
+    },
+    {
+      "width": 650,
+      "touch": false,
+      "after": {
+        "pageHeight": 3208,
+        "scrollWidth": 650,
+        "viewportWidth": 650,
+        "fontSize": "16px",
+        "header": {
+          "width": 650,
+          "height": 111,
+          "top": 0
+        },
+        "board": {
+          "width": 621,
+          "height": 458,
+          "top": 934
+        },
+        "fret": {
+          "width": 46,
+          "height": 52,
+          "top": 968
+        },
+        "timeline": {
+          "width": 621,
+          "height": 146,
+          "top": 1473
+        },
+        "inspector": {
+          "width": 621,
+          "height": 256,
+          "top": 1659
+        },
+        "math": {
+          "width": 621,
+          "height": 195,
+          "top": 1955
+        },
+        "wheel": {
+          "width": 621,
+          "height": 477,
+          "top": 2189
+        }
+      }
+    },
+    {
+      "width": 570,
+      "touch": true,
+      "after": {
+        "pageHeight": 3551,
+        "scrollWidth": 570,
+        "viewportWidth": 570,
+        "fontSize": "16px",
+        "header": {
+          "width": 570,
+          "height": 139,
+          "top": 0
+        },
+        "board": {
+          "width": 541,
+          "height": 466,
+          "top": 1078
+        },
+        "fret": {
+          "width": 50,
+          "height": 52,
+          "top": 1112
+        },
+        "timeline": {
+          "width": 541,
+          "height": 170,
+          "top": 1625
+        },
+        "inspector": {
+          "width": 541,
+          "height": 341,
+          "top": 1835
+        },
+        "math": {
+          "width": 541,
+          "height": 215,
+          "top": 2216
+        },
+        "wheel": {
+          "width": 541,
+          "height": 513,
+          "top": 2470
+        }
+      }
+    },
+    {
+      "width": 390,
+      "touch": true,
+      "after": {
+        "pageHeight": 3750,
+        "scrollWidth": 390,
+        "viewportWidth": 390,
+        "fontSize": "16px",
+        "header": {
+          "width": 390,
+          "height": 182,
+          "top": 0
+        },
+        "board": {
+          "width": 361,
+          "height": 490,
+          "top": 1209
+        },
+        "fret": {
+          "width": 50,
+          "height": 52,
+          "top": 1243
+        },
+        "timeline": {
+          "width": 361,
+          "height": 214,
+          "top": 1780
+        },
+        "inspector": {
+          "width": 361,
+          "height": 341,
+          "top": 2033
+        },
+        "math": {
+          "width": 361,
+          "height": 215,
+          "top": 2414
+        },
+        "wheel": {
+          "width": 361,
+          "height": 513,
+          "top": 2669
+        }
+      },
+      "before": {
+        "pageHeight": 3412,
+        "scrollWidth": 390,
+        "viewportWidth": 390,
+        "fontSize": "16px",
+        "header": {
+          "width": 390,
+          "height": 106,
+          "top": 0
+        },
+        "board": {
+          "width": 374,
+          "height": 614,
+          "top": 227
+        },
+        "fret": {
+          "width": 50,
+          "height": 50,
+          "top": 437
+        },
+        "timeline": {
+          "width": 374,
+          "height": 442,
+          "top": 849
+        },
+        "inspector": {
+          "width": 374,
+          "height": 695,
+          "top": 1885
+        },
+        "math": null,
+        "wheel": {
+          "width": 374,
+          "height": 462,
+          "top": 2588
+        }
+      },
+      "pageHeightReductionPercent": -10
+    },
+    {
+      "width": 360,
+      "touch": true,
+      "after": {
+        "pageHeight": 3750,
+        "scrollWidth": 360,
+        "viewportWidth": 360,
+        "fontSize": "16px",
+        "header": {
+          "width": 360,
+          "height": 182,
+          "top": 0
+        },
+        "board": {
+          "width": 331,
+          "height": 490,
+          "top": 1209
+        },
+        "fret": {
+          "width": 50,
+          "height": 52,
+          "top": 1243
+        },
+        "timeline": {
+          "width": 331,
+          "height": 214,
+          "top": 1780
+        },
+        "inspector": {
+          "width": 331,
+          "height": 341,
+          "top": 2033
+        },
+        "math": {
+          "width": 331,
+          "height": 215,
+          "top": 2414
+        },
+        "wheel": {
+          "width": 331,
+          "height": 513,
+          "top": 2669
+        }
+      }
+    },
+    {
+      "width": 320,
+      "touch": true,
+      "after": {
+        "pageHeight": 3861,
+        "scrollWidth": 320,
+        "viewportWidth": 320,
+        "fontSize": "16px",
+        "header": {
+          "width": 320,
+          "height": 182,
+          "top": 0
+        },
+        "board": {
+          "width": 291,
+          "height": 490,
+          "top": 1251
+        },
+        "fret": {
+          "width": 50,
+          "height": 52,
+          "top": 1285
+        },
+        "timeline": {
+          "width": 291,
+          "height": 258,
+          "top": 1862
+        },
+        "inspector": {
+          "width": 291,
+          "height": 341,
+          "top": 2159
+        },
+        "math": {
+          "width": 291,
+          "height": 215,
+          "top": 2540
+        },
+        "wheel": {
+          "width": 291,
+          "height": 498,
+          "top": 2795
+        }
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "viewport": "1280x720-visual-practice",
+      "checks": [
+        "three membership sizes and current step",
+        "outside-key pattern shape",
+        "recall wrong/correct/keyboard/hidden hints",
+        "melody register and project preservation",
+        "value drag preview/commit/Undo/Escape",
+        "whole random-bound drag/crossing/cancel",
+        "whole fret-window drag/Home/End/Undo",
+        "left-handed direction/persistence"
+      ]
+    },
+    {
+      "viewport": "390x844-visual-practice",
+      "checks": [
+        "three membership sizes and current step",
+        "outside-key pattern shape",
+        "recall wrong/correct/keyboard/hidden hints",
+        "melody register and project preservation",
+        "value drag preview/commit/Undo/Escape",
+        "whole random-bound drag/crossing/cancel",
+        "whole fret-window drag/Home/End/Undo",
+        "left-handed direction/persistence",
+        "native touch movement and cancellation"
+      ]
+    },
+    {
+      "viewport": "1366x768-learner",
+      "checks": [
+        "fresh Learn default",
+        "topic-first controls and contextual scale choice",
+        "no advanced reference clutter",
+        "44px learning/practice controls",
+        "Notes/Steps/Scales/Modes navigation",
+        "transient lesson play/stop/restart/Escape/navigation cancellation",
+        "seven parallel-mode masks",
+        "synchronized strip/neck preview without mutation",
+        "learner audition independent of Studio preference",
+        "single pattern Play/Stop control",
+        "conventional string numbers",
+        "explicit randomization opt-ins with disabled fixed fields and inline limits",
+        "fixed key/count/string pool",
+        "full notes-per-string grouping range",
+        "explicit chord/grouping correction and Undo",
+        "kept-note generation and persistent atomic failure feedback",
+        "new-pattern seed advance",
+        "one-step complete Undo",
+        "bounded random count and strings",
+        "instrument protection",
+        "view/configuration persistence",
+        "keyboard focus"
+      ]
+    },
+    {
+      "viewport": "1366x768-learner",
+      "checks": [
+        "six-lesson path and real-note explanation",
+        "signed and compound interval pairs with independent audio",
+        "all-degree chord lesson and unsupported-scale recovery",
+        "ear-only challenge hides visual and accessible answers",
+        "goal setup preserves music",
+        "three-pass self-assessment, speed change, Undo and identity reset",
+        "advanced seventh-chord and finger-picking practice"
+      ]
+    },
+    {
+      "viewport": "1280x720-learner",
+      "checks": [
+        "fresh Learn default",
+        "topic-first controls and contextual scale choice",
+        "no advanced reference clutter",
+        "44px learning/practice controls",
+        "Notes/Steps/Scales/Modes navigation",
+        "transient lesson play/stop/restart/Escape/navigation cancellation",
+        "seven parallel-mode masks",
+        "synchronized strip/neck preview without mutation",
+        "learner audition independent of Studio preference",
+        "single pattern Play/Stop control",
+        "conventional string numbers",
+        "explicit randomization opt-ins with disabled fixed fields and inline limits",
+        "fixed key/count/string pool",
+        "full notes-per-string grouping range",
+        "explicit chord/grouping correction and Undo",
+        "kept-note generation and persistent atomic failure feedback",
+        "new-pattern seed advance",
+        "one-step complete Undo",
+        "bounded random count and strings",
+        "instrument protection",
+        "view/configuration persistence",
+        "keyboard focus"
+      ]
+    },
+    {
+      "viewport": "1280x720-learner",
+      "checks": [
+        "six-lesson path and real-note explanation",
+        "signed and compound interval pairs with independent audio",
+        "all-degree chord lesson and unsupported-scale recovery",
+        "ear-only challenge hides visual and accessible answers",
+        "goal setup preserves music",
+        "three-pass self-assessment, speed change, Undo and identity reset",
+        "advanced seventh-chord and finger-picking practice"
+      ]
+    },
+    {
+      "viewport": "390x844-learner-touch",
+      "checks": [
+        "fresh Learn default",
+        "topic-first controls and contextual scale choice",
+        "no advanced reference clutter",
+        "44px learning/practice controls",
+        "Notes/Steps/Scales/Modes navigation",
+        "transient lesson play/stop/restart/Escape/navigation cancellation",
+        "seven parallel-mode masks",
+        "synchronized strip/neck preview without mutation",
+        "learner audition independent of Studio preference",
+        "single pattern Play/Stop control",
+        "conventional string numbers",
+        "explicit randomization opt-ins with disabled fixed fields and inline limits",
+        "fixed key/count/string pool",
+        "full notes-per-string grouping range",
+        "explicit chord/grouping correction and Undo",
+        "kept-note generation and persistent atomic failure feedback",
+        "new-pattern seed advance",
+        "one-step complete Undo",
+        "bounded random count and strings",
+        "instrument protection",
+        "view/configuration persistence",
+        "keyboard focus"
+      ]
+    },
+    {
+      "viewport": "390x844-learner-touch",
+      "checks": [
+        "six-lesson path and real-note explanation",
+        "signed and compound interval pairs with independent audio",
+        "all-degree chord lesson and unsupported-scale recovery",
+        "ear-only challenge hides visual and accessible answers",
+        "goal setup preserves music",
+        "three-pass self-assessment, speed change, Undo and identity reset",
+        "advanced seventh-chord and finger-picking practice"
+      ]
+    },
+    {
+      "viewport": "320x800-learner-touch",
+      "checks": [
+        "fresh Learn default",
+        "topic-first controls and contextual scale choice",
+        "no advanced reference clutter",
+        "44px learning/practice controls",
+        "Notes/Steps/Scales/Modes navigation",
+        "transient lesson play/stop/restart/Escape/navigation cancellation",
+        "seven parallel-mode masks",
+        "synchronized strip/neck preview without mutation",
+        "learner audition independent of Studio preference",
+        "single pattern Play/Stop control",
+        "conventional string numbers",
+        "explicit randomization opt-ins with disabled fixed fields and inline limits",
+        "fixed key/count/string pool",
+        "full notes-per-string grouping range",
+        "explicit chord/grouping correction and Undo",
+        "kept-note generation and persistent atomic failure feedback",
+        "new-pattern seed advance",
+        "one-step complete Undo",
+        "bounded random count and strings",
+        "instrument protection",
+        "view/configuration persistence",
+        "keyboard focus"
+      ]
+    },
+    {
+      "viewport": "320x800-learner-touch",
+      "checks": [
+        "six-lesson path and real-note explanation",
+        "signed and compound interval pairs with independent audio",
+        "all-degree chord lesson and unsupported-scale recovery",
+        "ear-only challenge hides visual and accessible answers",
+        "goal setup preserves music",
+        "three-pass self-assessment, speed change, Undo and identity reset",
+        "advanced seventh-chord and finger-picking practice"
+      ]
+    },
+    {
+      "viewport": "1440x1000-desktop",
+      "checks": [
+        "edit/undo",
+        "fret keyboard",
+        "signed octave/ratio",
+        "From/To comparator and keyboard swap",
+        "non-mutating views",
+        "hover/focus/tap help + Escape",
+        "timeline",
+        "play/stop with sounding chord reference",
+        "theory tabs",
+        "Projects/practice-card download",
+        "every schema control/random flag once",
+        "practice-range numeric/keyboard/drag/cancel/undo/persistence",
+        "generation worker/melody contour/persistence",
+        "12 strings/36 frets/re-entrant tuning",
+        "empty/rest"
+      ]
+    },
+    {
+      "viewport": "1440x900-desktop",
+      "checks": [
+        "Overview all eight panels",
+        "recipe preserves existing music and instrument",
+        "sequence/rhythm field focus",
+        "per-string generation bounds",
+        "recipe generation worker",
+        "event lock",
+        "seed-only Variation",
+        "one-step Undo",
+        "play/stop",
+        "Overview Settings shortcut",
+        "expand/Escape without music changes"
+      ]
+    },
+    {
+      "viewport": "1366x768-desktop",
+      "checks": [
+        "Overview all eight panels",
+        "recipe preserves existing music and instrument",
+        "sequence/rhythm field focus",
+        "per-string generation bounds",
+        "recipe generation worker",
+        "event lock",
+        "seed-only Variation",
+        "one-step Undo",
+        "play/stop",
+        "Overview Settings shortcut",
+        "expand/Escape without music changes"
+      ]
+    },
+    {
+      "viewport": "390x844-touch",
+      "checks": [
+        "edit/undo",
+        "fret keyboard",
+        "signed octave/ratio",
+        "From/To comparator and keyboard swap",
+        "non-mutating views",
+        "hover/focus/tap help + Escape",
+        "timeline",
+        "play/stop with sounding chord reference",
+        "theory tabs",
+        "Projects/practice-card download",
+        "every schema control/random flag once",
+        "practice-range numeric/keyboard/drag/cancel/undo/persistence",
+        "generation worker/melody contour/persistence",
+        "12 strings/36 frets/re-entrant tuning",
+        "empty/rest"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,21 @@
 # Deployment and rollback
 
-## Release 1.10.0, verified 2026-10-06 UTC
+## Release 1.11.0, verified 2026-10-07 UTC
+
+The learning-path release is deployed to [ToneDef](https://generalgroovy.github.io/tonedef/) from runtime revision `a08f9603910375f8dbeca1ee37cee4ecc8ddb2d4`.
+
+- Six directly selectable lessons connect the notes played to explanations. Pair lessons name exact directional/compound intervals; Chords builds correctly spelled triads on every degree of supported seven-note scales. Stacked layouts move the single feedback card next to the fretboard and provide a direct jump.
+- Eight visible practice goals include first notes/pulse and seventh-chord changes, with practice cues and extensions. Optional self-assessment counts three clean passes before offering a 5 bpm increase; exact speed and Undo remain available. Ear matching plays an unnamed target with hints hidden. No instrument recording or automatic performance assessment is claimed.
+- **107 automated tests** passed, plus syntax and static-build checks. Triad tests cover all 12 roots and all degrees of every supported seven-note scale; session tests cover reset identity, tempo changes, self-reported streaks and actual-pattern timing.
+- [Candidate browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37640497136) and [main browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37641013187) passed. The 21 primary contexts include two visual-practice desktop/touch runs, four Learn/Practice runs with the new learning-path checks, and 15 Studio/Arrange layouts from 320 to 2560 pixels. Existing expressive audio, range controls, exact melody recall, constraints, locks, imports/exports and advanced inventory remain covered.
+- [Pages deployment](https://github.com/generalgroovy/tonedef/actions/runs/37641012691) succeeded. All **27 runtime files**, file list, source revision and build manifest matched committed bytes over certificate-validated HTTPS. Runtime SHA-256: `d5b09fc3f67b7eab79604e91cda45f17969dbf3a91ea6e726cbc957eaec2d4eb`.
+- Live browser smoke passed: six-topic navigation, C3→E3 major-third feedback, independent pair Play/Stop, B–D–F diminished-triad construction, ear matching with hidden/restored lesson and timeline answers, three self-reported practice passes, 92→97 bpm followed by Undo to92, and pattern Play/Stop with chord lines. The existing five-step pattern remained visible and unchanged. No browser warnings or errors were recorded. The old tab initially retained cached1.10 modules; reloading after the `max-age=600` cache window displayed1.11 correctly.
+
+[Browser report](evidence/learning-path-layout.json) · [Public byte receipt](evidence/learning-path-public-runtime.json) · [Rebuild supplement](LEARNING-PATH.md)
+
+The release target is the canonical GitHub Pages app. The separately managed portfolio embed was not part of this deployment. Browser and emulated-touch checks do not establish physical-device ergonomics, human listening acceptance or learning outcomes. Session results are explicitly self-reported. Documentation-only commits may follow the runtime revision without changing the deployed application.
+
+## Historical release: 1.10.0, verified 2026-10-06 UTC
 
 [ToneDef](https://generalgroovy.github.io/tonedef/) is published from application revision `1d620ad5fc016853091b1000f0b564dd7f6cb551`. [Visual practice](VISUAL-PRACTICE.md) specifies the new behavior and rebuild contract.
 
