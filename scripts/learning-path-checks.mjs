@@ -1,0 +1,113 @@
+import assert from 'node:assert/strict';
+import path from 'node:path';
+
+export async function learningPathChecks(page,{touch,label,output}) {
+  page.setDefaultTimeout(10000);
+  const tap = async selector => { const node=page.locator(selector); if(touch)await node.tap();else await node.click(); };
+  const saved = () => page.evaluate(()=>JSON.parse(localStorage.getItem('tonedef.current.v2')));
+  // An isolated CI context, never a user's saved browser project.
+  await page.evaluate(async()=>{
+    const {defaultProject,emptyEvent}=await import('./src/model.js');
+    const p=defaultProject();p.settings.generationType='melody';p.settings.editorMode='melody';
+    p.events=[emptyEvent('melody')];p.events[0].notes=[{id:'learn-note',stringId:'s1',fret:3}];p.selectedId=p.events[0].id;
+    localStorage.setItem('tonedef.current.v2',JSON.stringify(p));localStorage.setItem('tonedef.workspace.mode.v3','learn');
+  });
+  await page.reload();await page.waitForSelector('.fret');
+  const original=await saved();
+  await tap('[data-pos="s1:3"]');
+  assert.match(await page.locator('#learning-feedback').innerText(),/C3[\s\S]*C is home/);
+  await tap('#learn-next');
+  assert.equal(await page.locator('#learn-topic-steps').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'learn-topic-steps');
+  await tap('#learn-topic-intervals');
+  await tap('[data-pos="s1:3"]');await tap('[data-pos="s2:2"]');
+  assert.match(await page.locator('#learning-feedback').innerText(),/C3 → E3[\s\S]*Major third · up 4 half steps/);
+  await tap('[data-pos="s5:0"]');
+  assert.match(await page.locator('#learning-feedback').innerText(),/Major tenth · up 16 half steps/);
+  await tap('#learn-pair-play');
+  await page.waitForFunction(()=>document.querySelector('#learn-pair-play')?.getAttribute('aria-pressed')==='true');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#learn-pair-play').getAttribute('aria-pressed'),'false');
+  await tap('#learn-pair-reset');
+  assert.equal(await page.locator('#learn-pair-play').isEnabled(),false);
+  await page.locator('[data-pos="s2:2"]').focus();await page.keyboard.press('Space');
+  await page.locator('[data-pos="s1:3"]').focus();await page.keyboard.press('Space');
+  assert.match(await page.locator('#learning-feedback').innerText(),/Major third · down 4 half steps/);
+  assert.deepEqual(await saved(),original,'Learn feedback, pair playback and keyboard attacks never edit the project');
+  await page.screenshot({path:path.join(output,`${label}-interval-feedback.png`),fullPage:true});
+
+  await tap('#learn-topic-chords');
+  await page.locator('#learn-chord-root').selectOption('6');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'learn-chord-root');
+  assert.match(await page.locator('.learning-chord').innerText(),/Bdim · diminished[\s\S]*0–3–6/);
+  assert.deepEqual(await page.locator('[data-learn-pitch]').evaluateAll(nodes=>nodes.map(n=>Number(n.dataset.learnPitch))),[71,74,77]);
+  await tap('#learn-listen');
+  await page.waitForFunction(()=>document.querySelector('#learn-listen')?.getAttribute('aria-pressed')==='true');
+  await tap('#learn-listen');
+  assert.deepEqual(await saved(),original,'Triad root and playback are lesson choices, not project edits');
+  await page.locator('#collection').selectOption('7');
+  assert.match(await page.locator('.learning-empty').innerText(),/seven-note scale/);
+  assert.equal(await page.locator('#learn-listen').isEnabled(),false);
+  await page.locator('#collection').selectOption('0');
+  await page.locator('#learn-chord-root').selectOption('0');
+  await page.screenshot({path:path.join(output,`${label}-chord-lesson.png`),fullPage:true});
+
+  await tap('#recall > summary');await page.locator('#recall-kind').selectOption('ear');
+  const beforeEar=await saved();
+  await tap('#recall-start');
+  assert.equal(await page.locator('#recall-hidden').isChecked(),true);
+  assert.match(await page.locator('.recall-prompt').innerText(),/^Match the sound · any octave$/);
+  for(const selector of ['.learning-strip','.learning-feedback','.learning-chord','.simple-panel .timeline']) assert.equal(await page.locator(selector).isVisible(),false,selector+' hides answers');
+  assert.doesNotMatch(await page.locator('.recall-prompt').innerText(),/[A-G][♯♭]?\d/,'The ear prompt does not name the target');
+  assert.ok((await page.locator('.fret').first().getAttribute('aria-label')).startsWith('string '));
+  await tap('#recall-hear');
+  // A black-box octave of guesses must find the audible scale target exactly once.
+  for(let fret=0;fret<12&&!await page.locator('#recall-next').isEnabled();fret++) await tap(`[data-pos="s5:${fret}"]`);
+  assert.equal(await page.locator('#recall-next').isEnabled(),true);
+  assert.match(await page.locator('.recall-score').innerText(),/1 solved/);
+  await tap('#recall-next');assert.equal(await page.locator('#recall-next').isEnabled(),false);
+  await tap('[data-recall-action="stop"]');
+  await page.locator('.learning-feedback').waitFor({state:'visible'});
+  assert.deepEqual(await saved(),beforeEar,'Ear training never overwrites music');
+  await tap('#recall > summary');
+
+  await tap('#workspace-practice');
+  assert.equal(await page.locator('#exercise-recipe').isVisible(),true,'Practice goals are available before More choices');
+  await page.locator('#exercise-recipe').selectOption('first-notes');
+  const configured=await saved();
+  assert.deepEqual(configured.events,beforeEar.events);
+  assert.equal(configured.settings.tempo,60);assert.equal(configured.settings.eventCount,4);
+  await tap('#practice-new');await page.waitForFunction(()=>document.querySelector('#practice-new')?.disabled===false);
+  const pattern=await saved();assert.equal(pattern.events.length,4);assert.equal(await page.locator('#practice-error').count(),0);
+  await tap('#practice-coach > summary');await tap('#coach-start');
+  assert.match(await page.locator('.practice-timing').innerText(),/1 step per quarter-note beat · 4 seconds/);
+  for(let i=0;i<3;i++)await tap('#coach-clean');
+  assert.equal(await page.locator('#coach-faster').innerText(),'Try 65 bpm →');
+  assert.deepEqual(await saved(),pattern,'Self-assessment does not mutate project or Undo history');
+  await tap('#coach-faster');
+  assert.equal((await saved()).settings.tempo,65);
+  assert.equal(await page.locator('.coach-progress .complete').count(),0);
+  assert.match(await page.locator('.practice-aim').innerText(),/steady pulse/);
+  await page.locator('[data-action="undo"]').click();
+  assert.deepEqual(await saved(),pattern,'One Undo reverts only the optional speed change');
+  await tap('#coach-clean');await tap('#coach-retry');
+  assert.equal(await page.locator('.coach-progress .complete').count(),0);
+  await tap('#coach-slower');assert.equal((await saved()).settings.tempo,55);
+  await page.locator('[data-action="undo"]').click();
+  await tap('#workspace-learn');await tap('#workspace-practice');
+  assert.equal(await page.locator('#coach-clean').count(),1,'View changes preserve the current practice session');
+  // Native disclosure state is separate from the ephemeral session.
+  if(!await page.locator('#coach-clean').isVisible())await tap('#practice-coach > summary');
+  await page.screenshot({path:path.join(output,`${label}-practice-session.png`),fullPage:true});
+  await tap('#practice-new');await page.waitForFunction(()=>document.querySelector('#practice-new')?.disabled===false);
+  assert.equal(await page.locator('#coach-start').count(),1,'Different generated notes reset the self-assessment session');
+  await page.locator('#exercise-recipe').selectOption('seventh-changes');
+  await tap('#practice-new');await page.waitForFunction(()=>document.querySelector('#practice-new')?.disabled===false);
+  assert.equal(await page.locator('#practice-error').count(),0);
+  assert.ok((await saved()).events.every(event=>event.kind==='chord'));
+  await tap('#practice-more > summary');await page.locator('#setting-picking').selectOption('fingers');
+  assert.equal(await page.locator('#setting-fingerPattern').isVisible(),true,'Finger-picking depth is reachable from Practice');
+  const layout=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
+  assert.ok(layout.scroll<=layout.width+1,'Learning and practice do not create page-level horizontal overflow');
+  return ['six-lesson path and real-note explanation','signed and compound interval pairs with independent audio','all-degree chord lesson and unsupported-scale recovery','ear-only challenge hides visual and accessible answers','goal setup preserves music','three-pass self-assessment, speed change, Undo and identity reset','advanced seventh-chord and finger-picking practice'];
+}

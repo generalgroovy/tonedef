@@ -48,11 +48,12 @@ import { installValueSliders } from './range-controls.js';
 import { patternPositions, noteState, noteLegend } from './note-state.js';
 import { createRecall } from './recall.js';
 import { Player, playbackPlan } from "./audio.js";
-import { EXERCISE_RECIPES, SEQUENCE_PATTERNS, RHYTHM_PATTERNS, applyExerciseRecipe } from "./exercises.js";
+import { EXERCISE_RECIPES, PRACTICE_GOALS, matchingExercise, SEQUENCE_PATTERNS, RHYTHM_PATTERNS, applyExerciseRecipe } from "./exercises.js";
+import { createPracticeCoach } from './practice-coach.js';
 import { practiceCard } from "./practice.js";
 import { installExpression } from "./expression.js";
 import { mountWorkspace, revealPanel, workspaceMode, simpleWorkspace } from "./workspace.js";
-import { learningView, learningPitches } from "./learning.js";
+import { learningView, learningPitches, learningFeedback } from "./learning.js";
 import { practiceControls } from "./practice-view.js";
 import { defaultPracticeOptions } from "./practice-options.js";
 import { chordSegments, selectedInk } from "./layout.js";
@@ -98,6 +99,8 @@ let tool = "notes",
 let saveAllowed = !bootNotice;
 let halfStepLabels = true;
 let learningTopic = 'notes';
+let learningDegree = 0, learningFirst = null, learningLast = null, learningContext = '';
+let lessonKind = 'scale';
 let practiceResult = null;
 let practiceError = null;
 let heardPitch = null;
@@ -116,9 +119,24 @@ function showHeardPitch(midi) {
 }
 function updateLessonButton() {
   const button = document.getElementById('learn-listen');
-  if (!button) return;
-  button.textContent = lessonPlayer.running ? '■ Stop scale' : '▶ Hear scale';
-  button.setAttribute('aria-pressed', String(lessonPlayer.running));
+  if (button) {
+    button.textContent = lessonPlayer.running && lessonKind !== 'pair' ? '■ Stop' : learningTopic === 'chords' ? '▶ Hear chord tones' : '▶ Hear scale';
+    button.setAttribute('aria-pressed', String(lessonPlayer.running && lessonKind !== 'pair'));
+  }
+  const pair = document.getElementById('learn-pair-play');
+  if (pair) { pair.textContent = lessonPlayer.running && lessonKind === 'pair' ? '■ Stop pair' : 'Hear pair'; pair.setAttribute('aria-pressed',String(lessonPlayer.running && lessonKind === 'pair')); }
+}
+function explainAttack(midi) {
+  if (workspaceMode() !== 'learn' || recall.active() || !Number.isInteger(midi)) return;
+  if (['steps','intervals'].includes(learningTopic)) {
+    if (learningFirst === null) learningFirst = midi; else learningLast = midi;
+  } else { learningFirst = midi; learningLast = null; }
+  const node = document.getElementById('learning-feedback');
+  if (node) {
+    const focus = document.activeElement?.id;
+    node.outerHTML = learningFeedback(project().settings,learningTopic,learningFirst,learningLast);
+    if (focus?.startsWith('learn-pair-')) document.getElementById(focus)?.focus({preventScroll:true});
+  }
 }
 function firstSteps() {
   const p = defaultProject(); p.title = 'First steps';
@@ -175,12 +193,13 @@ const expression = installExpression({
   settings: () => simpleWorkspace() ? {...project().settings,audition:true} : project().settings, tool: activeTool, blocked: () => player.running,
   describe: midi => pretty(spellPitch(midi, project().settings)),
   error: message => notify("Note audio: " + message, true), hideHelp,
-  simple: simpleWorkspace, onAttack: midi => recall.answer(midi), onPitch: showHeardPitch, beforeStart: () => lessonPlayer.stop(),
+  simple: simpleWorkspace, onAttack: midi => { explainAttack(midi); recall.answer(midi); }, onPitch: showHeardPitch, beforeStart: () => lessonPlayer.stop(),
 });
 window.addEventListener('blur', () => lessonPlayer.stop());
 document.addEventListener('visibilitychange', () => { if (document.hidden) lessonPlayer.stop(); });
 const sliders = installValueSliders();
 const recall = createRecall({project:()=>project(),audition:midi=>expression.audition(midi).catch(e=>notify(e.message,true)),beforeListen:()=>{player.stop();lessonPlayer.stop();expression.stop();}});
+const practiceCoach = createPracticeCoach({project,changeTempo:tempo=>setSetting('tempo',tempo)});
 const ranges = installPracticeRanges({
   settings: () => project().settings,
   change: (index, edge, value) => mutate(p => {
@@ -627,11 +646,11 @@ function exercisePanel() {
   const p = project(), s = p.settings;
   if (simpleWorkspace()) {
     const keyFields = `<div class="simple-key-fields">${field('tonic','Home note')}${collectionControl()}</div>`;
-    const matched = EXERCISE_RECIPES.find(r => Object.entries(r.settings).every(([id,value]) => s[id] === value));
-    const recipes = `<label for="exercise-recipe">Start with<select id="exercise-recipe"><option value="">Custom pattern</option>${EXERCISE_RECIPES.map(r=>`<option value="${r.id}" ${matched?.id===r.id?'selected':''}>${esc(r.label)}</option>`).join('')}</select></label>`;
+    const matched = matchingExercise(s), goal = PRACTICE_GOALS[matched?.id];
+    const recipes = `<div class="practice-goal"><label for="exercise-recipe">What do you want to practise?<select id="exercise-recipe"><option value="" ${matched?'':'selected'} disabled>Custom pattern</option>${['Start here','Build fluency','Stretch your control'].map(group=>`<optgroup label="${group}">${EXERCISE_RECIPES.filter(r=>PRACTICE_GOALS[r.id].group===group).map(r=>`<option value="${r.id}" ${matched?.id===r.id?'selected':''}>${esc(r.label)}</option>`).join('')}</optgroup>`).join('')}</select></label><p class="practice-aim">${esc(goal?.aim ?? 'Shape a pattern around what you want to improve.')}</p>${goal?`<details id="practice-goal-guide"><summary>How to practise · go deeper</summary><p>${esc(goal.cue)}</p><p>${esc(goal.stretch)}</p><p>These rules shape the next New pattern. Your saved pattern stays until you generate; kept steps keep their notes and rhythm.</p></details>`:''}</div>`;
     return `<section class="panel exercise-panel" aria-label="${workspaceMode()==='learn'?'Learning':'Practice choices'}">${workspaceMode()==='learn'
-      ? `${learningView(s,learningTopic,{keyFields:field('tonic','Home note'),collectionControl:collectionControl()})}<button id="learn-practice" data-workspace-mode="practice">Make a pattern →</button>`
-      : practiceControls(p,{field,keyFields,recipes,ranges:practiceRangesView(s),busy:!!worker,resultText:practiceResult?.project===JSON.stringify(p)?practiceResult.text:'',errorText:practiceError?.project===JSON.stringify(p)?practiceError.text:''})}</section>`;
+      ? `${learningView(s,learningTopic,{keyFields:field('tonic','Home note'),collectionControl:collectionControl(),degree:learningDegree,first:learningFirst,last:learningLast})}<button id="learn-practice" data-workspace-mode="practice">Make a pattern →</button>`
+      : practiceControls(p,{field,keyFields,recipes,coach:practiceCoach.view(),ranges:practiceRangesView(s),busy:!!worker,resultText:practiceResult?.project===JSON.stringify(p)?practiceResult.text:'',errorText:practiceError?.project===JSON.stringify(p)?practiceError.text:''})}</section>`;
   }
   const matched = EXERCISE_RECIPES.find(r => Object.entries(r.settings).every(([id, value]) => s[id] === value));
   return `<section class="panel exercise-panel" aria-label="Exercise builder">
@@ -660,6 +679,8 @@ function settings() {
 }
 
 function render() {
+  const nextLearningContext = JSON.stringify([learningTopic,project().settings.tonic,project().settings.keyMask,project().settings.tonicSpelling,project().settings.accidentals]);
+  if (learningContext !== nextLearningContext) { learningFirst = null; learningLast = null; learningContext = nextLearningContext; }
   lessonPlayer.stop();
   heardPitch = null;
   ranges.cancel();
@@ -840,7 +861,7 @@ document.addEventListener("click", (event) => {
   const target = event.target.closest("button");
   if (!target) return;
   attempt(() => {
-    if (target.dataset.learnTopic) { learningTopic = target.dataset.learnTopic; render(); return; }
+    if (target.dataset.learnTopic) { learningTopic = target.dataset.learnTopic; render(); if (target.id === 'learn-next') document.getElementById('learn-topic-'+learningTopic)?.focus({preventScroll:true}); return; }
     if (target.dataset.learnScale !== undefined) {
       mutate(p => { p.settings.keyMask = maskFor(p.settings.tonic,SCALE_DEFS[Number(target.dataset.learnScale)].intervals); }); return;
     }
@@ -849,6 +870,7 @@ document.addEventListener("click", (event) => {
       lessonPlayer.stop(); expression.stop();
       player.stop(); player.audition([midi],project().settings).catch(e=>notify(e.message,true));
       showHeardPitch(midi);
+      explainAttack(midi);
       return;
     }
     if (target.dataset.practiceString) {
@@ -871,6 +893,7 @@ document.addEventListener("click", (event) => {
       if (activeTool() !== "explore") commit(editPosition(project(), stringId, Number(fret), activeTool() === "key"));
       if (event.detail === 0 && (simpleWorkspace() || project().settings.audition) && activeTool() !== "key") {
         lessonPlayer.stop(); showHeardPitch(midiOf({stringId,fret:Number(fret)},project().settings));
+        explainAttack(midiOf({stringId,fret:Number(fret)},project().settings));
         recall.answer(midiOf({stringId,fret:Number(fret)},project().settings));
         expression
           .audition(midiOf({ stringId, fret: Number(fret) }, project().settings))
@@ -955,11 +978,21 @@ document.addEventListener("click", (event) => {
     }
     const action = target.dataset.action;
     if (action === 'unmute') { setSetting('volume',60); }
-    else if (action === 'learn-listen') {
+    else if (action === 'learn-pair-reset') {
+      lessonPlayer.stop(); learningFirst = null; learningLast = null; render();
+      document.getElementById('fretboard')?.querySelector('.fret[tabindex="0"]')?.focus({preventScroll:true});
+    } else if (action === 'learn-pair-play') {
+      if (lessonPlayer.running && lessonKind === 'pair') lessonPlayer.stop();
+      else if (Number.isInteger(learningFirst) && Number.isInteger(learningLast)) {
+        player.stop(); expression.stop(); lessonKind = 'pair'; lessonPitches = [learningFirst,learningLast];
+        lessonPlayer.playSequence(lessonPitches,project().settings).then(updateLessonButton).catch(e=>notify(e.message,true));
+      }
+    } else if (action === 'learn-listen') {
       if (lessonPlayer.running) lessonPlayer.stop();
       else {
         expression.stop(); player.stop();
-        lessonPitches = learningPitches(project().settings,learningTopic);
+        lessonKind = learningTopic === 'chords' ? 'chord' : 'scale';
+        lessonPitches = learningPitches(project().settings,learningTopic,learningDegree);
         lessonPlayer.playSequence(lessonPitches,project().settings).then(updateLessonButton).catch(e=>notify('Could not play the scale: '+e.message,true));
       }
     } else if (action === 'practice-free-strings') {
@@ -1125,11 +1158,12 @@ document.addEventListener("contextmenu", (event) => {
 document.addEventListener("change", (event) => {
   const el = event.target;
   attempt(() => {
+    if (el.id === 'learn-chord-root') { learningDegree = Number(el.value); learningFirst = null; learningLast = null; render(); return; }
     if (el.dataset.intervalEnd !== undefined) { intervalPair[Number(el.dataset.intervalEnd)] = Number(el.value); render(); return; }
     if (el.dataset.practice) {
       mutate(p=> { p.practice ??= defaultPracticeOptions(); p.practice[el.dataset.practice]=el.type==='checkbox'?el.checked:Number(el.value); });
     } else if (el.id === 'exercise-recipe' && el.value) {
-      commit(applyExerciseRecipe(project(), el.value), 'Recipe ready. Generate when you are ready; existing notes are unchanged.');
+      commit(applyExerciseRecipe(project(), el.value), simpleWorkspace() ? 'Goal ready. Choose New pattern to use these rules. Undo restores your previous setup.' : 'Recipe ready. Generate when you are ready; existing notes are unchanged.');
     } else if (el.dataset.setting) {
       const id = el.dataset.setting,
         def = SCHEMA[id];

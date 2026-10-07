@@ -36,6 +36,8 @@ const melodic = {
 };
 
 export const EXERCISE_RECIPES = catalogue([
+  { id: "first-notes", label: "First notes & pulse", description: "Four scale steps, one note per quarter-note beat, at 60 bpm.",
+    settings: { ...melodic, eventCount: 4, sequencePattern: "steps", melodicContour: "ascending", rhythmPattern: "steady", tempo: 60, duration: 96 } },
   { id: "scale-walk", label: "Scale walk", description: "Eight ascending collection steps with even eighth notes.",
     settings: { ...melodic, eventCount: 8, sequencePattern: "steps", melodicContour: "ascending", rhythmPattern: "steady" } },
   { id: "thirds", label: "Thirds study", description: "Overlapping skip-one pairs, then vary the key or direction.",
@@ -50,7 +52,31 @@ export const EXERCISE_RECIPES = catalogue([
       chordVocabulary: "triads", inKey: true, restRate: 0, picking: "down", tempo: 72 } },
   { id: "syncopated-line", label: "Dotted line", description: "A free melody over a dotted-eighth/sixteenth pulse.",
     settings: { ...melodic, eventCount: 16, sequencePattern: "free", melodicContour: "random", rhythmPattern: "syncopated", maxLeap: 5 } },
+  { id: "seventh-changes", label: "Seventh-chord changes", description: "Four seventh-chord voicings for harmony and economical movement.",
+    settings: { generationType: "progression", editorMode: "chord", append: false, eventCount: 4,
+      sequencePattern: "free", melodicContour: "random", rhythmPattern: "steady", duration: 192,
+      chordVocabulary: "sevenths", inKey: true, restRate: 0, picking: "down", tempo: 60 } },
 ]);
+
+export const PRACTICE_GOALS = Object.freeze({
+  'first-notes': { group: 'Start here', aim: 'Find notes and keep a steady pulse.', cue: 'Say each note name, then play it. Leave the same space between notes.', stretch: 'Find the same pitches on another string. Can you do it without the labels?' },
+  'scale-walk': { group: 'Start here', aim: 'Connect scale sounds to fretboard positions.', cue: 'Name the notes or degrees as you play. Hear where each half step falls.', stretch: 'Reverse the direction, then change home note. A scale walk can start on any degree.' },
+  thirds: { group: 'Build fluency', aim: 'Hear and play the intervals inside a scale.', cue: 'Play each skip-one pair evenly. In a seven-note scale, compare its major and minor thirds.', stretch: 'Use Intervals in Learn to name each jump. Pentatonic skip-one pairs are not all thirds.' },
+  'chord-pulse': { group: 'Build fluency', aim: 'Change chords cleanly while hearing each voice.', cue: 'Prepare the next shape before the change. Listen to the lowest note separately.', stretch: 'Open Studio → Motion. Compare lowest to lowest, then the higher pitch ranks; these are not inferred independent voices.' },
+  'triplet-groups': { group: 'Stretch your control', aim: 'Separate melodic groups from the beat.', cue: 'Count three equal notes per quarter-note beat: 1-trip-let, 2-trip-let.', stretch: 'Keep the pulse while changing the sequence to groups of four. Melody grouping and rhythm are independent.' },
+  'four-note-groups': { group: 'Stretch your control', aim: 'Keep small groups even across string changes.', cue: 'Count 1-e-and-a. Practise even volume and clear string changes before increasing speed.', stretch: 'Change direction or use a narrow fret range. Vary picking in More choices.' },
+  'syncopated-line': { group: 'Stretch your control', aim: 'Hold a steady pulse through unequal note lengths.', cue: 'Count sixteenths: attacks fall on 1, a, 2, and. Let the long notes last.', stretch: 'Add rests or change meter. Kept steps retain their original rhythm.' },
+  'seventh-changes': { group: 'Stretch your control', aim: 'Hear chord quality and economical movement.', cue: 'Identify root, third and seventh. Listen for common tones between shapes.', stretch: 'In Studio, compare chord interpretations, inversions and ranked motion. Generated chords are a study, not a prescribed functional progression.' },
+});
+
+/** A goal survives tempo, length and direction changes, but never mislabels a different motif. */
+export function matchingExercise(settings) {
+  const keys = ['generationType', 'sequencePattern', 'rhythmPattern', 'inKey', 'restRate'];
+  return EXERCISE_RECIPES.find(recipe => [...keys,
+    ...(settings.rhythmPattern === 'steady' ? ['duration'] : []),
+    ...(settings.generationType === 'progression' ? ['chordVocabulary'] : []),
+  ].every(key => settings[key] === recipe.settings[key]));
+}
 
 /** Configure an exercise without generating, replacing music, or changing the instrument. */
 export function applyExerciseRecipe(project, id) {

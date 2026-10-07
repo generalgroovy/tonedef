@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { LEARNING_TOPICS, learningView, learningPitches } from "../src/learning.js";
-import { SCALE_DEFS, maskFor, parseNote } from "../src/theory.js";
+import { LEARNING_TOPICS, learningView, learningPitches, learningTriad, playedExplanation, intervalWords } from "../src/learning.js";
+import { SCALE_DEFS, maskFor, parseNote, intervalBetween } from "../src/theory.js";
 
 const settings = (tonic = 0, mode = 0) => ({
   tonic,
@@ -13,8 +13,8 @@ const pitches = (html) => [...html.matchAll(/data-learn-pitch="(\d+)"/g)].map((m
 const degrees = (html) => [...html.matchAll(/data-learn-degree="([^"]+)"/g)].map((match) => match[1]);
 const steps = (html) => [...html.matchAll(/data-half-steps="(\d+)"/g)].map((match) => Number(match[1]));
 
-test("Four brief lessons provide semantic navigation and a playable task", () => {
-  assert.deepEqual(LEARNING_TOPICS.map((topic) => topic.id), ["notes", "steps", "scales", "modes"]);
+test("Six brief lessons provide a skippable learning path and a playable task", () => {
+  assert.deepEqual(LEARNING_TOPICS.map((topic) => topic.id), ["notes", "steps", "scales", "intervals", "chords", "modes"]);
   for (const topic of LEARNING_TOPICS) {
     assert.ok(topic.prompt.length < 70);
     assert.ok(topic.explanation.length < 95);
@@ -104,12 +104,12 @@ test("Topic controls appear once, with collection choice only where it helps", (
     assert.equal([...html.matchAll(/id="lesson-home"/g)].length, 1);
     assert.equal([...html.matchAll(/id="lesson-collection"/g)].length, topic === "modes" ? 0 : 1);
     assert.ok(!html.includes('class="learning-context"'), "Controls do not repeat the same home or collection in a second row");
-    if (topic === "notes" || topic === "steps") {
+    if (["notes", "steps", "intervals"].includes(topic)) {
       assert.ok(html.indexOf('id="learning-info"') < html.indexOf('id="lesson-collection"'));
       assert.ok(!html.includes('id="learn-listen"'));
     } else {
-      if (topic === "scales") assert.ok(html.indexOf('id="lesson-collection"') < html.indexOf('id="learning-info"'));
-      assert.match(html, /id="learn-listen" data-action="learn-listen">Hear scale<\/button>/);
+      if (["scales","chords"].includes(topic)) assert.ok(html.indexOf('id="lesson-collection"') < html.indexOf('id="learning-info"'));
+      assert.match(html, new RegExp(`id="learn-listen" data-action="learn-listen">${topic === 'chords' ? 'Hear chord tones' : 'Hear scale'}<\\/button>`));
     }
     assert.deepEqual(input, before, "Changing lesson presentation never selects a different collection");
   }
@@ -117,6 +117,46 @@ test("Topic controls appear once, with collection choice only where it helps", (
   assert.match(custom, /class="learning-context"><span>Custom scale<\/span>/);
   assert.match(custom, /Choose a mode to compare/);
   assert.ok(!custom.includes('aria-pressed="true">Dorian'));
+});
+
+test('Triads carry octave and spelling correctly on every degree of every seven-note collection', () => {
+  const majorQualities = ['major','minor','minor','major','major','minor','diminished'];
+  for(let tonic=0;tonic<12;tonic++) for(let mode=0;mode<SCALE_DEFS.length;mode++) {
+    const input=settings(tonic,mode),before=structuredClone(input),scale=SCALE_DEFS[mode];
+    for(let degree=0;degree<7;degree++) {
+      const triad=learningTriad(input,degree);
+      if(scale.intervals.length!==7) {assert.equal(triad,null);continue;}
+      assert.ok(triad.pitches[0]<triad.pitches[1]&&triad.pitches[1]<triad.pitches[2]);
+      assert.deepEqual(triad.names.map(n=>parseNote(n).midi),triad.pitches);
+      assert.deepEqual(triad.intervals.map(i=>i.number),[1,3,5]);
+      assert.ok(triad.pitches.every(midi=>input.keyMask & (1 << (midi%12))));
+      assert.deepEqual(learningPitches(input,'chords',degree),triad.pitches);
+      assert.deepEqual(pitches(learningView(input,'chords',{degree})),triad.pitches);
+      if(mode===0)assert.equal(triad.quality,majorQualities[degree]);
+    }
+    assert.deepEqual(input,before);
+  }
+  assert.deepEqual(learningTriad(settings(),6).names,['B4','D5','F5']);
+  assert.deepEqual(learningTriad(settings(1),1).names,['Eb4','Gb4','Bb4']);
+  assert.deepEqual(learningTriad(settings(0,10),2).intervals.map(i=>i.semitones),[0,4,8]);
+  assert.match(learningView(settings(0,7),'chords'),/Choose a seven-note scale/);
+  assert.equal(learningTriad({...settings(),keyMask:0}),null);
+});
+
+test('Played explanations distinguish quality, signed direction, octaves and outside-scale pitches', () => {
+  for(const [a,b,text] of [[60,64,'Major third · up 4 half steps'],[64,60,'Major third · down 4 half steps'],[60,76,'Major tenth · up 16 half steps'],[60,60,'Perfect unison · same pitch']]) {
+    assert.ok(playedExplanation(settings(),'intervals',a,b).text.includes(text));
+  }
+  assert.match(playedExplanation(settings(0,5),'intervals',60,63).text,/Minor third/);
+  assert.equal(intervalWords(intervalBetween('C4','F#4')),'Augmented fourth');
+  assert.equal(intervalWords(intervalBetween('C4','Gb4')),'Diminished fifth');
+  assert.match(playedExplanation(settings(),'notes',60,null).text,/C is home/);
+  assert.match(playedExplanation(settings(),'scales',64,null).text,/degree 3/);
+  assert.match(playedExplanation(settings(0,1),'modes',63,null).text,/degree ♭3/);
+  assert.match(playedExplanation(settings(),'notes',61,null).text,/outside this scale/);
+  assert.match(playedExplanation({...settings(),keyMask:0},'notes',60,null).text,/home, currently outside/);
+  assert.match(playedExplanation(settings(),'intervals',null,null).text,/starting note/);
+  assert.match(playedExplanation(settings(),'steps',60,null).text,/another note/);
 });
 
 test("Mode comparisons name the changed notes and mark their exact degrees across roots", () => {

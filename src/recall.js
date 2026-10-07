@@ -36,18 +36,21 @@ export function createRecall({project,audition,beforeListen}) {
   function start() {
     reset(); const result=recallTargets(project(),kind); targets=result.targets;
     if(!targets.length){feedback=result.reason;return;}
+    if(kind==='ear'&&project().settings.volume===0){feedback='Sound is muted. Use Turn sound on above the neck, then start again.';return;}
     if(kind!=='melody') for(let i=targets.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[targets[i],targets[j]]=[targets[j],targets[i]];}
     active=true;
+    if(kind==='ear'){hidden=true;beforeListen();audition(current().midi);}
   }
   function prompt() {
     const target=current(),s=project().settings;
     if(kind==='melody') return `Recall note ${index+1} of ${targets.length}`;
+    if(kind==='ear') return `Match the sound · any octave`;
     if(kind==='intervals') return `Find ${RECALL_INTERVALS[target.interval]} above ${name(60+s.tonic,s)} · ${target.interval} half steps`;
     return `Find ${name(target.midi,s)} · any octave`;
   }
   function content() {
-    return `<div class="recall-options"><label for="recall-kind">Exercise<select id="recall-kind"><option value="notes" ${kind==='notes'?'selected':''}>Find notes</option><option value="intervals" ${kind==='intervals'?'selected':''}>Find intervals</option><option value="melody" ${kind==='melody'?'selected':''}>Recall melody</option></select></label><label class="recall-hide"><input id="recall-hidden" type="checkbox" ${hidden?'checked':''}>Hide hints</label></div>
-      ${active?`<p class="recall-prompt">${esc(prompt())}</p><p class="recall-instruction">${kind==='melody'?'Match the exact pitch on any string. Rests are skipped; timing is not scored.':kind==='intervals'?'Tap the neck. Octave-equivalent answers count; the interval is measured from home.':'Tap a matching note on the neck.'}</p>`:complete?`<p class="recall-prompt">Round complete · ${firstTry} / ${solved} first try</p>`:'<p class="recall-instruction">Find a note, work out an interval, or recall your melody. Hide hints when you are ready.</p>'}
+    return `<div class="recall-options"><label for="recall-kind">Exercise<select id="recall-kind"><option value="notes" ${kind==='notes'?'selected':''}>Find notes</option><option value="intervals" ${kind==='intervals'?'selected':''}>Find intervals</option><option value="ear" ${kind==='ear'?'selected':''}>Match by ear</option><option value="melody" ${kind==='melody'?'selected':''}>Recall melody</option></select></label><label class="recall-hide"><input id="recall-hidden" type="checkbox" ${hidden?'checked':''}>Hide hints</label></div>
+      ${active?`<p class="recall-prompt">${esc(prompt())}</p><p class="recall-instruction">${kind==='melody'?'Match the exact pitch on any string. Rests are skipped; timing is not scored.':kind==='intervals'?'Tap the neck. Octave-equivalent answers count; the interval is measured from home.':kind==='ear'?'Hear the target, then find it on the neck. The target comes from your current scale. Hear it again whenever you need.':'Tap a matching note on the neck.'}</p>`:complete?`<p class="recall-prompt">Round complete · ${firstTry} / ${solved} first try</p>`:'<p class="recall-instruction">Find a note, work out an interval, match a sound, or recall your melody. Hide hints when you are ready.</p>'}
       <p id="recall-feedback" class="recall-feedback" role="status" aria-live="polite">${esc(feedback)}</p>
       <div class="recall-actions">${active?`<button id="recall-hear" data-recall-action="hear">Hear target</button><button id="recall-next" data-recall-action="next" ${correct?'':'disabled'}>${index===targets.length-1?'Finish round':'Next →'}</button><button data-recall-action="stop">End</button>`:`<button id="recall-start" data-recall-action="start">${complete?'Try again':'Start challenge'}</button>`}</div>${active?`<small class="recall-score">${solved} solved · ${firstTry} first try · this session</small>`:''}`;
   }
@@ -67,7 +70,7 @@ export function createRecall({project,audition,beforeListen}) {
       if(mask)node.setAttribute('aria-pressed','false');
       else node.setAttribute('aria-pressed',String(node.classList.contains('selected')));
     }
-    for(const node of document.querySelectorAll('.learning-strip,.note-state-legend,.simple-panel .timeline,.simple-pattern-actions,#pattern-info')) {
+    for(const node of document.querySelectorAll('.learning-strip,.learning-feedback,.learning-chord,.note-state-legend,.simple-panel .timeline,.simple-pattern-actions,#pattern-info')) {
       node.hidden=mask;
     }
     let hint=document.getElementById('recall-pattern-hidden');
@@ -91,11 +94,12 @@ export function createRecall({project,audition,beforeListen}) {
     if(action==='hear'&&active){beforeListen();audition(current().midi);}
     if(action==='next'&&active&&correct){
       if(index===targets.length-1){active=false;complete=true;feedback='Try the same ideas on your instrument, in a new key or higher on the neck.';}
-      else {index++;tries=0;correct=false;feedback='';}
+      else {index++;tries=0;correct=false;feedback='';if(kind==='ear'){beforeListen();audition(current().midi);}}
       update();
     }
   });
   return {
+    active:()=>active,
     view:()=>{
       if(signature!==context())reset();
       return `<details id="recall" class="recall"><summary>Challenge yourself${active?' · in progress':''}</summary><div id="recall-body">${content()}</div></details>`;

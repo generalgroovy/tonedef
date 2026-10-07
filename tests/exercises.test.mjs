@@ -239,7 +239,7 @@ test("legacy v1 and v2 projects migrate missing fields only and reject malformed
 });
 
 test("every recipe configures settings only, preserves exact existing work and can generate on the default instrument", () => {
-  assert.equal(EXERCISE_RECIPES.length, 6);
+  assert.equal(EXERCISE_RECIPES.length, 8);
   for (const recipe of EXERCISE_RECIPES) {
     const p = example("bass");
     p.events[0].locked = true; p.settings.practiceRanges[0] = { min: 3, max: 11 };

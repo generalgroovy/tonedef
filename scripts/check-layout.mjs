@@ -2,6 +2,7 @@
 // Optional dev tooling: playwright@1.57.0; no application dependencies added.
 import assert from 'node:assert/strict';
 import {visualPracticeChecks} from './visual-practice-checks.mjs';
+import {learningPathChecks} from './learning-path-checks.mjs';
 import { createServer } from 'node:http';
 import { mkdir, readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
@@ -668,6 +669,13 @@ try {
     const label=`${width}x${height}-learner${touch?'-touch':''}`;
     await page.goto(origin+'/tonedef/',{waitUntil:'networkidle'});await page.waitForSelector('.fret');
     await learnerInteractions(page,label,touch);
+    try {
+      const checks=await learningPathChecks(page,{touch,label,output});
+      report.interactions.push({viewport:label,checks});
+    } catch(error) {
+      await page.screenshot({path:path.join(output,`${label}-learning-failure.png`),fullPage:true});
+      throw error;
+    }
     assert.deepEqual(errors,[],`${label}: browser/network errors`);
     console.log(`PASS ${label}: Learn, Practice and configured generation`);
     await context.close();
