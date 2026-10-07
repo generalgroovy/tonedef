@@ -50,7 +50,7 @@ import { createRecall } from './recall.js';
 import { Player, playbackPlan } from "./audio.js";
 import { EXERCISE_RECIPES, PRACTICE_GOALS, matchingExercise, SEQUENCE_PATTERNS, RHYTHM_PATTERNS, applyExerciseRecipe } from "./exercises.js";
 import { createPracticeCoach } from './practice-coach.js';
-import { createFocusedPractice, stepGuide } from './focused-practice.js';
+import { createFocusedPractice, stepGuide, passageLabel } from './focused-practice.js';
 import { practiceCard } from "./practice.js";
 import { installExpression } from "./expression.js";
 import { mountWorkspace, revealPanel, workspaceMode, simpleWorkspace } from "./workspace.js";
@@ -108,6 +108,7 @@ let heardPitch = null;
 let lessonPitches = [];
 let lastRenderedWorkspace = null;
 let playbackState = null;
+let playbackRange = null;
 const activeTool = () => simpleWorkspace() ? 'explore' : tool;
 const playLabel = () => player.running ? '■ Stop' : workspaceMode()==='practice'
   ? practiceFocus.options().response ? '▶ Listen & play' : practiceFocus.label()==='Whole pattern' ? '▶ Play pattern' : '▶ Play passage'
@@ -213,6 +214,7 @@ const recall = createRecall({project:()=>project(),audition:midi=>expression.aud
 const practiceFocus = createFocusedPractice({project,changed:()=>{player.stop();render();},error:message=>notify(message,true)});
 const practiceCoach = createPracticeCoach({project:()=>({...project(),events:practiceFocus.events()}),scope:()=>JSON.stringify(practiceFocus.range()),changeTempo:tempo=>setSetting('tempo',tempo)});
 function playPattern() {
+  playbackRange=workspaceMode()==='practice'?practiceFocus.range():null;
   return player.play(clone(project()),workspaceMode()==='practice'?practiceFocus.options():undefined);
 }
 function updatePracticePlayback() {
@@ -225,7 +227,7 @@ function updatePracticePlayback() {
   const beat=document.getElementById('practice-beat');
   if(beat)beat.textContent=player.running&&state?phase==='count-in'?`${Math.min(state.beat,state.beats)} / ${state.beats}`:`Beat ${(state.beat-1)%state.beats+1}${boardEvent()?' · '+nameOf(boardEvent()):''}`:'▶ Play above';
   const scope=document.getElementById('practice-scope');
-  if(scope)scope.textContent=practiceFocus.label()+(player.running&&state?.phase!=='count-in'?` · pass ${state?.cycle ?? 1}`:'');
+  if(scope)scope.textContent=(player.running&&playbackRange?passageLabel(playbackRange,project().events.length):practiceFocus.label())+(player.running&&state?.phase!=='count-in'?` · pass ${state?.cycle ?? 1}`:'');
   const guide=document.getElementById('step-guide'),event=boardEvent();
   if(guide) {
     guide.outerHTML=stepGuide(project(),project().events.indexOf(event),event?nameOf(event):'');
@@ -1072,6 +1074,7 @@ document.addEventListener("click", (event) => {
     else if (action === "audition") {
       expression.stop();lessonPlayer.stop();
       const index=project().events.indexOf(current());
+      playbackRange={min:index+1,max:index+1};
       if(index>=0)player.play({...clone(project()),settings:{...project().settings,loop:false,metronome:false}},{from:index,to:index}).catch(e=>notify(e.message,true));
     }
     else if (action === "inspect") {

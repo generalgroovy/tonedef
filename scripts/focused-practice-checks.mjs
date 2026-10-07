@@ -79,6 +79,7 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
   assert.equal(await page.evaluate(()=>document.activeElement.id),'step-hear','Keyboard focus remains usable at the end of the pattern');
   await tap('#step-previous');
   await tap('#step-hear');await page.waitForFunction(()=>document.querySelector('#playButton').getAttribute('aria-pressed')==='true');
+  assert.match(await page.locator('#practice-scope').innerText(),/^Step 3 · pass 1$/,'Hear identifies the one step actually sounding');
   await page.keyboard.press('Escape');
   await tap('#practice-coach > summary');await tap('#coach-start');
   assert.match(await page.locator('.practice-timing').innerText(),/1 second/);
