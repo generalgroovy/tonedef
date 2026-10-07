@@ -6,6 +6,13 @@ import { wholePassage, validatePassage, passageEvents, passageIdentity, passageL
 import { windowTrack } from '../src/range-controls.js';
 
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} ≈ ${b}`);
+test('All supported meters count one complete bar at the stored quarter-note tempo',()=>{
+  const p=defaultProject();p.settings.tempo=120;p.events=[emptyEvent('rest',96)];
+  for(const [meter,pulses,spacing,seconds] of [['2/4',2,.5,1],['3/4',3,.5,1.5],['4/4',4,.5,2],['5/4',5,.5,2.5],['6/8',2,.75,1.5],['7/8',7,.25,1.75],['9/8',3,.75,2.25],['12/8',4,.75,3]]) {
+    p.settings.meter=meter;const plan=playbackPlan(p,{countIn:true});
+    near(plan.countIn,seconds);near(plan.beatTicks*plan.secondsPerTick,spacing);assert.equal(plan.barTicks/plan.beatTicks,pulses);
+  }
+});
 test('A passage preserves exact saved events and IDs, original alternating strokes, rests and fractional ticks',()=>{
   const p=example();p.settings.tempo=120;
   p.events.forEach((e,i)=>{e.duration=[32,173,24,96][i%4];e.picking='alternate';});

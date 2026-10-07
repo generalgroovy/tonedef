@@ -66,12 +66,37 @@ export function createFocusedPractice({project,changed,error}) {
     }
     if(el.id==='practice-count-in') {countIn=el.checked;changed();}
   });
-  document.addEventListener('click',event=>{
-    const node=event.target.closest?.('[data-passage-action]');if(!node)return;
+  function activate(node) {
     const action=node.dataset.passageAction;
     if(action==='whole')update(wholePassage(project().events.length));
     if(action==='selected') {const n=project().events.findIndex(e=>e.id===project().selectedId)+1;if(n)update({min:n,max:n});}
     if(action==='along'||action==='response') {response=action==='response';changed();}
+  }
+  // Touch browsers can suppress the compatibility click following a captured
+  // range drag. Accept an actual tap release; never turn a scroll into a choice.
+  let touchChoice,compatibilityClick;
+  document.addEventListener('pointerdown',event=>{
+    const node=event.target.closest?.('.practice-play-modes button');
+    if(event.pointerType!=='touch'||!event.isPrimary||!node||node.disabled)return;
+    touchChoice={node,pointer:event.pointerId,x:event.clientX,y:event.clientY,moved:false};
+  });
+  document.addEventListener('pointermove',event=>{
+    if(touchChoice?.pointer===event.pointerId&&Math.hypot(event.clientX-touchChoice.x,event.clientY-touchChoice.y)>8)touchChoice.moved=true;
+  });
+  document.addEventListener('pointerup',event=>{
+    if(touchChoice?.pointer!==event.pointerId)return;
+    const gesture=touchChoice;touchChoice=null;
+    if(gesture.moved||!gesture.node.isConnected)return;
+    compatibilityClick={id:gesture.node.id,until:performance.now()+700};
+    activate(gesture.node);
+  });
+  for(const type of ['pointercancel','lostpointercapture'])document.addEventListener(type,event=>{if(touchChoice?.pointer===event.pointerId)touchChoice=null;});
+  window.addEventListener('blur',()=>{touchChoice=null;});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)touchChoice=null;});
+  document.addEventListener('click',event=>{
+    const node=event.target.closest?.('[data-passage-action]');if(!node)return;
+    if(event.detail>0&&compatibilityClick?.id===node.id&&performance.now()<compatibilityClick.until){compatibilityClick=null;return;}
+    activate(node);
   });
   return {
     cancel:tracks.cancel, range:()=>({...sync()}),

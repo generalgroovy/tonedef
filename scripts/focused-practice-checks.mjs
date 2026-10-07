@@ -70,6 +70,9 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
   await tap('#simple-event-1');
   assert.match(await page.locator('#step-guide').innerText(),/Step 2 · D3[\s\S]*String 4 · fret 0[\s\S]*Upstroke[\s\S]*major second, up 2 half steps/);
   await tap('#step-next');assert.match(await page.locator('#step-guide').innerText(),/Step 3 · E3/);
+  await page.locator('#step-next').focus();await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'step-hear','Keyboard focus remains usable at the end of the pattern');
+  await tap('#step-previous');
   await tap('#step-hear');await page.waitForFunction(()=>document.querySelector('#playButton').getAttribute('aria-pressed')==='true');
   await page.keyboard.press('Escape');
   await tap('#practice-coach > summary');await tap('#coach-start');
@@ -85,5 +88,23 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
   await tap('#practice-passage > summary');await tap('#practice-coach > summary');
   await page.screenshot({path:path.join(output,`${label}-focused-practice.png`),fullPage:true});
   const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));assert.ok(size.scroll<=size.width+1);
+  await page.evaluate(async()=>{
+    const {example}=await import('./src/model.js');const p=example();p.settings.tempo=240;p.settings.loop=true;p.events.forEach(e=>e.duration=96);
+    localStorage.setItem('tonedef.current.v2',JSON.stringify(p));
+  });
+  await page.reload();await page.waitForSelector('#practice-stage');
+  await tap('#simple-event-1');assert.match(await page.locator('#step-guide').innerText(),/Lowest note[\s\S]*pitch ranks/);
+  await tap('#practice-passage > summary');await number('passage-max',3);await number('passage-min',2);
+  await page.locator('#practice-count-in').uncheck();await tap('#practice-response');
+  await page.waitForFunction(()=>document.querySelector('#practice-response').getAttribute('aria-pressed')==='true');
+  const chords=await saved();await tap('#playButton');
+  await page.waitForFunction(()=>document.querySelector('#practice-stage').dataset.phase==='answer');
+  assert.equal(await page.locator('.chord-shape').count(),1,'The current chord shape remains connected in the answer turn');
+  assert.ok(await page.locator('.current-note').count()>1);
+  await tap('#playButton');assert.deepEqual(await saved(),chords);
+  await page.screenshot({path:path.join(output,`${label}-focused-chords.png`),fullPage:true});
+  await page.evaluate(async()=>{const {defaultProject}=await import('./src/model.js');localStorage.setItem('tonedef.current.v2',JSON.stringify(defaultProject()));});
+  await page.reload();await page.waitForSelector('#practice-stage');assert.equal(await page.locator('#playButton').isEnabled(),false);
+  assert.match(await page.locator('#step-guide').innerText(),/make a pattern/);
   return ['immediate generation action and folded depth','passage exact inputs, range translation, keyboard, Escape and touch','one-bar count-in cancellation','listen/answer turns, repeated cycle and neck/timeline synchronization','unaltered saved music and picking','selected-step theory, manual navigation and Hear','passage-scoped self-assessment reset','challenge hints stay hidden after playback'];
 }

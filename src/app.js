@@ -741,6 +741,7 @@ function render() {
     });
   }
   mountWorkspace(render, notify);
+  $('#playButton').disabled = !p.events.length;
   updateLessonButton();
   updatePracticePlayback();
   recall.mount(simpleWorkspace());
@@ -968,6 +969,7 @@ document.addEventListener("click", (event) => {
     if (target.dataset.stepJump !== undefined) {
       const step=project().events[Number(target.dataset.stepJump)];
       if(step) mutate(p=>{p.selectedId=step.id;});
+      if(document.getElementById(target.id)?.disabled)document.getElementById('step-hear')?.focus({preventScroll:true});
       return;
     }
     if (target.dataset.event) {
