@@ -250,11 +250,13 @@
 
 /* Learn and Practice keep one task, the neck, and its pattern together. */
 body:is([data-workspace="learn"],[data-workspace="practice"]) { --panel: #202933; --muted: #c2cbd4; }
-body:is([data-workspace="learn"],[data-workspace="practice"]) .topbar { padding: 8px 16px; gap: 16px; }
+body:is([data-workspace="learn"],[data-workspace="practice"]) .topbar { padding: 8px 16px; gap: 16px; position: sticky; top: 0; z-index: 50; }
 body:is([data-workspace="learn"],[data-workspace="practice"]) .header-actions { flex: 1; align-items: center; gap: 8px; }
 body:is([data-workspace="learn"],[data-workspace="practice"]) .workspace-switch { margin-right: auto; }
 body:is([data-workspace="learn"],[data-workspace="practice"]) :is(button,select,input:not([type="checkbox"]),summary) { min-height: 44px; }
 body:is([data-workspace="learn"],[data-workspace="practice"]) .header-actions button { padding: 8px 12px; font-size: .9rem; }
+body:is([data-workspace="learn"],[data-workspace="practice"]) button:not(.fret):not([data-window-edge]),
+body:is([data-workspace="learn"],[data-workspace="practice"]) summary { touch-action: manipulation; }
 body:is([data-workspace="learn"],[data-workspace="practice"]) input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
 .simple-menu { position: relative; }
 .simple-menu summary { display: flex; align-items: center; padding: 6px 10px; cursor: pointer; }
@@ -423,7 +425,7 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) footer > span { di
 #practice-shape > summary span { margin-left: auto; color: var(--muted); font-size: .75rem; font-weight: 400; text-align: right; }
 #practice-shape > .setting { margin: 10px 0; }
 .practice-jump { display: none; color: var(--accent); font-size: .85rem; min-height: 44px; align-items: center; }
-.practice-stage { margin-top: 6px; border-top: 1px solid var(--line); scroll-margin-top: 80px; }
+.practice-stage { margin-top: 6px; border-top: 1px solid var(--line); scroll-margin-top: 116px; }
 .practice-stage[data-phase="ready"] .practice-pulse { display: none; }
 .practice-stage:not([data-phase="ready"]) .step-guide-heading { display: none; }
 .practice-pulse { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 0; font-size: .8rem; color: var(--muted); }
