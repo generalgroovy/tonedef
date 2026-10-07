@@ -1,6 +1,22 @@
 # Deployment and rollback
 
-## Release 1.11.0, verified 2026-10-07 UTC
+## Release 1.12.0, verified 2026-10-07 UTC
+
+Focused practice is deployed to [ToneDef](https://generalgroovy.github.io/tonedef/) from runtime revision `5123a3defcc3a3dd8db8e6aa7828493a42d039fb`.
+
+- Practice puts New pattern before optional generation details. Shape next pattern retains the deeper rules and random flags. A sticky header keeps Play/Stop available on narrow screens; the 320px header fits two rows.
+- A passage can be isolated with exact first/last steps, draggable endpoints or a whole-range grip. Play along uses the guide; Listen → play alternates the guide with a turn over the click. The optional one-bar count-in runs once per start. These session controls leave the saved project intact.
+- The step guide connects each physical note/chord to its actual duration, picking and spelled interval from the preceding event. Chords explicitly explain lowest-to-lowest movement. One-step auditions preserve original alternating strokes and display their actual playback scope. Self-checks use the chosen passage and reset when its scope changes.
+- **113 automated tests** passed, plus syntax and static-build checks. The new tests cover all supported meters, compound pulse timing, count-in cancellation, exact passage timing, repeated guide/answer scheduling, selection identity and interval explanations.
+- [Candidate browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37651820338) and [main browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37652504772) passed for this exact revision. The 21 primary contexts include two visual-practice desktop/touch runs, four learner runs with focused-practice checks, and 15 Studio/Arrange layouts from 320 to 2560 pixels. Native touch sequences, range cancellation, keyboard focus, hidden answers, chord highlighting, empty-pattern recovery and unchanged project data are covered. Final desktop and narrow screenshots were visually inspected.
+- [Pages deployment](https://github.com/generalgroovy/tonedef/actions/runs/37652504949) succeeded. All **28 runtime files**, file list, source revision and build manifest matched committed bytes over certificate-validated HTTPS. Runtime SHA-256: `8c8611294b8abd5b0e69fc0f8493b9bcec187a4805e839c365d25489c35af7ca`.
+- Live smoke passed on the existing saved project: exact passage steps 2–3, Listen → play, count-in cancellation/restart, Am → F guide playback, Your turn with the Am shape highlighted, and Stop restoring the editing selection. Exported project backups before deployment and after the live checks were byte-for-byte identical. No browser warnings or errors were recorded.
+
+[Browser report](evidence/focused-practice-layout.json) · [Public byte receipt](evidence/focused-practice-public-runtime.json) · [Live interaction receipt](evidence/focused-practice-live.json) · [Rebuild supplement](FOCUSED-PRACTICE.md)
+
+The release target is the canonical GitHub Pages app. The separately managed portfolio embed was outside this deployment. Browser and emulated-touch checks do not establish physical-device ergonomics, human listening acceptance or learning outcomes. Self-checks are self-reported; the response turn retains visual guidance. Documentation-only commits may follow the runtime revision without changing the deployed application.
+
+## Historical release: 1.11.0, verified 2026-10-07 UTC
 
 The learning-path release is deployed to [ToneDef](https://generalgroovy.github.io/tonedef/) from runtime revision `a08f9603910375f8dbeca1ee37cee4ecc8ddb2d4`.
 

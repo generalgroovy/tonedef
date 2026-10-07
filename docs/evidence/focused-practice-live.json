@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-07T16:37:55.475403+00:00",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "version": "1.12.0",
+  "sourceRevision": "5123a3defcc3a3dd8db8e6aa7828493a42d039fb",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "checks": [
+    "New focused-practice controls after public reload",
+    "Exact passage first=2 and last=3",
+    "Listen to Am then F before the response turn",
+    "One-bar count-in and immediate Stop cancellation",
+    "Response turn keeps Am physical notes E C A E A highlighted",
+    "Stop restores the existing editing selection",
+    "Existing project exported through the public Backup action before and after deployment"
+  ],
+  "projectPreservation": {
+    "byteIdentical": true,
+    "beforeSha256": "6b2f46d0876c7f6a1ac95264c89266ff0f1704d75d7f24451390e9f11b882733",
+    "afterSha256": "6b2f46d0876c7f6a1ac95264c89266ff0f1704d75d7f24451390e9f11b882733",
+    "bytes": 9053,
+    "rawBackupsPublished": false
+  },
+  "consoleWarnings": 0,
+  "consoleErrors": 0,
+  "screenshot": "Captured locally as .runtime/focused-practice-live.png; CI screenshots are available from the linked workflow artifact.",
+  "limits": "Software behavior and browser rendering only; no physical touch, human listening or learning-outcome acceptance is claimed."
+}
