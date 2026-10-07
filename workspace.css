@@ -409,6 +409,46 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) footer > span { di
   .simple-grid { height: calc(100dvh - 76px); }
 }
 .practice-result { font-size: .8rem; color: var(--muted); margin: 4px 0; line-height: 1.4; }
+.practice-playback { border-top: 1px solid var(--line); padding-top: 12px; }
+.practice-play-modes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; }
+.practice-play-modes button { font-size: .85rem; padding: 8px 5px; }
+.practice-play-hint { color: var(--muted); font-size: .82rem; line-height: 1.5; margin: 8px 0; }
+.practice-count-in { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.practice-count-in small { margin-left: auto; color: var(--muted); }
+.practice-playback .passage-info { font-size: .78rem; }
+.passage-numbers { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 52px; margin: 8px 0; }
+.passage-numbers label { display: grid; gap: 5px; }
+.passage-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.passage-actions button { flex: 1; font-size: .8rem; }
+#practice-shape > summary span { margin-left: auto; color: var(--muted); font-size: .75rem; font-weight: 400; text-align: right; }
+#practice-shape > .setting { margin: 10px 0; }
+.practice-jump { display: none; color: var(--accent); font-size: .85rem; min-height: 44px; align-items: center; }
+.practice-stage { margin-top: 6px; border-top: 1px solid var(--line); scroll-margin-top: 80px; }
+.practice-stage[data-phase="ready"] .practice-pulse { display: none; }
+.practice-stage:not([data-phase="ready"]) .step-guide-heading { display: none; }
+.practice-pulse { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 0; font-size: .8rem; color: var(--muted); }
+#practice-phase { border-radius: 5px; padding: 5px 9px; min-width: 90px; text-align: center; background: #293b39; color: #e0f2d9; font-size: .9rem; }
+.practice-stage[data-phase="answer"] #practice-phase { background: #36526c; color: #fff; }
+.practice-stage[data-phase="count-in"] #practice-phase { background: #775134; color: #fff; }
+#practice-beat { font-variant-numeric: tabular-nums; min-width: 70px; }
+#practice-scope { margin-left: auto; }
+.step-guide-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
+.step-guide-heading strong { font-size: 1rem; }
+.step-navigation { display: flex; gap: 4px; }
+.step-navigation button { min-width: 44px; padding: 4px 9px; }
+.step-guide p { font-size: .8rem; margin: 3px 0; line-height: 1.5; color: var(--muted); }
+.step-guide .step-movement { color: #e0e9df; }
+body[data-workspace="practice"] .simple-grid { grid-template-rows: minmax(465px,1fr) 166px; }
+body[data-workspace="practice"] .simple-panel[data-panel="timeline"] > h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.simple-panel .event-card.outside-passage { background: #182027; border-color: #3b454b; color: #9daab3; }
+.simple-panel .event-card.outside-passage strong { font-weight: 400; }
+.simple-panel .event-card.passage-start { border-left: 3px solid var(--accent); }
+.simple-panel .event-card.passage-end { border-right: 3px solid var(--accent); }
+body[data-workspace="practice"] #play-status { display: none; }
+@media (max-width:1100px), (max-height:700px) {
+  body[data-workspace="practice"] .simple-grid { grid-template-rows: auto; }
+  .practice-jump { display: flex; }
+}
 @media (max-width:400px) { .string-choices { grid-template-columns: repeat(3,minmax(44px,1fr)); gap: 4px; } }
 
 /* Retained directional comparator from the 1.7 release. */

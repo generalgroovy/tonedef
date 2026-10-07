@@ -24,6 +24,7 @@ export function practiceRangesView(s) {
 // Range gestures and numeric entry share the same validated project transaction.
 export function installPracticeRanges({ settings, change, changeWindow, practice, changePractice, error }) {
   const tracks = installWindowTracks({
+    accepts: key => key !== 'passage',
     read: key => key.startsWith('frets:') ? settings().practiceRanges[Number(key.split(':')[1])] : {min:practice()[key+'Min'],max:practice()[key+'Max']},
     change: (key, range) => key.startsWith('frets:') ? changeWindow(Number(key.split(':')[1]),range) : changePractice(key,range),
   });

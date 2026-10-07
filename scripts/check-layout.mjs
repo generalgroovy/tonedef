@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import {visualPracticeChecks} from './visual-practice-checks.mjs';
 import {learningPathChecks} from './learning-path-checks.mjs';
+import {focusedPracticeChecks} from './focused-practice-checks.mjs';
 import { createServer } from 'node:http';
 import { mkdir, readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
@@ -226,7 +227,10 @@ async function learnerInteractions(page,label,touch) {
   assert.equal(await page.locator('#workspace-practice').getAttribute('aria-pressed'),'true');
   assert.deepEqual(await savedProject(page),beforePreview,'Opening Practice does not replace existing music');
   assert.equal(await page.locator('#practice-more').getAttribute('open'),null,'Extra choices start closed');
-  assert.equal(await page.locator('#setting-generationType').isVisible(),true,'Pattern type is visible without opening extra choices');
+  assert.equal(await page.locator('#practice-shape').getAttribute('open'),null,'Shape choices start folded so New pattern is immediately reachable');
+  assert.equal(await page.locator('#practice-new').isVisible(),true);
+  await page.locator('#practice-shape > summary').click();
+  assert.equal(await page.locator('#setting-generationType').isVisible(),true,'Pattern type is reachable inside Shape next pattern');
   assert.equal(await page.locator('#practice-countMin,#practice-stringsMin,#practice-notesPerStringMin').count(),0,'Random bounds stay out of the way until requested');
   for(const key of ['keyRandom','modeRandom','countRandom','stringsRandom','notesPerStringRandom']) {
     assert.equal(await page.locator(`#practice-${key}`).isChecked(),false,`${key}: randomization requires an explicit choice`);
@@ -672,6 +676,7 @@ try {
     try {
       const checks=await learningPathChecks(page,{touch,label,output});
       report.interactions.push({viewport:label,checks});
+      report.interactions.push({viewport:label,checks:await focusedPracticeChecks(page,{touch,label,output})});
     } catch(error) {
       await page.screenshot({path:path.join(output,`${label}-learning-failure.png`),fullPage:true});
       throw error;

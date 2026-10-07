@@ -111,7 +111,7 @@ export async function learningPathChecks(page,{touch,label,output}) {
   await tap('#practice-new');await page.waitForFunction(()=>document.querySelector('#practice-new')?.disabled===false);
   assert.equal(await page.locator('#practice-error').count(),0);
   assert.ok((await saved()).events.every(event=>event.kind==='chord'));
-  await tap('#practice-more > summary');await page.locator('#setting-picking').selectOption('fingers');
+  await tap('#practice-shape > summary');await tap('#practice-more > summary');await page.locator('#setting-picking').selectOption('fingers');
   assert.equal(await page.locator('#setting-fingerPattern').isVisible(),true,'Finger-picking depth is reachable from Practice');
   const layout=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
   assert.ok(layout.scroll<=layout.width+1,'Learning and practice do not create page-level horizontal overflow');

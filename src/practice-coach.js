@@ -38,10 +38,10 @@ export function practiceTiming(project) {
   return `${pace} · ${Number(seconds.toFixed(1))} seconds per pass. A step can be a note, chord or rest.`;
 }
 
-export function createPracticeCoach({project,changeTempo}) {
+export function createPracticeCoach({project,changeTempo,scope = () => ''}) {
   let session=freshPracticeSession(), signature='';
   function sync() {
-    const p=project(), identity=practiceIdentity(p);
+    const p=project(), identity=practiceIdentity(p)+scope();
     if(signature && signature!==identity) session=freshPracticeSession();
     signature=identity;
     session=practiceSessionStep(session,'sync',p.settings.tempo);
@@ -53,13 +53,13 @@ export function createPracticeCoach({project,changeTempo}) {
       <div class="coach-progress" aria-label="${session.streak} of 3 clean passes">${[1,2,3].map(n=>`<span class="${n<=session.streak?'complete':''}" aria-hidden="true">${n<=session.streak?'✓':n}</span>`).join('')}<span>at ${tempo} bpm</span></div>
       <p class="coach-status" role="status">${esc(session.message)}</p>
       <div class="coach-actions"><button id="coach-clean" data-coach="clean">Clean pass</button><button id="coach-retry" data-coach="retry">Needs work</button>${session.streak>=3&&tempo<240?`<button id="coach-faster" data-coach="faster">Try ${Math.min(240,tempo+5)} bpm →</button>`:''}${tempo>30?`<button id="coach-slower" data-coach="slower">Slower −5 bpm</button>`:''}<button id="coach-end" data-coach="end">End session</button></div>
-      <small>${session.passes} self-reported clean ${session.passes===1?'pass':'passes'}${session.best?` · three-pass best ${session.best} bpm`:''}. This session only.</small>` : `<p>Listen to your pattern, play it on your instrument, then mark how it went. Build three clean passes before trying a faster tempo.</p><button id="coach-start" data-coach="start" ${p.events.some(e=>e.notes.length)?'':'disabled'}>Start practice loop</button>`}
+      <small>${session.passes} self-reported clean ${session.passes===1?'pass':'passes'}${session.best?` · three-pass best ${session.best} bpm`:''}. This session only.</small>` : `<p>Play the current passage on your instrument, then mark how it went. Build three clean passes before trying a faster tempo.</p><button id="coach-start" data-coach="start" ${p.events.some(e=>e.notes.length)?'':'disabled'}>Start self-check</button>`}
       <p class="coach-disclaimer">You judge timing, tone and technique. ToneDef does not listen to your instrument.</p>`;
   }
   function update(previousFocus) {
     const node=document.getElementById('practice-coach-body'); if(!node)return;
     const focus=previousFocus ?? document.activeElement?.id; node.innerHTML=content();
-    document.querySelector('#practice-coach > summary').textContent='Practise this pattern'+(session.active?' · session active':'');
+    document.querySelector('#practice-coach > summary').textContent='Check your progress'+(session.active?' · session active':'');
     if(focus?.startsWith('coach-')) (document.getElementById(focus)??document.getElementById(session.active?'coach-clean':'coach-start'))?.focus({preventScroll:true});
   }
   document.addEventListener('click',event=>{
@@ -72,5 +72,5 @@ export function createPracticeCoach({project,changeTempo}) {
     else session=practiceSessionStep(session,action,tempo);
     update(focus);
   });
-  return { view:()=>{ sync(); return `<details id="practice-coach" class="practice-coach"><summary>Practise this pattern${session.active?' · session active':''}</summary><div id="practice-coach-body">${content()}</div></details>`; } };
+  return { view:()=>{ sync(); return `<details id="practice-coach" class="practice-coach"><summary>Check your progress${session.active?' · session active':''}</summary><div id="practice-coach-body">${content()}</div></details>`; } };
 }

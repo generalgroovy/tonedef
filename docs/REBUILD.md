@@ -1,5 +1,7 @@
 # Rebuild ToneDef from these documents
 
+Apply [Focused practice 1.12](FOCUSED-PRACTICE.md) for the current passage range, one-bar count-in, listen/answer playback, step guide and compact practice controls. It extends the 1.11 learning path without changing saved-project format.
+
 Apply [Learning path 1.11](LEARNING-PATH.md) for the current six-lesson path, played-note explanations, diatonic triad builder, ear matching, practice goals and self-assessed practice loop. It extends 1.10 without changing saved-project format or generation algorithms.
 
 Apply [Visual practice 1.10](VISUAL-PRACTICE.md) for the current note hierarchy, draggable values and whole ranges, and optional recall exercises. It extends the 1.9 foundation below without changing the project schema or generation rules.

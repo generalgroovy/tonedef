@@ -12,7 +12,7 @@ export function pointerValue(x, rect, min, max, reversed = false) {
 }
 const esc = v => String(v).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
 export function windowTrack({key, id, range, min, max, label, reversed = false, fretIndex}) {
-  const pct = value => (reversed ? max - value : value - min) / (max - min) * 100;
+  const pct = value => (reversed ? max - value : value - min) / Math.max(1,max - min) * 100;
   const start = Math.min(pct(range.min),pct(range.max)), end = Math.max(pct(range.min),pct(range.max));
   return `<div class="range-track" data-window="${key}" data-window-min="${min}" data-window-max="${max}" ${reversed ? 'data-window-reversed' : ''} ${fretIndex === undefined ? '' : `data-range-track="${fretIndex}"`} style="--range-start:${start}%;--range-end:${end}%">
     <span class="range-band" aria-hidden="true"></span><button id="${id}-band" class="range-move" role="slider" data-window-edge="band" title="Drag to move both ends" aria-label="${esc(label)}: move whole range" aria-valuemin="${min}" aria-valuemax="${max-(range.max-range.min)}" aria-valuenow="${range.min}" aria-valuetext="${range.min} to ${range.max}"><span aria-hidden="true">↔</span></button>
@@ -20,11 +20,11 @@ export function windowTrack({key, id, range, min, max, label, reversed = false, 
 }
 
 // One pointer gesture = one commit. Only temporary DOM values change on move.
-export function installWindowTracks({read, change}) {
+export function installWindowTracks({read, change, accepts = () => true}) {
   let drag;
   function paint(g, range) {
     g.value = range;
-    const pct = v => (g.reversed ? g.max-v : v-g.min) / (g.max-g.min)*100;
+    const pct = v => (g.reversed ? g.max-v : v-g.min) / Math.max(1,g.max-g.min)*100;
     g.track.style.setProperty('--range-start',Math.min(pct(range.min),pct(range.max))+'%');
     g.track.style.setProperty('--range-end',Math.max(pct(range.min),pct(range.max))+'%');
     for (const edge of ['min','max','band']) {
@@ -53,7 +53,7 @@ export function installWindowTracks({read, change}) {
   }
   document.addEventListener('pointerdown', e=>{
     const track = e.target.closest?.('[data-window]');
-    if (!track || e.button!==0 || !e.isPrimary) return;
+    if (!track || !accepts(track.dataset.window) || e.button!==0 || !e.isPrimary) return;
     finish(true);
     const g = context(track), before = {...read(g.key)}, rect = track.getBoundingClientRect();
     const value = pointerValue(e.clientX,rect,g.min,g.max,g.reversed);
@@ -82,7 +82,7 @@ export function installWindowTracks({read, change}) {
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'&&drag){e.preventDefault();e.stopImmediatePropagation();finish(true);return;}
     const handle=e.target.closest?.('[data-window-edge]');
-    if(!handle||e.altKey||e.ctrlKey||e.metaKey)return;
+    if(!handle||!accepts(handle.closest('[data-window]')?.dataset.window)||e.altKey||e.ctrlKey||e.metaKey)return;
     const g=context(handle.closest('[data-window]')),range=read(g.key),edge=handle.dataset.windowEdge,step=e.shiftKey?5:1;
     const delta={ArrowLeft:-step*(g.reversed?-1:1),ArrowRight:step*(g.reversed?-1:1),ArrowDown:-step,ArrowUp:step}[e.key];
     if(delta===undefined&&!['Home','End'].includes(e.key))return;

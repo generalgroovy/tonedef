@@ -70,7 +70,7 @@ export function createRecall({project,audition,beforeListen}) {
       if(mask)node.setAttribute('aria-pressed','false');
       else node.setAttribute('aria-pressed',String(node.classList.contains('selected')));
     }
-    for(const node of document.querySelectorAll('.learning-strip,.learning-feedback,.learning-chord,.note-state-legend,.simple-panel .timeline,.simple-pattern-actions,#pattern-info')) {
+    for(const node of document.querySelectorAll('.learning-strip,.learning-feedback,.learning-chord,.note-state-legend,.simple-panel .timeline,.simple-pattern-actions,#pattern-info,#step-guide')) {
       node.hidden=mask;
     }
     let hint=document.getElementById('recall-pattern-hidden');

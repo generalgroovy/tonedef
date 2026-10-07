@@ -77,6 +77,7 @@ export async function visualPracticeChecks(page,{touch,output,label}) {
   assert.match(await page.locator('.fret').first().getAttribute('aria-label'),/^E4,/);
 
   await page.locator('#workspace-practice').click();
+  await openDetails('practice-shape');
   await page.locator('#drag-setting-eventCount').press('ArrowRight');
   assert.equal((await saved()).settings.eventCount,original.settings.eventCount+1);await undo();
   const speedBefore=await saved();
@@ -118,7 +119,7 @@ export async function visualPracticeChecks(page,{touch,output,label}) {
   // Left-handed ranges reverse only horizontal drag and arrow directions.
   await page.locator('#workspace-overview').click();
   await page.locator('#instrument-detail > summary').click();await page.locator('#setting-leftHanded').check();
-  await page.locator('#workspace-practice').click();await openDetails('practice-more');await openDetails('practice-ranges');
+  await page.locator('#workspace-practice').click();await openDetails('practice-shape');await openDetails('practice-more');await openDetails('practice-ranges');
   await page.locator('#range-0-band').press('ArrowRight');
   assert.deepEqual((await saved()).settings.practiceRanges[0],{min:3,max:11});await undo();
   await dragWindow('#range-0-band',-4);

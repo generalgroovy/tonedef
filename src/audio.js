@@ -1,8 +1,10 @@
 import { midiOf, PPQ } from "./model.js";
 import { frequency } from "./theory.js";
-export function playbackPlan(project) {
+export function playbackPlan(project, {from = 0, to = project.events.length - 1, countIn = false, response = false} = {}) {
   const s = project.settings,
     secondsPerTick = 60 / s.tempo / PPQ;
+  if (project.events.length && (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || from > to || to >= project.events.length))
+    throw Error('Choose a passage inside the pattern.');
   let tick = 0;
   const events = project.events.map((event, index) => {
     const start = tick * secondsPerTick;
@@ -31,12 +33,23 @@ export function playbackPlan(project) {
       })),
     };
   });
+  const selected = events.slice(from,to + 1);
+  let passageTicks = 0;
+  const passage = selected.map((event,i) => {
+    const start=passageTicks * secondsPerTick;
+    passageTicks += project.events[from+i].duration;
+    return {...event,start,phase:response?'listen':'play'};
+  });
+  const passDuration = passageTicks * secondsPerTick;
   const [beats, unit] = s.meter.split("/").map(Number),
     barTicks = (beats * PPQ * 4) / unit,
     beatTicks = unit === 8 && beats % 3 === 0 ? PPQ * 1.5 : (PPQ * 4) / unit;
   return {
-    events,
-    duration: tick * secondsPerTick,
+    events: response ? [...passage,...passage.map(event => ({...event,start:event.start+passDuration,notes:[],phase:'answer'}))] : passage,
+    duration: passDuration * (response ? 2 : 1),
+    passDuration,
+    countIn: countIn && passage.length ? barTicks * secondsPerTick : 0,
+    response,
     barTicks,
     beatUnitTicks: (PPQ * 4) / unit,
     beatTicks,
@@ -139,8 +152,8 @@ export class Player {
         settings.waveform,
       );
   }
-  async play(project) {
-    return this.playPlan(playbackPlan(project), project.settings);
+  async play(project, options) {
+    return this.playPlan(playbackPlan(project, options), project.settings);
   }
   async playSequence(midis, settings) {
     const duration = 60 / 90;
@@ -158,17 +171,24 @@ export class Player {
     if (revision !== this.revision) return;
     if (!plan.events.length || !plan.duration) return;
     this.running = true;
-    this.origin = this.context.currentTime + 0.07;
+    const countIn = plan.countIn || 0;
+    const countStart = this.context.currentTime + 0.07;
+    this.origin = countStart + countIn;
     let cursor = 0,
       cycle = 0,
       nextClick = 0,
       clickCycle = 0,
+      countClick = 0,
       lastPosition = "";
     const clickSeconds = plan.beatTicks * plan.secondsPerTick;
     const pump = () => {
       if (!this.running || revision !== this.revision) return;
       const now = this.context.currentTime,
         horizon = now + 0.12;
+      while (countClick < countIn && countStart + countClick < horizon) {
+        this.voice(countClick === 0 ? 96 : 89,countStart+countClick,0.035,(s.volume/100)*0.1,'sine');
+        countClick += clickSeconds;
+      }
       // Schedule across loop boundaries ahead of the audio clock, never after a loop ends.
       while (s.loop || cycle === 0) {
         const e = plan.events[cursor],
@@ -187,24 +207,27 @@ export class Player {
           cycle++;
         }
       }
-      if (s.metronome)
+      if (s.metronome || plan.response)
         while (s.loop || clickCycle === 0) {
           const start = this.origin + clickCycle * plan.duration + nextClick;
           if (start >= horizon) break;
           const barSeconds = plan.barTicks * plan.secondsPerTick,
+            phasePosition = nextClick >= (plan.passDuration ?? plan.duration) ? nextClick-plan.passDuration : nextClick,
             accent =
               Math.abs(
-                nextClick / barSeconds - Math.round(nextClick / barSeconds),
+                phasePosition / barSeconds - Math.round(phasePosition / barSeconds),
               ) < 0.001;
-          this.voice(
+          if (s.metronome || (plan.response && nextClick >= plan.passDuration)) this.voice(
             accent ? 96 : 89,
             start,
             0.035,
             (s.volume / 100) * 0.1,
             "sine",
           );
-          nextClick += clickSeconds;
-          if (nextClick >= plan.duration) {
+          // Each answer starts at its own beat 1, even for an off-beat passage.
+          nextClick = plan.response && nextClick < plan.passDuration
+            ? Math.min(plan.passDuration,nextClick + clickSeconds) : nextClick + clickSeconds;
+          if (nextClick >= plan.duration - 1e-9) {
             nextClick = 0;
             clickCycle++;
           }
@@ -216,13 +239,17 @@ export class Player {
       }
       const position =
         s.loop && elapsed >= 0 ? elapsed % plan.duration : elapsed;
+      const beat = elapsed < 0 ? Math.max(0,Math.floor((now-countStart)/clickSeconds)) + 1
+        : Math.floor(((position >= (plan.passDuration ?? plan.duration) ? position-plan.passDuration : position) + 1e-9)/clickSeconds) + 1;
       const index = plan.events.findLastIndex((e) => e.start <= position),
-        key = Math.floor(Math.max(0, elapsed) / plan.duration) + ":" + index;
+        cycleIndex = Math.floor(Math.max(0, elapsed) / plan.duration),
+        key = cycleIndex + ":" + index + ':' + beat;
       if (key !== lastPosition) {
         lastPosition = key;
         this.onStep(
           plan.events[index]?.id ?? null,
           Math.max(0, position) / plan.duration,
+          {phase:elapsed < 0 && countIn ? 'count-in' : plan.events[index]?.phase ?? 'play',beat,beats:Math.round(plan.barTicks/plan.beatTicks),cycle:cycleIndex + 1},
         );
       }
     };

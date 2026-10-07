@@ -50,6 +50,7 @@ import { createRecall } from './recall.js';
 import { Player, playbackPlan } from "./audio.js";
 import { EXERCISE_RECIPES, PRACTICE_GOALS, matchingExercise, SEQUENCE_PATTERNS, RHYTHM_PATTERNS, applyExerciseRecipe } from "./exercises.js";
 import { createPracticeCoach } from './practice-coach.js';
+import { createFocusedPractice, stepGuide } from './focused-practice.js';
 import { practiceCard } from "./practice.js";
 import { installExpression } from "./expression.js";
 import { mountWorkspace, revealPanel, workspaceMode, simpleWorkspace } from "./workspace.js";
@@ -106,8 +107,11 @@ let practiceError = null;
 let heardPitch = null;
 let lessonPitches = [];
 let lastRenderedWorkspace = null;
+let playbackState = null;
 const activeTool = () => simpleWorkspace() ? 'explore' : tool;
-const playLabel = () => player.running ? '■ Stop' : simpleWorkspace() ? '▶ Play pattern' : '▶ Play';
+const playLabel = () => player.running ? '■ Stop' : workspaceMode()==='practice'
+  ? practiceFocus.options().response ? '▶ Listen & play' : practiceFocus.label()==='Whole pattern' ? '▶ Play pattern' : '▶ Play passage'
+  : simpleWorkspace() ? '▶ Play pattern' : '▶ Play';
 function showHeardPitch(midi) {
   if (!simpleWorkspace()) return;
   heardPitch = Number.isFinite(midi) ? Math.round(midi) : null;
@@ -161,7 +165,9 @@ let analysisCache = new Map();
 let analysisSettings = null;
 let analysisProject = null;
 const player = new Player(
-  (id) => {
+  (id, progress, state) => {
+    playbackState = player.running ? state ?? null : null;
+    if(state?.phase==='count-in'&&workspaceMode()==='practice')id=practiceFocus.events()[0]?.id ?? null;
     const changed = playingId !== id;
     playingId = id;
     if (changed) refreshPlayingBoard();
@@ -173,8 +179,13 @@ const player = new Player(
     document
       .querySelectorAll("[data-event]")
       .forEach((el) => el.classList.toggle("playing", el.dataset.event === id));
+    if(changed && id && workspaceMode()==='practice') {
+      const card=document.querySelector(`[data-event="${CSS.escape(id)}"]`),track=card?.closest('.timeline');
+      if(track) {const c=card.getBoundingClientRect(),t=track.getBoundingClientRect();if(c.left<t.left)track.scrollLeft-=t.left-c.left;else if(c.right>t.right)track.scrollLeft+=c.right-t.right;}
+    }
     $("#playButton")?.setAttribute("aria-pressed", String(player.running));
     if ($("#playButton")) $("#playButton").textContent = playLabel();
+    updatePracticePlayback();
   },
   () => {
     $("#playButton")?.setAttribute("aria-pressed", "false");
@@ -199,7 +210,29 @@ window.addEventListener('blur', () => lessonPlayer.stop());
 document.addEventListener('visibilitychange', () => { if (document.hidden) lessonPlayer.stop(); });
 const sliders = installValueSliders();
 const recall = createRecall({project:()=>project(),audition:midi=>expression.audition(midi).catch(e=>notify(e.message,true)),beforeListen:()=>{player.stop();lessonPlayer.stop();expression.stop();}});
-const practiceCoach = createPracticeCoach({project,changeTempo:tempo=>setSetting('tempo',tempo)});
+const practiceFocus = createFocusedPractice({project,changed:()=>{player.stop();render();},error:message=>notify(message,true)});
+const practiceCoach = createPracticeCoach({project:()=>({...project(),events:practiceFocus.events()}),scope:()=>JSON.stringify(practiceFocus.range()),changeTempo:tempo=>setSetting('tempo',tempo)});
+function playPattern() {
+  return player.play(clone(project()),workspaceMode()==='practice'?practiceFocus.options():undefined);
+}
+function updatePracticePlayback() {
+  const stage=document.getElementById('practice-stage');if(!stage)return;
+  const state=playbackState,phase=state?.phase;
+  const title=phase==='count-in'?'Get ready':phase==='answer'?'Your turn':phase==='listen'?'Listen':player.running?'Play along':'Ready';
+  stage.dataset.phase=phase ?? 'ready';
+  const status=document.getElementById('practice-phase');
+  if(status && status.textContent!==title)status.textContent=title;
+  const beat=document.getElementById('practice-beat');
+  if(beat)beat.textContent=player.running&&state?phase==='count-in'?`${Math.min(state.beat,state.beats)} / ${state.beats}`:`Beat ${(state.beat-1)%state.beats+1}${boardEvent()?' · '+nameOf(boardEvent()):''}`:'▶ Play above';
+  const scope=document.getElementById('practice-scope');
+  if(scope)scope.textContent=practiceFocus.label()+(player.running&&state?.phase!=='count-in'?` · pass ${state?.cycle ?? 1}`:'');
+  const guide=document.getElementById('step-guide'),event=boardEvent();
+  if(guide) {
+    guide.outerHTML=stepGuide(project(),project().events.indexOf(event),event?nameOf(event):'');
+    document.getElementById('step-guide').hidden=document.body.classList.contains('recalling-hidden');
+  }
+  stage.querySelectorAll('.step-navigation button').forEach(button=>{if(player.running)button.disabled=true;});
+}
 const ranges = installPracticeRanges({
   settings: () => project().settings,
   change: (index, edge, value) => mutate(p => {
@@ -514,7 +547,7 @@ function drawChordShape() {
 }
 function timeline() {
   const p = project(), s = p.settings, plan = playbackPlan(p);
-  if (simpleWorkspace()) return `<section class="panel timeline-panel" aria-label="Pattern"><div class="timeline" aria-label="Pattern timeline">${p.events.map((e,i)=>`<button class="event-card ${p.selectedId===e.id?'active':''}" id="simple-event-${i}" data-event="${e.id}" aria-pressed="${p.selectedId===e.id}"><span class="event-time">${i+1}${e.locked?' ▣':''}</span><strong>${esc(nameOf(e))}</strong><small>${e.notes.length>1 ? `${e.notes.length} notes` : e.notes.map(n=>`String ${stringNumber(s,n.stringId)} · fret ${n.fret}`).join('') || 'Rest'}</small></button>`).join('') || '<p>Choose Practice to make your first pattern.</p>'}</div><div class="simple-pattern-actions">${current()?`<button data-action="lock-event" aria-pressed="${current().locked}">${current().locked?'Release step':'Keep step'}</button>`:''}<span id="play-status" aria-live="off"></span><span>${p.events.length} steps · ${s.tempo} bpm</span></div><details id="pattern-info"><summary>Info</summary><p>Tap a card to find it on the neck. Press Play to hear the pattern. Keep step protects that card when you make a new pattern. The fretboard plays freely; use Studio to edit your pattern.</p></details></section>`;
+  if (simpleWorkspace()) return `<section class="panel timeline-panel" aria-label="Pattern"><div class="timeline" aria-label="Pattern timeline">${p.events.map((e,i)=>`<button class="event-card ${p.selectedId===e.id?'active':''}" id="simple-event-${i}" data-event="${e.id}" aria-pressed="${p.selectedId===e.id}"><span class="event-time">${i+1}${e.locked?' ▣':''}</span><strong>${esc(nameOf(e))}</strong><small>${workspaceMode()==='practice' ? `${formatBeats(e.duration)} ♩${e.notes.length?' · '+esc(pickingLabel(e,i)):''}` : e.notes.length>1 ? `${e.notes.length} notes` : e.notes.map(n=>`String ${stringNumber(s,n.stringId)} · fret ${n.fret}`).join('') || 'Rest'}</small></button>`).join('') || '<p>Choose Practice to make your first pattern.</p>'}</div><div class="simple-pattern-actions">${current()?`<button data-action="lock-event" aria-pressed="${current().locked}">${current().locked?'Release step':'Keep step'}</button>`:''}<span id="play-status" aria-live="off"></span><span>${p.events.length} steps${workspaceMode()==='practice'?'':' · '+s.tempo+' bpm'}</span></div><details id="pattern-info"><summary>Info</summary><p>Tap a card to find it on the neck. Press Play to hear the pattern. Keep step protects that card when you make a new pattern. The fretboard plays freely; use Studio to edit your pattern.</p>${workspaceMode()==='practice'?'<p>♩ is one quarter-note beat. Arrows show the saved picking direction. Dimmed cards are outside your practice passage; change it under Choose passage. Your full pattern is always preserved.</p>':''}</details></section>`;
   const pageStart = Math.floor(Math.max(0, p.events.findIndex((e) => e.id === p.selectedId)) / 16) * 16;
   let tick = p.events.slice(0, pageStart).reduce((sum, e) => sum + e.duration, 0);
   return `<section class="panel timeline-panel" aria-label="Pattern"><div class="pattern-toolbar"><div class="button-row"><span class="count" aria-label="${p.events.length} events">${p.events.length}</span><button data-action="add" data-kind="chord">+ Chord</button><button data-action="add" data-kind="melody">+ Note</button><button data-action="add" data-kind="rest">+ Rest</button>${help("Pattern", "Select a card to edit its notes. Drag cards or use arrows to reorder. Duration is in quarter-note beats; picking affects playback. Locked events survive generation.")}</div></div>${p.events.length > 16 ? `<div class="timeline-pages"><button data-event-index="${pageStart - 16}" ${pageStart === 0 ? "disabled" : ""}>← 16</button><span>${pageStart + 1}–${Math.min(pageStart + 16, p.events.length)} / ${p.events.length}</span><button data-event-index="${pageStart + 16}" ${pageStart + 16 >= p.events.length ? "disabled" : ""}>16 →</button></div>` : ""}<div class="pattern-content"><div class="timeline" aria-label="Pattern timeline">${p.events.length ? p.events.slice(pageStart, pageStart + 16).map((e, i) => {
@@ -650,7 +683,7 @@ function exercisePanel() {
     const recipes = `<div class="practice-goal"><label for="exercise-recipe">What do you want to practise?<select id="exercise-recipe"><option value="" ${matched?'':'selected'} disabled>Custom pattern</option>${['Start here','Build fluency','Stretch your control'].map(group=>`<optgroup label="${group}">${EXERCISE_RECIPES.filter(r=>PRACTICE_GOALS[r.id].group===group).map(r=>`<option value="${r.id}" ${matched?.id===r.id?'selected':''}>${esc(r.label)}</option>`).join('')}</optgroup>`).join('')}</select></label><p class="practice-aim">${esc(goal?.aim ?? 'Shape a pattern around what you want to improve.')}</p>${goal?`<details id="practice-goal-guide"><summary>How to practise · go deeper</summary><p>${esc(goal.cue)}</p><p>${esc(goal.stretch)}</p><p>These rules shape the next New pattern. Your saved pattern stays until you generate; kept steps keep their notes and rhythm.</p></details>`:''}</div>`;
     return `<section class="panel exercise-panel" aria-label="${workspaceMode()==='learn'?'Learning':'Practice choices'}">${workspaceMode()==='learn'
       ? `${learningView(s,learningTopic,{keyFields:field('tonic','Home note'),collectionControl:collectionControl(),degree:learningDegree,first:learningFirst,last:learningLast})}<button id="learn-practice" data-workspace-mode="practice">Make a pattern →</button>`
-      : practiceControls(p,{field,keyFields,recipes,coach:practiceCoach.view(),ranges:practiceRangesView(s),busy:!!worker,resultText:practiceResult?.project===JSON.stringify(p)?practiceResult.text:'',errorText:practiceError?.project===JSON.stringify(p)?practiceError.text:''})}</section>`;
+      : practiceControls(p,{field,keyFields,recipes,playback:practiceFocus.view(),coach:practiceCoach.view(),ranges:practiceRangesView(s),busy:!!worker,resultText:practiceResult?.project===JSON.stringify(p)?practiceResult.text:'',errorText:practiceError?.project===JSON.stringify(p)?practiceError.text:''})}</section>`;
   }
   const matched = EXERCISE_RECIPES.find(r => Object.entries(r.settings).every(([id, value]) => s[id] === value));
   return `<section class="panel exercise-panel" aria-label="Exercise builder">
@@ -679,6 +712,8 @@ function settings() {
 }
 
 function render() {
+  if (lastRenderedWorkspace && lastRenderedWorkspace!==workspaceMode()) player.stop();
+  practiceFocus.cancel();
   const nextLearningContext = JSON.stringify([learningTopic,project().settings.tonic,project().settings.keyMask,project().settings.tonicSpelling,project().settings.accidentals]);
   if (learningContext !== nextLearningContext) { learningFirst = null; learningLast = null; learningContext = nextLearningContext; }
   lessonPlayer.stop();
@@ -696,8 +731,18 @@ function render() {
   const p = project(), s = p.settings, e = current();
   const reference = referenceName();
   $("#app").innerHTML = `<header class="topbar"><a class="brand" href="./" aria-label="ToneDef home" ${hint("ToneDef · guitar and bass workspace by GeneralGroovy")}><span class="brand-icon">t<span>d</span></span></a><div class="project-title"><input id="project-title" aria-label="Project name" maxlength="120" value="${esc(p.title)}"></div><div class="header-actions"><button data-action="undo" ${!history.past.length ? "disabled" : ""} aria-label="Undo" ${hint("Undo · Ctrl/Command+Z")}>Undo</button><button data-action="redo" ${!history.future.length ? "disabled" : ""} aria-label="Redo" ${hint("Redo · Ctrl/Command+Shift+Z")}>Redo</button><button id="playButton" class="primary" data-action="play" aria-pressed="${player.running}">${playLabel()}</button><button data-action="stop" aria-label="Stop playback">■ Stop</button><button data-action="projects">Projects</button><button data-action="settings" ${hint("Instrument, generation, rhythm, sound and display settings.")}>Settings</button><button class="help-trigger" data-action="help" aria-label="Help and keyboard shortcuts">?</button></div></header><main><section class="context-bar" aria-label="Key and interval reference"><div class="context-fields">${field("tonic")}${collectionControl()}</div><div class="key-tones" aria-label="Current key tones">${pcsFor(s.keyMask).map((pc) => `<button data-key-pc="${pc}" data-pc="${pc}" title="Remove ${pretty(TONICS[pc])} from key" style="--note-color:${s[`color${mod(pc - s.tonic)}`]}">${pretty(spellPitch(60 + pc, s).replace(/\d+$/, ""))}</button>`).join("") || "<span>No key tones</span>"}${!(s.keyMask & (1 << s.tonic)) ? '<span class="warning-text">Tonic outside collection</span>' : ""}</div><div class="reference-row">${field("colorReference")}<span class="reference-readout">${esc(reference)}</span></div></section><div class="workspace">${exercisePanel()}<section class="panel fretboard-panel"><h1 class="sr-only">Fretboard</h1><div class="board-bar"><div class="segmented" aria-label="Editor mode"><button id="mode-chord" data-mode="chord" aria-pressed="${editorMode() === "chord"}">Chord</button><button id="mode-melody" data-mode="melody" aria-pressed="${editorMode() === "melody"}">Melody</button></div><div class="segmented small" aria-label="Fretboard tool"><button id="tool-notes" data-tool="notes" aria-pressed="${tool === "notes"}" ${hint("Click a fret to edit a note. Chord mode keeps one note per string; another click removes it.")}>Edit notes</button><button id="tool-explore" data-tool="explore" aria-pressed="${tool === "explore"}" ${hint("Play without changing the pattern. Hold and drag horizontally to slide or vertically to bend. Keyboard: hold Space/Enter, then arrows; release to stop.")}>Explore</button><button id="tool-key" data-tool="key" aria-pressed="${tool === "key"}" ${hint("Edit the pitch-class collection without changing notes. Right-click / Shift+F10 also edits the key.")}>Edit key</button></div><label class="hear-toggle"><input type="checkbox" data-setting="audition" ${s.audition ? "checked" : ""}> Hear clicks</label>${randomBox("audition")}${editorMode() === "melody" ? field("append", "Append") : ""}<button id="half-step-labels" data-action="half-step-labels" aria-pressed="${halfStepLabels}" ${hint("Show numeric half-step distances on the fretboard, relative to the selected Reference. Tonic and chord-root values are modulo 12; a pinned MIDI reference gives signed distances including octaves.")}>½ steps</button><span class="board-context">${e?.locked ? "▣ Locked · " : ""}${esc(e ? nameOf(e) : "—")}${halfStepLabels ? s.colorReference === "pinned" ? " · signed ½ steps" : " · mod 12" : ""}</span>${help("Fretboard", "Arrow keys move; Enter or Space toggles a note; Shift+F10 changes key membership. Small neutral discs are outside the key; rings are key tones; filled squares are pattern positions; a white ring marks the current step. A small home dot marks the tonic. Dashed filled squares are pattern notes outside the key. × marks a muted string. The chosen reference determines interval colors. Lines connect chord positions across physical strings; dashed spans cross muted strings. They do not indicate barres or voice leading.")}</div><div class="fretboard-guide"><output id="expression-readout" aria-live="off"></output><details class="gesture-help"><summary>Info</summary><p>Hold a note and move sideways to slide along its string; move vertically to bend up to two semitones. 100 cents = one semitone. The first movement chooses the gesture. Release to stop; Escape cancels. Enable Hear clicks for sound. Use the scrollbar below the neck to pan on touch.</p><p>Explore keyboard: hold Space or Enter and use ← → to slide by a fret, ↑ ↓ to raise or release a bend in quarter-semitone steps. Arrow keys alone move focus. In Edit, Enter or Space toggles a note. Right-click / Shift+F10 edits the key.</p><p><strong>Filled squares = positions used in your pattern.</strong> A white ring marks the current step. Medium rings = key tones. Small neutral discs = outside the key. A home dot marks the tonic. Dashed filled squares are pattern notes outside the key. Colors show intervals from the selected Reference; the numbered legend below explains them.</p></details></div>${board()}${noteLegend(p)}${simpleWorkspace() ? recall.view() : ''}<div class="neck-navigation" hidden><button data-neck-pan="-1" aria-label="Scroll fretboard left">←</button><button data-neck-pan="1" aria-label="Scroll fretboard right">→</button></div><div class="interval-legend" aria-label="Interval color key in half steps"><span class="unit">½ steps</span>${INTERVALS.map((name, i) => `<span class="interval-key" style="--note-color:${s[`color${i}`]}" ${hint(`${i} half steps · ${name}. Interval color is repeated each octave.`)} tabindex="0"><i></i><b>${i}</b><small>${name}</small></span>`).join("")}</div></section>${timeline()}<div class="theory-row">${inspector()}${toolsPanel()}${intervalWorkspace(intervalContext(p), s, intervalPair)}${transition()}</div></div>${settings()}<footer><span ${hint("Twelve-tone equal temperament; A4 = 440 Hz. Frequency ratio for n half steps is 2^(n/12).")} tabindex="0">12-TET · A4 440 Hz</span><button data-action="export-json" ${hint("Export your project as JSON. Projects otherwise stay in this browser.")}>Backup ↗</button></footer></main><dialog id="modal"></dialog>`;
+  if(workspaceMode()==='practice') {
+    document.querySelector('.fretboard-panel').insertAdjacentHTML('beforeend',`<section id="practice-stage" class="practice-stage" aria-label="Current practice step"><div class="practice-pulse"><strong id="practice-phase" role="status">Ready</strong><span id="practice-beat" aria-live="off"></span><span id="practice-scope"></span></div>${stepGuide(p,p.events.indexOf(e),e?nameOf(e):'')}</section>`);
+    const range=practiceFocus.range();
+    document.querySelectorAll('.timeline [data-event]').forEach((node,i)=>{
+      node.classList.toggle('outside-passage',i<range.min-1||i>=range.max);
+      node.classList.toggle('passage-start',i===range.min-1);
+      node.classList.toggle('passage-end',i===range.max-1);
+    });
+  }
   mountWorkspace(render, notify);
   updateLessonButton();
+  updatePracticePlayback();
   recall.mount(simpleWorkspace());
   for (const [id, top] of panelScroll) {
     const panel = document.querySelector('[data-panel="'+id+'"]');
@@ -920,6 +965,11 @@ document.addEventListener("click", (event) => {
       });
       return;
     }
+    if (target.dataset.stepJump !== undefined) {
+      const step=project().events[Number(target.dataset.stepJump)];
+      if(step) mutate(p=>{p.selectedId=step.id;});
+      return;
+    }
     if (target.dataset.event) {
       mutate((p) => {
         p.selectedId = target.dataset.event;
@@ -1014,14 +1064,14 @@ document.addEventListener("click", (event) => {
       lessonPlayer.stop(); showHeardPitch(null);
       expression.stop();
       if (player.running) player.stop();
-      else player.play(clone(project())).catch(e=>notify('Audio could not start: '+e.message,true));
+      else playPattern().catch(e=>notify('Audio could not start: '+e.message,true));
     }
     else if (action === "stop") { expression.stop(); player.stop(); }
-    else if (action === "audition")
-      (expression.stop(), player)
-        .play({ ...clone(project()), events: current() ? [clone(current())] : [],
-          settings: { ...project().settings, loop: false, metronome: false } })
-        .catch((e) => notify(e.message, true));
+    else if (action === "audition") {
+      expression.stop();lessonPlayer.stop();
+      const index=project().events.indexOf(current());
+      if(index>=0)player.play({...clone(project()),settings:{...project().settings,loop:false,metronome:false}},{from:index,to:index}).catch(e=>notify(e.message,true));
+    }
     else if (action === "inspect") {
       revealPanel("inspector");
       $(".inspector").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1254,7 +1304,7 @@ document.addEventListener("change", (event) => {
   });
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === 'Escape') lessonPlayer.stop();
+  if (event.key === 'Escape') {lessonPlayer.stop();player.stop();expression.stop();}
   const target = event.target;
   if (target.matches("input,textarea,select")) return;
   if (target.dataset.pos) {
@@ -1302,7 +1352,7 @@ document.addEventListener("keydown", (event) => {
     lessonPlayer.stop(); showHeardPitch(null);
     expression.stop();
     if (player.running) player.stop();
-    else player.play(clone(project())).catch((e) => notify(e.message, true));
+    else playPattern().catch((e) => notify(e.message, true));
   }
 });
 document.addEventListener("focusin", (event) => {
