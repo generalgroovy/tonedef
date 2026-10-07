@@ -47,11 +47,12 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
   const inputTrace=[];
   await page.exposeFunction('recordFocusedInput',entry=>inputTrace.push(entry));
   await page.evaluate(()=>{
-    for(const type of ['pointerdown','pointerup','touchend','click'])document.addEventListener(type,event=>{
-      window.recordFocusedInput({type,id:event.target.id,mode:document.querySelector('#practice-response')?.getAttribute('aria-pressed')});
+    for(const type of ['pointerdown','pointerup','touchend','mousedown','mouseup','focusout','change','click'])document.addEventListener(type,event=>{
+      window.recordFocusedInput({type,id:event.target.id,connected:event.target.isConnected,prevented:event.defaultPrevented,mode:document.querySelector('#practice-response')?.getAttribute('aria-pressed')});
     },true);
   });
   await tap('#practice-response');
+  await page.waitForFunction(()=>document.querySelector('#practice-response')?.getAttribute('aria-pressed')==='true',null,{timeout:1500}).catch(()=>{throw Error(JSON.stringify(inputTrace));});
   assert.equal(await page.locator('#practice-response').getAttribute('aria-pressed'),'true',JSON.stringify(inputTrace));
   await tap('#playButton');
   await page.waitForFunction(()=>document.querySelector('#practice-stage')?.dataset.phase==='count-in');
