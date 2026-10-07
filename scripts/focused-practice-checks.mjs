@@ -40,7 +40,7 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
     await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
     await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+t.width/3,y}]});
     await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-    await client.detach();
+    // Keep the input session alive until this isolated browser context closes.
     assert.equal(await page.locator('#passage-min').inputValue(),'2','Native touch moves the whole passage');
     assert.equal(await page.locator('#passage-max').inputValue(),'3');
   } else {await page.locator('#passage-range-band').press('ArrowRight');}
@@ -48,7 +48,7 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
   await page.exposeFunction('recordFocusedInput',entry=>inputTrace.push(entry));
   await page.evaluate(()=>{
     for(const type of ['pointerdown','pointerup','touchend','mousedown','mouseup','focusout','change','click'])document.addEventListener(type,event=>{
-      window.recordFocusedInput({type,id:event.target.id,connected:event.target.isConnected,prevented:event.defaultPrevented,mode:document.querySelector('#practice-response')?.getAttribute('aria-pressed')});
+      queueMicrotask(()=>window.recordFocusedInput({type,id:event.target.id,connected:event.target.isConnected,prevented:event.defaultPrevented,pointer:event.pointerType,primary:event.isPrimary,touches:event.touches?.length,track:event.target.closest('[data-window]')?.dataset.window,mode:document.querySelector('#practice-response')?.getAttribute('aria-pressed')}));
     },true);
   });
   await tap('#practice-response');
