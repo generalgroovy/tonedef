@@ -54,6 +54,11 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
   await tap('#practice-response');
   await page.waitForFunction(()=>document.querySelector('#practice-response')?.getAttribute('aria-pressed')==='true',null,{timeout:1500}).catch(()=>{throw Error(JSON.stringify(inputTrace));});
   assert.equal(await page.locator('#practice-response').getAttribute('aria-pressed'),'true',JSON.stringify(inputTrace));
+  if(page.viewportSize().width<=390) {
+    const header=await page.locator('.topbar').boundingBox();assert.ok(header.height<=112,'Mobile transport uses at most two rows');
+    await tap('.practice-jump');
+    const play=await page.locator('#playButton').boundingBox();assert.ok(play.y>=0&&play.y+play.height<=page.viewportSize().height,'Play/Stop remains visible beside the neck');
+  }
   await tap('#playButton');
   await page.waitForFunction(()=>document.querySelector('#practice-stage')?.dataset.phase==='count-in');
   assert.equal(await page.locator('#practice-phase').innerText(),'Get ready');

@@ -411,6 +411,10 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) footer > span { di
   .simple-grid { height: calc(100dvh - 76px); }
 }
 .practice-result { font-size: .8rem; color: var(--muted); margin: 4px 0; line-height: 1.4; }
+@media (max-width:380px) {
+  body:is([data-workspace="learn"],[data-workspace="practice"]) .header-actions button { padding-inline: 10px; }
+  .simple-menu summary { min-width: 44px; padding-inline: 4px; justify-content: center; }
+}
 .practice-playback { border-top: 1px solid var(--line); padding-top: 12px; }
 .practice-play-modes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; }
 .practice-play-modes button { font-size: .85rem; padding: 8px 5px; }
