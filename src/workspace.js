@@ -28,7 +28,7 @@ function jumpToPanel(id) {
   window.scrollTo({top:Math.max(0,panel.getBoundingClientRect().top+window.scrollY-header-12),behavior:reducedMotion()?'instant':'smooth'});
   panel.focus({preventScroll:true});
 }
-const stackedLearning = window.matchMedia('(max-width: 1100px), (max-height: 700px)');
+const stackedLearning = window.matchMedia('(max-width: 1099px), (max-height: 699px)');
 function placeLearningFeedback() {
   const feedback = document.getElementById('learning-feedback');
   const board = document.querySelector('.fretboard-panel'), exercise = document.querySelector('.exercise-panel');

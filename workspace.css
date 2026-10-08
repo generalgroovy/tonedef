@@ -451,7 +451,7 @@ body[data-workspace="practice"] .simple-panel[data-panel="timeline"] > h2 { posi
 .simple-panel .event-card.passage-start { border-left: 3px solid var(--accent); }
 .simple-panel .event-card.passage-end { border-right: 3px solid var(--accent); }
 body[data-workspace="practice"] #play-status { display: none; }
-@media (max-width:1100px), (max-height:700px) {
+@media (max-width:1099px), (max-height:699px) {
   body[data-workspace="practice"] .simple-grid { grid-template-rows: auto; }
   .practice-jump { display: flex; }
 }
@@ -574,9 +574,10 @@ body:is([data-workspace="learn"],[data-workspace="practice"]) :is(button,select,
 .simple-panel { scrollbar-width: thin; scrollbar-color: #586776 transparent; }
 .simple-panel :is(.board-scroll,.timeline) { scrollbar-width: thin; scrollbar-color: #637968 #172129; }
 .simple-menu summary::after { content: '⌄'; margin-left: 7px; }
+@media (max-width:380px) { .simple-menu summary::after { display: none; } }
 .simple-menu[open] > button { text-align: left; border: 0; background: transparent; border-radius: 5px; }
 .simple-menu[open] > button:hover { background: #34424e; }
-@media (max-width:1100px), (max-height:700px) {
+@media (max-width:1099px), (max-height:699px) {
   body:is([data-workspace="learn"],[data-workspace="practice"]) main { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
   .workspace-jumps { position: fixed; z-index: 45; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); background: #17212bf5; border-top: 1px solid #4b5b69; box-shadow: 0 -6px 24px #09101655; }
   .workspace-jumps button { min-height: 44px; border-color: transparent; background: transparent; color: #c7d2d9; font-size: .85rem; }

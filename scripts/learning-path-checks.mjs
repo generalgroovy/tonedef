@@ -14,7 +14,7 @@ export async function learningPathChecks(page,{touch,label,output}) {
   });
   await page.reload();await page.waitForSelector('.fret');
   const original=await saved();
-  const stacked=await page.evaluate(()=>matchMedia('(max-width: 1100px), (max-height: 700px)').matches);
+  const stacked=await page.evaluate(()=>matchMedia('(max-width: 1099px), (max-height: 699px)').matches);
   assert.equal(await page.locator('#learning-feedback').evaluate(n=>n.parentElement.classList.contains('fretboard-panel')),stacked,'The single feedback card follows the stacked layout');
   assert.equal(await page.locator('#learning-feedback').count(),1);
   if(stacked)await tap('#jump-fretboard');

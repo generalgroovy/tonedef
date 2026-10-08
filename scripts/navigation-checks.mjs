@@ -25,7 +25,7 @@ export async function navigationChecks(page,{touch,label,output}) {
   await tap('#practice-shape > summary');await tap('#practice-more > summary');
   assert.equal(await page.locator('#practice-reach').evaluate(n=>n.parentElement.id),'practice-shape','Reach is not nested inside rhythm');
   assert.equal(await page.locator('#practice-ranges').evaluate(n=>n.parentElement.id),'practice-shape','Fret ranges have a direct disclosure');
-  const stacked=await page.evaluate(()=>matchMedia('(max-width:1100px), (max-height:700px)').matches);
+  const stacked=await page.evaluate(()=>matchMedia('(max-width:1099px), (max-height:699px)').matches);
   if(!stacked)await page.locator('#simple-exercise').evaluate(n=>{n.scrollTop=150;});
   const choicesScroll=await page.locator('#simple-exercise').evaluate(n=>n.scrollTop);
   await tap('#quick-instrument');
