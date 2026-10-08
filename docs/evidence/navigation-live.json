@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-10-08T07:53:32.115230+00:00",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "version": "1.13.0",
+  "sourceRevision": "bff23d9a4e55a5e99e69001580f2045dab0d59f8",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "checks": [
+    "New Instrument shortcut after public reload",
+    "Setup stays in Practice with the existing five-step pattern",
+    "Instrument, Sound and Display tabs with ArrowRight and Home keyboard focus",
+    "Bass retune confirmation cancelled by Escape; standard guitar and origin focus restored",
+    "Back and Learn/Practice navigation restore expanded practice choices",
+    "More closes on Escape and restores focus, and closes after Backup",
+    "Count-in and pattern playback advance the step guide; Stop restores Fmaj7 editing selection",
+    "Existing project exported through the public Backup action before and after deployment"
+  ],
+  "projectPreservation": {
+    "byteIdentical": true,
+    "beforeSha256": "6b2f46d0876c7f6a1ac95264c89266ff0f1704d75d7f24451390e9f11b882733",
+    "afterSha256": "6b2f46d0876c7f6a1ac95264c89266ff0f1704d75d7f24451390e9f11b882733",
+    "bytes": 9053,
+    "rawBackupsPublished": false
+  },
+  "consoleWarnings": 0,
+  "consoleErrors": 0,
+  "screenshot": "Captured locally as .runtime/navigation-live.png; CI screenshots are available from the linked workflow artifact.",
+  "limits": "Software behavior and browser rendering only; no physical touch, human listening or learning-outcome acceptance is claimed."
+}

@@ -1,6 +1,21 @@
 # Deployment and rollback
 
-## Release 1.12.0, verified 2026-10-07 UTC
+## Release 1.13.0, verified 2026-10-08 UTC
+
+Navigation and in-place configuration are deployed to [ToneDef](https://generalgroovy.github.io/tonedef/) from runtime revision `bff23d9a4e55a5e99e69001580f2045dab0d59f8`.
+
+- Instrument beside the fretboard opens tuning, Sound and Display tabs inside Learn or Practice. The neck and pattern stay available. Back and Escape return explicitly; each workspace and setup section remembers its disclosures and scroll position for the session. These view preferences never enter project exports or Undo history.
+- On stacked layouts, a fixed bottom bar connects Lesson/Choices/Setup, Fretboard and Pattern. It moves keyboard focus with the view, respects reduced motion and accounts for the sticky playback header. The 320px header fits two rows even with Listen & play. Desktop spacing keeps the standard step guide and pattern actions visible.
+- Shape next pattern exposes order/rhythm/picking, per-string ranges and pitch/reach/rests as sibling sections. Menu dismissal, focus recovery, touch targets and disclosure indicators are consistent. Setup shares Studio's validation, reconciliation and Undo transactions; no musical schema or runtime dependency changed.
+- **113 automated tests** passed, plus syntax and static-build checks. [Candidate browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37745386420) and [main browser regression](https://github.com/generalgroovy/tonedef/actions/runs/37745788111) passed for this exact revision. The 21 primary contexts cover two visual-practice runs, four learner desktop/touch runs and 15 Studio/Arrange layouts from 320 to 2560 pixels. New navigation checks cover keyboard tabs, exact sound Undo, cancelled and confirmed retuning, invalid-value recovery, independent disclosure/scroll memory, section focus, menu dismissal, duplicate IDs, overflow and unchanged saved music. Desktop and narrow screenshots were visually inspected.
+- [Pages deployment](https://github.com/generalgroovy/tonedef/actions/runs/37745787834) succeeded. All **28 runtime files**, file list, source revision and build manifest matched committed bytes over certificate-validated HTTPS. Runtime SHA-256: `eeeda0df78a8c52336f0fd6b6afc444ba1940d7440cc149aed0f73e6bbf9a2e1`.
+- Live smoke passed on the existing five-step project: in-place setup, all three tabs, keyboard switching, cancelled bass retuning with preset/focus restoration, Back, Learn/Practice disclosure restoration, More dismissal, count-in, pattern playback and Stop restoring the editing selection. Exported backups before deployment and after the live checks were byte-for-byte identical. No browser warnings or errors were recorded.
+
+[Browser report](evidence/navigation-layout.json) · [Public byte receipt](evidence/navigation-public-runtime.json) · [Live interaction receipt](evidence/navigation-live.json) · [Rebuild supplement](NAVIGATION.md)
+
+The release target is the canonical GitHub Pages app. The separately managed portfolio embed was outside this deployment. Browser and emulated-touch checks do not establish physical-device ergonomics, human listening acceptance or learning outcomes. Documentation-only commits may follow the runtime revision without changing the deployed application.
+
+## Historical release: 1.12.0, verified 2026-10-07 UTC
 
 Focused practice is deployed to [ToneDef](https://generalgroovy.github.io/tonedef/) from runtime revision `5123a3defcc3a3dd8db8e6aa7828493a42d039fb`.
 

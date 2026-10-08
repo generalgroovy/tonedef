@@ -1,0 +1,153 @@
+{
+  "checkedAt": "2026-10-08T07:50:38.501984+00:00",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "version": "1.13.0",
+  "sourceRevision": "bff23d9a4e55a5e99e69001580f2045dab0d59f8",
+  "contentSha256": "eeeda0df78a8c52336f0fd6b6afc444ba1940d7440cc149aed0f73e6bbf9a2e1",
+  "runtimeFiles": 28,
+  "passed": 28,
+  "manifestMatched": true,
+  "files": [
+    {
+      "path": "compact.css",
+      "passed": true,
+      "sha256": "30554b4b98b473837284bc0ad7e90b02f2a44573ad80923c2d949fee1e26a83b"
+    },
+    {
+      "path": "favicon.svg",
+      "passed": true,
+      "sha256": "7d5e60cf93b6c8a9e86b5ba4c4fda307f091643eba30d51949e679cde4717e92"
+    },
+    {
+      "path": "index.html",
+      "passed": true,
+      "sha256": "e142dc228bd5985555264c29b04b30045a891fdb7b977feb15a1882695c5dabc"
+    },
+    {
+      "path": "src/analysis-context.js",
+      "passed": true,
+      "sha256": "8b593d806a4adf2a843d7dc62a4701564e1022f13dd37f5a381419eef447c591"
+    },
+    {
+      "path": "src/app.js",
+      "passed": true,
+      "sha256": "9b65d5f6b0fba0e0da242826a69a154f04e683ba410b6e7e7916410cd672485d"
+    },
+    {
+      "path": "src/audio.js",
+      "passed": true,
+      "sha256": "1b4f95006e6c68dc2992e8e85246390c9a81f67a726a0c188824b5e1bb8d536f"
+    },
+    {
+      "path": "src/exercises.js",
+      "passed": true,
+      "sha256": "bfb6abbf730960d73ca77e14c2fdc455011702c8497b48b125a325b0f2def893"
+    },
+    {
+      "path": "src/expression.js",
+      "passed": true,
+      "sha256": "103c460c7b30d3096970032dfc46f7c7bc7d683e6958c594b960e5c07e0cc1bd"
+    },
+    {
+      "path": "src/focused-practice.js",
+      "passed": true,
+      "sha256": "3c4d551564063c8eab0dae8458750924a4616284cae0289d9cc0c66165ac6a16"
+    },
+    {
+      "path": "src/generation-worker.js",
+      "passed": true,
+      "sha256": "8885cc2dd1eaa1bdd60910af75018ebd35b69255286a8d9f1f8ff7acc7401c27"
+    },
+    {
+      "path": "src/generator.js",
+      "passed": true,
+      "sha256": "f833a2688ac9ecd252ae4c3ab642ff1368160c54693428cbd8590fc103c07470"
+    },
+    {
+      "path": "src/help.js",
+      "passed": true,
+      "sha256": "e77b1df3d13fcfe0e85cdad45bccb4e657f8145b7b05ed75e6a9f2ef6803e174"
+    },
+    {
+      "path": "src/interval-view.js",
+      "passed": true,
+      "sha256": "1732cc2f3140be0af899070c0d1398fa4280e8d4aa1cbf9b64cee4797c143444"
+    },
+    {
+      "path": "src/layout.js",
+      "passed": true,
+      "sha256": "e3b6b8b17f5ac728208c3976ffb9acb1cf96a1e1e14c83ddf19a46633a14f76f"
+    },
+    {
+      "path": "src/learning.js",
+      "passed": true,
+      "sha256": "f285e8918e1f3cf092d83893772cf687ba349fd1bff1403d6f0e87f32b1a680b"
+    },
+    {
+      "path": "src/model.js",
+      "passed": true,
+      "sha256": "7aaec12f9e97b6deb9abf071483266e2f53a07f738ff0b91a9eff801b5f90170"
+    },
+    {
+      "path": "src/note-state.js",
+      "passed": true,
+      "sha256": "a797759784128d74c9692d11aaedd3d29e91958c4964fd3abba032f553387ba2"
+    },
+    {
+      "path": "src/practice-coach.js",
+      "passed": true,
+      "sha256": "ac6af93a8a0ee7853db52d316036d909403a9ed6009a686069478cfca198bd86"
+    },
+    {
+      "path": "src/practice-options.js",
+      "passed": true,
+      "sha256": "586af831fafcd42e31b2c9d58f9af7c82ea8344348e380e0168df4e1ec28cb86"
+    },
+    {
+      "path": "src/practice-ranges.js",
+      "passed": true,
+      "sha256": "d985c84fab1cc22140233b1196df7cdd6ba40b9f5db5fa7a0346a6fccf20549b"
+    },
+    {
+      "path": "src/practice-view.js",
+      "passed": true,
+      "sha256": "9702cd2312acd614274fbabf4c72d5a0151940e985667597e648d7fa7cffeecf"
+    },
+    {
+      "path": "src/practice.js",
+      "passed": true,
+      "sha256": "275b111954fbbeeb812759d036d65ac14c4b23d6e809da469e4e77f9e46f25f9"
+    },
+    {
+      "path": "src/range-controls.js",
+      "passed": true,
+      "sha256": "47c41b7a31a315123a97cc3a2cadf6a636d92115a6f45a5fc65174b5a239073d"
+    },
+    {
+      "path": "src/recall.js",
+      "passed": true,
+      "sha256": "c0e31b09f21e0dcebff52d00c45ad2fb3b1cd2fa3b31f93fb659c9629ef11cb5"
+    },
+    {
+      "path": "src/theory.js",
+      "passed": true,
+      "sha256": "ba464fcdaa5d79810c48ff3eedc3bb5dcbe069f8421af027eb09e2ee5101361b"
+    },
+    {
+      "path": "src/workspace.js",
+      "passed": true,
+      "sha256": "cb0af6a09788861fd648e44dac5d00a487e7fb2efae9389f0ed53eee45005f40"
+    },
+    {
+      "path": "styles.css",
+      "passed": true,
+      "sha256": "c1115f773b77dbfb924f47212dd651e8787868d2d6fa389aafdae42c064d5947"
+    },
+    {
+      "path": "workspace.css",
+      "passed": true,
+      "sha256": "1ea30d5de0f08eebb6e3d2f08f664a8565b7824028f776bd0763ffaec44dd3e4"
+    }
+  ],
+  "scope": "Certificate-validated public HTTP and exact committed runtime bytes. Browser interaction evidence is separate."
+}
