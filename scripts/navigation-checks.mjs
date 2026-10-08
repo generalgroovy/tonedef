@@ -26,6 +26,12 @@ export async function navigationChecks(page,{touch,label,output}) {
   assert.equal(await page.locator('#practice-reach').evaluate(n=>n.parentElement.id),'practice-shape','Reach is not nested inside rhythm');
   assert.equal(await page.locator('#practice-ranges').evaluate(n=>n.parentElement.id),'practice-shape','Fret ranges have a direct disclosure');
   const stacked=await page.evaluate(()=>matchMedia('(max-width:1099px), (max-height:699px)').matches);
+  if(!stacked) {
+    const neck=await page.locator('#simple-fretboard').boundingBox(),guide=await page.locator('#step-guide').boundingBox();
+    const pattern=await page.locator('#simple-timeline').boundingBox(),keep=await page.locator('[data-action="lock-event"]').boundingBox();
+    assert.ok(guide.y+guide.height<=neck.y+neck.height,'The complete step guide fits beside the configuration choices');
+    assert.ok(keep.y+keep.height<=pattern.y+pattern.height,'The pattern action remains fully visible');
+  }
   if(!stacked)await page.locator('#simple-exercise').evaluate(n=>{n.scrollTop=150;});
   const choicesScroll=await page.locator('#simple-exercise').evaluate(n=>n.scrollTop);
   await tap('#quick-instrument');
