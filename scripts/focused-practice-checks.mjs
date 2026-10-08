@@ -56,7 +56,7 @@ export async function focusedPracticeChecks(page,{touch,label,output}) {
   assert.equal(await page.locator('#practice-response').getAttribute('aria-pressed'),'true',JSON.stringify(inputTrace));
   if(page.viewportSize().width<=390) {
     const header=await page.locator('.topbar').boundingBox();assert.ok(header.height<=112,'Mobile transport uses at most two rows');
-    await tap('.practice-jump');
+    await tap('#jump-fretboard');
     const play=await page.locator('#playButton').boundingBox();assert.ok(play.y>=0&&play.y+play.height<=page.viewportSize().height,'Play/Stop remains visible beside the neck');
   }
   await tap('#playButton');

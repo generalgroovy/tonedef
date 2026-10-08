@@ -126,7 +126,7 @@ test('active advanced rules and the provided matched recipe remain visible witho
   const p = project();
   Object.assign(p.settings,{sequencePattern:'steps',melodicContour:'ascending',restRate:20});
   const html = view(p);
-  assert.match(html,/<summary>More choices · Scale steps · Ascending · \+1<\/summary>/);
+  assert.match(html,/Active rules · Scale steps · Ascending · \+1<\/p>/);
   assert.match(html,/<select id="exercise-recipe"><option selected>Scale walk<\/option><\/select>/);
   assert.match(html,/a rest replaces one step/);
 });

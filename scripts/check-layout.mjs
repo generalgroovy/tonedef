@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {visualPracticeChecks} from './visual-practice-checks.mjs';
 import {learningPathChecks} from './learning-path-checks.mjs';
 import {focusedPracticeChecks} from './focused-practice-checks.mjs';
+import {navigationChecks} from './navigation-checks.mjs';
 import { createServer } from 'node:http';
 import { mkdir, readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
@@ -677,6 +678,7 @@ try {
       const checks=await learningPathChecks(page,{touch,label,output});
       report.interactions.push({viewport:label,checks});
       report.interactions.push({viewport:label,checks:await focusedPracticeChecks(page,{touch,label,output})});
+      report.interactions.push({viewport:label,checks:await navigationChecks(page,{touch,label,output})});
     } catch(error) {
       await page.screenshot({path:path.join(output,`${label}-learning-failure.png`),fullPage:true});
       throw error;

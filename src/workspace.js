@@ -4,9 +4,30 @@ let layout;
 try { layout = normalizeLayout(JSON.parse(localStorage.getItem(KEY))); } catch { layout = normalizeLayout(); }
 let editing = false, rerender = () => {}, notice = () => {};
 let mode = 'learn', focused = null;
+let configuring = false, configurationSection = 'instrument';
 try { const saved = localStorage.getItem('tonedef.workspace.mode.v3'); if (['learn','practice','overview','custom'].includes(saved)) mode = saved; } catch {}
 export const workspaceMode = () => mode;
 export const simpleWorkspace = () => ['learn','practice'].includes(mode);
+export const instrumentOpen = () => simpleWorkspace() && configuring;
+export const instrumentSection = () => configurationSection;
+export const workspaceSurface = () => mode + (instrumentOpen() ? ':configuration:'+configurationSection : '');
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+export function openInstrument(toggle = false) {
+  if (toggle && configuring) { closeInstrument(); return; }
+  configuring = true; rerender();
+  document.getElementById('config-tab-'+configurationSection)?.focus({preventScroll:true});
+  if (stackedLearning.matches) jumpToPanel('exercise');
+}
+function closeInstrument() {
+  configuring = false; rerender();
+  document.getElementById('quick-instrument')?.focus({preventScroll:true});
+}
+function jumpToPanel(id) {
+  const panel = document.getElementById('simple-'+id); if (!panel) return;
+  const header = document.querySelector('.topbar').getBoundingClientRect().height;
+  window.scrollTo({top:Math.max(0,panel.getBoundingClientRect().top+window.scrollY-header-12),behavior:reducedMotion()?'instant':'smooth'});
+  panel.focus({preventScroll:true});
+}
 const stackedLearning = window.matchMedia('(max-width: 1100px), (max-height: 700px)');
 function placeLearningFeedback() {
   const feedback = document.getElementById('learning-feedback');
@@ -31,7 +52,7 @@ function button(text, action, id, label) {
   b.id = `layout-${action}-${id}`; b.setAttribute('aria-label', label); b.title = label;
   return b;
 }
-export function mountWorkspace(render, notify) {
+export function mountWorkspace(render, notify, configuration = '') {
   rerender = render; notice = notify;
   const grid = document.querySelector('.workspace');
   document.body.dataset.workspace = mode;
@@ -39,7 +60,7 @@ export function mountWorkspace(render, notify) {
   switcher.setAttribute('aria-label', 'Workspace view');
   switcher.innerHTML = [['learn','Learn'],['practice','Practice'],['overview','Studio'], ...(!simpleWorkspace() ? [['custom','Arrange']] : [])].map(([value,label]) => `<button id="workspace-${value}" data-workspace-mode="${value}" aria-pressed="${mode === value}">${label}</button>`).join('');
   document.querySelector('.header-actions').prepend(switcher);
-  if (simpleWorkspace()) { mountSimple(grid); return; }
+  if (simpleWorkspace()) { mountSimple(grid, configuration); return; }
   if (mode === 'overview') { mountOverview(grid); return; }
   grid.classList.add('dock-grid'); grid.classList.toggle('layout-editing', editing);
   const controls = document.createElement('details'); controls.className = 'workspace-controls'; controls.id = 'workspace-controls';
@@ -118,10 +139,15 @@ document.addEventListener('change', e => {
 document.addEventListener('click', e => {
   const view = e.target.closest('[data-workspace-mode]');
   if (view) {
-    mode = view.dataset.workspaceMode; focused = null;
+    mode = view.dataset.workspaceMode; focused = null; configuring = false;
     try { localStorage.setItem('tonedef.workspace.mode.v3', mode); } catch { notice('View changed for this session; browser storage is unavailable.', true); }
     rerender(); (document.getElementById(view.id) ?? document.getElementById(`workspace-${mode}`))?.focus({preventScroll:true}); return;
   }
+  const section = e.target.closest('[data-config-section]');
+  if (section) { configurationSection = section.dataset.configSection; rerender(); document.getElementById(section.id)?.focus({preventScroll:true}); return; }
+  if (e.target.closest('#config-back')) { closeInstrument(); return; }
+  const jump = e.target.closest('[data-workspace-jump]');
+  if (jump) { jumpToPanel(jump.dataset.workspaceJump); return; }
   const expand = e.target.closest('[data-overview-expand]');
   if (expand) { focused = focused === expand.dataset.overviewExpand ? null : expand.dataset.overviewExpand; rerender(); document.getElementById(expand.id)?.focus({preventScroll:true}); return; }
   if (e.target.closest('a[href="#fretboard"]')) revealPanel('fretboard');
@@ -174,6 +200,16 @@ function finish(e) {
 document.addEventListener('pointerup', finish);
 document.addEventListener('pointercancel', finish);
 document.addEventListener('keydown', e => {
+  const section = e.target.closest('[data-config-section]');
+  if (section && ['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) {
+    e.preventDefault();
+    const ids = ['instrument','sound','display'], index = ids.indexOf(configurationSection);
+    configurationSection = ids[e.key==='Home'?0:e.key==='End'?2:(index+(e.key==='ArrowRight'?1:2))%3];
+    rerender(); document.getElementById('config-tab-'+configurationSection)?.focus({preventScroll:true}); return;
+  }
+  if (instrumentOpen() && e.key === 'Escape' && !document.querySelector('dialog[open]') && !document.getElementById('simple-menu')?.open) {
+    e.preventDefault(); closeInstrument(); return;
+  }
   if (mode === 'overview' && focused && e.key === 'Escape' && !document.querySelector('dialog[open]')) {
     e.preventDefault(); const id = focused; focused = null; rerender(); document.getElementById(`overview-expand-${id}`)?.focus({preventScroll:true}); return;
   }
@@ -225,7 +261,7 @@ function mountOverview(grid) {
   grid.querySelector('.theory-row')?.remove();
 }
 
-function mountSimple(grid) {
+function mountSimple(grid, configuration) {
   grid.className = 'workspace simple-grid';
   document.querySelector('.context-bar')?.remove();
   document.querySelector('.project-title')?.remove();
@@ -235,6 +271,8 @@ function mountSimple(grid) {
   const summary = document.createElement('summary'); summary.textContent = 'More'; more.append(summary);
   for (const action of ['redo','projects','settings','help']) {
     const node = actions.querySelector(`[data-action="${action}"]`); if (node) more.append(node);
+    if (node && action === 'settings') node.textContent = 'Instrument setup';
+    if (node && action === 'help') node.textContent = 'Help & shortcuts';
   }
   actions.append(more);
   const backup = document.querySelector('footer [data-action="export-json"]'); if (backup) more.append(backup);
@@ -244,6 +282,9 @@ function mountSimple(grid) {
   const toolbar = board.querySelector('.board-bar');
   toolbar.replaceChildren();
   const instruction = document.createElement('span'); instruction.textContent = 'Tap or hold a note'; toolbar.append(instruction);
+  const setup = document.createElement('button'); setup.id = 'quick-instrument'; setup.dataset.action = 'settings';
+  setup.textContent = 'Instrument'; setup.setAttribute('aria-expanded',String(configuring));
+  setup.setAttribute('aria-controls','simple-exercise'); toolbar.append(setup);
   if (document.querySelector('#setting-volume')?.value === '0') {
     const sound = document.createElement('button'); sound.dataset.action = 'unmute'; sound.textContent = 'Turn sound on'; toolbar.append(sound);
   }
@@ -253,15 +294,24 @@ function mountSimple(grid) {
   board.querySelectorAll('.note-disc small').forEach(node=>node.remove());
   if (mode === 'learn') { const strip = document.querySelector('.learning-strip'); if (strip) board.insertBefore(strip,board.querySelector('.board-scroll')); }
   placeLearningFeedback();
+  if (configuring) {
+    const original = document.querySelector('.exercise-panel');
+    const replacement = document.createElement('section'); replacement.className = 'panel exercise-panel configuration-panel';
+    replacement.setAttribute('aria-label','Instrument setup'); replacement.innerHTML = configuration;
+    original.replaceWith(replacement);
+    board.querySelectorAll('.learning-strip,.learning-feedback').forEach(node=>node.remove());
+  }
+  document.querySelectorAll('.learning-jump,.practice-jump').forEach(node => node.remove());
   const legend = board.querySelector('.note-state-legend');
   if (legend) board.insertBefore(legend,board.querySelector('.board-scroll'));
   const recall = board.querySelector('.recall'), exercise = document.querySelector('.exercise-panel');
-  if (recall) exercise.insertBefore(recall,mode === 'learn' ? exercise.querySelector('#learn-practice') : exercise.querySelector('#practice-info'));
+  if (recall && !configuring) exercise.insertBefore(recall,mode === 'learn' ? exercise.querySelector('#learn-practice') : exercise.querySelector('#practice-info'));
+  else recall?.remove();
   const output = board.querySelector('#expression-readout');
   if (output) { output.setAttribute('aria-live','polite'); toolbar.append(output); }
   board.querySelector('.fretboard-guide')?.remove();
   const keep = [
-    ['exercise', mode === 'learn' ? 'Try it' : 'Make a pattern', '.exercise-panel'],
+    ['exercise', configuring ? 'Instrument setup' : mode === 'learn' ? 'Try it' : 'Make a pattern', '.exercise-panel'],
     ['fretboard','Play the guitar','.fretboard-panel'],
     ['timeline','Your pattern','.timeline-panel'],
   ];
@@ -270,10 +320,36 @@ function mountSimple(grid) {
   document.querySelector('#settings-panel')?.remove();
   for (const [id,label,content] of nodes) {
     const panel = document.createElement('section'); panel.className = 'simple-panel'; panel.dataset.panel = id;
-    if (id === 'exercise') panel.tabIndex = 0;
+    panel.id = 'simple-'+id; panel.tabIndex = id==='exercise'?0:-1;
     panel.setAttribute('aria-labelledby',`panel-title-${id}`);
     const heading = document.createElement(id === 'fretboard' ? 'h1' : 'h2'); heading.id = `panel-title-${id}`; heading.textContent = label;
     content.querySelector(':scope > h1.sr-only')?.remove();
     panel.append(heading,content); grid.append(panel);
   }
+  const jumps = document.createElement('nav'); jumps.className = 'workspace-jumps'; jumps.setAttribute('aria-label','Workspace sections');
+  jumps.innerHTML = [['exercise',configuring?'Setup':mode==='learn'?'Lesson':'Choices'],['fretboard','Fretboard'],['timeline','Pattern']].map(([id,label])=>`<button id="jump-${id}" data-workspace-jump="${id}" aria-controls="simple-${id}">${label}</button>`).join('');
+  grid.after(jumps); updateJumpState();
 }
+
+let jumpFrame = 0;
+function updateJumpState() {
+  jumpFrame = 0;
+  if (!simpleWorkspace()) return;
+  const panels = [...document.querySelectorAll('.simple-panel')], offset = (document.querySelector('.topbar')?.getBoundingClientRect().height ?? 0)+24;
+  const atEnd = window.scrollY>0 && window.scrollY+innerHeight>=document.documentElement.scrollHeight-2;
+  const current = atEnd ? panels.at(-1) : panels.findLast(panel=>panel.getBoundingClientRect().top<=offset) ?? panels[0];
+  for (const button of document.querySelectorAll('[data-workspace-jump]')) {
+    if (button.dataset.workspaceJump === current?.dataset.panel) button.setAttribute('aria-current','true');
+    else button.removeAttribute('aria-current');
+  }
+}
+window.addEventListener('scroll',()=>{ if (!jumpFrame) jumpFrame=requestAnimationFrame(updateJumpState); },{passive:true});
+window.addEventListener('resize',updateJumpState);
+document.addEventListener('click',e=>{
+  const menu = document.getElementById('simple-menu');
+  if (menu?.open && (!menu.contains(e.target) || e.target.closest('button'))) menu.open = false;
+});
+document.addEventListener('keydown',e=>{
+  const menu = document.getElementById('simple-menu');
+  if (e.key==='Escape' && menu?.open) { menu.open=false; menu.querySelector('summary').focus(); }
+});

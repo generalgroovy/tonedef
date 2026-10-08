@@ -44,7 +44,7 @@ import {
   tabExport,
 } from "./model.js";
 import { practiceRangesView, installPracticeRanges, changedRange } from "./practice-ranges.js";
-import { installValueSliders } from './range-controls.js';
+import { installValueSliders, valueSlider } from './range-controls.js';
 import { patternPositions, noteState, noteLegend } from './note-state.js';
 import { createRecall } from './recall.js';
 import { Player, playbackPlan } from "./audio.js";
@@ -53,7 +53,7 @@ import { createPracticeCoach } from './practice-coach.js';
 import { createFocusedPractice, stepGuide, passageLabel } from './focused-practice.js';
 import { practiceCard } from "./practice.js";
 import { installExpression } from "./expression.js";
-import { mountWorkspace, revealPanel, workspaceMode, simpleWorkspace } from "./workspace.js";
+import { mountWorkspace, revealPanel, workspaceMode, simpleWorkspace, openInstrument, instrumentOpen, instrumentSection, workspaceSurface } from "./workspace.js";
 import { learningView, learningPitches, learningFeedback } from "./learning.js";
 import { practiceControls } from "./practice-view.js";
 import { defaultPracticeOptions } from "./practice-options.js";
@@ -96,6 +96,7 @@ let tool = "notes",
   hoverPc = null,
   worker = null,
   pendingInstrument = null,
+  pendingInstrumentOrigin = null,
   playingId = null;
 let saveAllowed = !bootNotice;
 let halfStepLabels = true;
@@ -107,6 +108,8 @@ let practiceError = null;
 let heardPitch = null;
 let lessonPitches = [];
 let lastRenderedWorkspace = null;
+let lastRenderedSurface = null;
+const surfacePositions = new Map();
 let playbackState = null;
 let playbackRange = null;
 const activeTool = () => simpleWorkspace() ? 'explore' : tool;
@@ -713,6 +716,19 @@ function settings() {
   </div></details>`;
 }
 
+function quickSettings() {
+  if (!instrumentOpen()) return '';
+  const s = project().settings, tab = instrumentSection();
+  const tuning = Object.entries(PRESETS).find(([,notes])=>notes.length===s.stringCount&&notes.every((note,i)=>note===s['open'+i]))?.[0] ?? '';
+  const section = (id,content) => `<section id="config-panel-${id}" role="tabpanel" aria-labelledby="config-tab-${id}" ${tab===id?'':'hidden'}>${content}</section>`;
+  return `<button id="config-back" class="configuration-back">← Back to ${workspaceMode()==='learn'?'lesson':'practice'}</button><h2>Instrument setup</h2><p class="configuration-intro">Make the neck match your instrument.</p>
+    <div class="configuration-tabs" role="tablist" aria-label="Instrument settings">${[['instrument','Instrument'],['sound','Sound'],['display','Display']].map(([id,label])=>`<button id="config-tab-${id}" data-config-section="${id}" role="tab" aria-selected="${tab===id}" aria-controls="config-panel-${id}" tabindex="${tab===id?0:-1}">${label}</button>`).join('')}</div>
+    ${section('instrument',`<label class="preset-field">Guitar / bass tuning<select id="instrument-preset"><option value="" ${tuning?'':'selected'}>Custom tuning</option>${Object.keys(PRESETS).map(name=>`<option ${name===tuning?'selected':''}>${esc(name)}</option>`).join('')}</select></label><div class="configuration-pair">${field('stringCount','Strings')}${field('fretCount','Frets')}${field('capo','Capo fret')}${field('leftHanded','Left-handed')}</div><h3>Visible frets</h3><div class="configuration-pair">${field('fretMin','First fret')}${field('fretMax','Last fret')}</div><details id="individual-tuning"><summary>Each string & octave</summary><p>Enter a note with its octave, such as E2. String 1 is the top displayed string.</p>${stringsOf(s).map(string=>`<div class="tuning-row"><label>String ${stringNumber(s,string.index)}<input id="tuning-${string.index}" data-tuning="${string.index}" aria-label="String ${stringNumber(s,string.index)} open pitch" value="${pretty(spellPitch(string.open,s))}"></label>${field('enabled'+string.index,'Use')}</div>`).join('')}</details>`)}
+    ${section('sound',`${field('volume','Volume · %')}${valueSlider('setting-volume','volume',s.volume,0,60,5)}${field('waveform','Sound')}${field('meter','Time signature')}${field('fingerPattern','Finger order')}<p class="configuration-note">Speed counts quarter notes per minute. The time signature sets the count-in and click grouping.</p>`)}
+    ${section('display',`${['labels','showOctaves','accidentals','tonicSpelling'].map(id=>field(id)).join('')}<details id="color-settings"><summary>Interval colors</summary><p>Colors repeat every octave. The neck also uses shapes and outlines to distinguish notes.</p>${COLORS.map((_,i)=>field('color'+i,i+' · '+INTERVALS[i])).join('')}</details>`)}
+    <p class="configuration-note">Changes apply immediately. Undo restores your previous setup.</p>`;
+}
+
 function render() {
   if (lastRenderedWorkspace && lastRenderedWorkspace!==workspaceMode()) player.stop();
   practiceFocus.cancel();
@@ -725,9 +741,17 @@ function render() {
   expression.cancel();
   hideHelp();
   colorAnalysis = analysis();
-  const panelScroll = lastRenderedWorkspace === workspaceMode() ? [...document.querySelectorAll("[data-panel]")].map(n => [n.dataset.panel, (n.querySelector(".dock-body") ?? n).scrollTop]) : [];
+  if (lastRenderedSurface) surfacePositions.set(lastRenderedSurface,{
+    panels:[...document.querySelectorAll('[data-panel]')].map(n=>[n.dataset.panel,(n.querySelector('.dock-body')??n).scrollTop]),
+    open:[...document.querySelectorAll('details[open][id]')].filter(n=>n.id!=='simple-menu').map(n=>n.id),
+    page:window.scrollY,
+  });
+  const surface = workspaceSurface(), stored = surfacePositions.get(surface);
+  const panelScroll = stored?.panels ?? [];
+  const changedSurface = lastRenderedSurface !== surface;
+  lastRenderedSurface = surface;
   lastRenderedWorkspace = workspaceMode();
-  const open = [...document.querySelectorAll("details[open]")].map((e) => e.id);
+  const open = stored?.open ?? [];
   const active = document.activeElement, activeAction = active?.dataset?.action, activeKind = active?.dataset?.kind, activeDelta = active?.dataset?.delta, activeEvent = active?.dataset?.event, activeEventField = active?.dataset?.eventField, activeId = active?.id, activePos = active?.dataset?.pos;
   const scrolls = [...document.querySelectorAll('.board-scroll,.matrix-scroll,.timeline')].map((el) => [el.className, el.scrollLeft, el.scrollTop]);
   const p = project(), s = p.settings, e = current();
@@ -742,11 +766,12 @@ function render() {
       node.classList.toggle('passage-end',i===range.max-1);
     });
   }
-  mountWorkspace(render, notify);
+  mountWorkspace(render, notify, quickSettings());
   $('#playButton').disabled = !p.events.length;
   updateLessonButton();
   updatePracticePlayback();
   recall.mount(simpleWorkspace());
+  for (const id of open) { const detail = document.getElementById(id); if (detail) detail.open = true; }
   for (const [id, top] of panelScroll) {
     const panel = document.querySelector('[data-panel="'+id+'"]');
     const body = panel?.querySelector('.dock-body') ?? panel;
@@ -757,7 +782,6 @@ function render() {
   boardObserver.observe(document.getElementById('fretboard'));
   drawChordShape();
   if (playingId) refreshPlayingBoard();
-  for (const id of open) { const detail = document.getElementById(id); if (detail) detail.open = true; }
   prepareHelp($("#app"));
   if (activePos) document.querySelector(`[data-pos="${activePos}"]`)?.focus({preventScroll: true});
   else if (activeId) document.getElementById(activeId)?.focus({preventScroll: true});
@@ -768,6 +792,7 @@ function render() {
     const node = document.getElementsByClassName(className)[0];
     if (node) { node.scrollLeft = left; node.scrollTop = top; }
   }
+  if (changedSurface) window.scrollTo({top:stored?.page ?? 0,behavior:'instant'});
 }
 function openModal(html) {
   const modal = $("#modal");
@@ -788,6 +813,7 @@ function instrumentChange(s) {
     return;
   }
   pendingInstrument = s;
+  pendingInstrumentOrigin = document.activeElement?.id;
   openModal(
     `<h2>Keep the music intentional</h2><p>${impact.length} note positions would change pitch or no longer fit this instrument.</p><p>Choose how to reconcile them. If a note cannot be preserved, the change is rejected. Your previous instrument remains available with Undo.</p><div class="button-stack"><button data-action="apply-instrument" data-policy="pitches">Keep sounding pitches · find new positions</button><button data-action="apply-instrument" data-policy="positions">Keep physical positions · retune notes</button><button data-action="close-modal">Cancel change</button></div>`,
   );
@@ -1055,6 +1081,7 @@ document.addEventListener("click", (event) => {
       halfStepLabels = !halfStepLabels;
       render();
     } else if (action === "settings") {
+      if (simpleWorkspace()) { openInstrument(target.id==='quick-instrument'); return; }
       revealPanel("settings");
       const panel = document.querySelector("[data-panel=settings]");
       panel.scrollIntoView({behavior: "instant", block: "nearest"});
@@ -1088,8 +1115,10 @@ document.addEventListener("click", (event) => {
       if (pendingInstrument) {
         pendingInstrument = null;
         render();
+        document.getElementById(pendingInstrumentOrigin)?.focus({preventScroll:true});
+        pendingInstrumentOrigin = null;
       }
-    } else if (action === "help" && simpleWorkspace()) openModal('<h2>Start with a sound</h2><p>In Learn, tap a note and find it on the guitar. Try Notes, Steps, Scales, then Modes at your own pace.</p><p>In Practice, choose a few notes and strings, then New pattern. Check Random beside anything you want to change each time. Play follows the cards; Keep step saves a favourite spot.</p><p>Studio holds writing, tuning and detailed theory. More → Settings opens your instrument. Projects saves and opens patterns on this device; Backup downloads a copy.</p><p>Keyboard: Tab moves between controls. Arrow keys move on the neck; hold Enter or Space to hear a note. Undo: Ctrl/Command + Z.</p>');
+    } else if (action === "help" && simpleWorkspace()) openModal('<h2>Start with a sound</h2><p>In Learn, tap a note and find it on the guitar. Explore Notes, Steps, Scales, Intervals, Chords and Modes at your own pace.</p><p>In Practice, choose a goal, then New pattern. Shape next pattern holds the order, rhythm, string and fret choices. Check Random beside anything you want to vary. Choose a passage to work on a small part; Listen → play gives you a turn with the click.</p><p>Instrument beside the neck opens tuning, sound and display in place. Back returns to your lesson or practice. On smaller screens, the bottom navigation jumps between choices, fretboard and pattern. Studio holds writing and detailed theory. More → Projects saves and opens patterns; Backup downloads a copy.</p><p>Keyboard: Tab moves between controls. Left/right arrows switch setup tabs. Arrow keys move on the neck; hold Enter or Space to hear a note. Escape returns from setup or stops playback. Undo: Ctrl/Command + Z.</p>');
     else if (action === "help")
       openModal(
         `<h2>Controls & shortcuts</h2><ol><li>Choose a tonic and collection. The rings on the neck show its tones.</li><li>In Chord mode, click a position on each string. A second click removes it; another fret on that string replaces it.</li><li>In Melody mode, edit the selected event or turn on Append / record to play in a sequence.</li><li>Right-click a note to change the key collection. On touch, select Edit key. Keyboard: arrows move, Enter/Space edits, Shift F10 edits the key.</li><li>Select timeline cards to inspect notes, intervals and chord transitions. Play hears exactly those events.</li><li>Choose an exercise recipe, adjust its rules, then Generate. Variation changes only the seed. Lock an event to keep it in the next result. Advanced randomization changes checked settings.</li></ol><p>Scale compatibility is not a diagnosis of key. Chord names can be ambiguous. Colored intervals always have a labeled reference.</p><p>Undo/redo: Ctrl or Command + Z / Shift Z. Space on the page toggles playback; inside the fretboard it edits the focused position.</p>`,
@@ -1104,6 +1133,8 @@ document.addEventListener("click", (event) => {
         "Instrument updated.",
       );
       pendingInstrument = null;
+      document.getElementById(pendingInstrumentOrigin)?.focus({preventScroll:true});
+      pendingInstrumentOrigin = null;
     } else if (action === "generate" || action === "randomize" || action === "variation" || action === "practice")
       runGeneration(action);
     else if (action === "cancel-generation") {
@@ -1426,6 +1457,8 @@ document.addEventListener(
       event.preventDefault();
       pendingInstrument = null;
       render();
+      document.getElementById(pendingInstrumentOrigin)?.focus({preventScroll:true});
+      pendingInstrumentOrigin = null;
     }
   },
   true,

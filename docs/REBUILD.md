@@ -1,5 +1,7 @@
 # Rebuild ToneDef from these documents
 
+Apply [Navigation and configuration 1.13](NAVIGATION.md) for in-place instrument setup, keyboard tabs, per-view position memory, responsive section navigation and flatter practice controls. It extends the 1.12 workflow without changing saved-project format.
+
 Apply [Focused practice 1.12](FOCUSED-PRACTICE.md) for the current passage range, one-bar count-in, listen/answer playback, step guide and compact practice controls. It extends the 1.11 learning path without changing saved-project format.
 
 Apply [Learning path 1.11](LEARNING-PATH.md) for the current six-lesson path, played-note explanations, diatonic triad builder, ear matching, practice goals and self-assessed practice loop. It extends 1.10 without changing saved-project format or generation algorithms.

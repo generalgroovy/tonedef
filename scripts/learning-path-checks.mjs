@@ -17,7 +17,7 @@ export async function learningPathChecks(page,{touch,label,output}) {
   const stacked=await page.evaluate(()=>matchMedia('(max-width: 1100px), (max-height: 700px)').matches);
   assert.equal(await page.locator('#learning-feedback').evaluate(n=>n.parentElement.classList.contains('fretboard-panel')),stacked,'The single feedback card follows the stacked layout');
   assert.equal(await page.locator('#learning-feedback').count(),1);
-  if(stacked)await tap('.learning-jump');
+  if(stacked)await tap('#jump-fretboard');
   await tap('[data-pos="s1:3"]');
   assert.match(await page.locator('#learning-feedback').innerText(),/C3[\s\S]*C is home/);
   await tap('#learn-next');

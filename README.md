@@ -16,6 +16,8 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 
 ## Start here
 
+**Find your way:** Learn explores theory, Practice builds exercises, and Studio opens the complete editor. **Instrument** beside the neck opens tuning, sound and display in place; **Back** returns to your previous lesson or choices. Setup tabs work with Left/Right and Home/End; Escape returns. Each view remembers its open sections and position for the session. On small screens, the bottom bar jumps between choices, fretboard and pattern. [Navigation and setup](docs/NAVIGATION.md).
+
 **Read the neck at a glance:** small neutral discs are outside the key; colored rings are in the key; filled squares are positions used in your pattern. The white outline follows the current step. A dashed square keeps an outside-key pattern note distinct. Every position remains playable.
 
 **Learn** opens first with a six-part path: Notes → Steps → Scales → Intervals → Chords → Modes. Jump into any lesson. Tap a note for an explanation of its place in the scale; in Steps or Intervals, tap two notes for the named distance, direction and exact half-step count, including octaves. **Hear pair** replays them; **New pair** chooses a new start. Chords builds a root–third–fifth triad on any degree of a seven-note scale. Hear its tones without editing your pattern. Modes keep home fixed and name the changes from major. Definitions stay under Info.
@@ -28,7 +30,7 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 
 **Check your progress:** play the current passage on your instrument, then mark **Clean pass** or **Needs work**. Three consecutive clean passes offer an optional 5 bpm increase; slower and exact tempo controls remain available. Music or passage changes reset the session. A tempo change resets its streak. Results are self-reported and stay in this session; ToneDef does not listen to or grade your instrument. The timing explanation uses actual notes and rests in the passage.
 
-**More choices** holds note order, rhythm, picking and per-string fret ranges. Its summary names active rules; controls appear only for the pattern type and rhythm that use them. A group of two plays two sounding notes per chosen string, from low to high on a standard guitar, then cycles; the last group may be shorter. **Any** allows free string changes. Optional rests count toward pattern length but do not consume string-group slots. Grouping supports 1–16 notes per string. Chords play strings together; a saved incompatible grouping rule gets an explicit correction, with Undo.
+**Shape next pattern** groups order/rhythm/picking, per-string fret ranges, and pitch/reach/rests in separate disclosures. Active rules stay summarized; controls appear only for the pattern type and rhythm that use them. A group of two plays two sounding notes per chosen string, from low to high on a standard guitar, then cycles; the last group may be shorter. **Any** allows free string changes. Optional rests count toward pattern length but do not consume string-group slots. Grouping supports 1–16 notes per string. Chords play strings together; a saved incompatible grouping rule gets an explicit correction, with Undo.
 
 **Drag to shape practice:** slide length or speed, drag a range endpoint to resize it, or move its middle grip to shift both ends together. Exact numbers and keyboard arrows remain available. Escape cancels a drag; one Undo reverses it. Random bounds and per-string fret ranges share these controls.
 
@@ -36,7 +38,7 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 
 String **1** is the top string on the displayed neck (high E on a standard guitar); **6** is low E. The low-to-high practice row therefore reads **6 → 1**. This display correction leaves physical IDs, tuning, saved notes and fret ranges unchanged.
 
-The simple fretboard always auditions without changing music, even if Studio's Hear clicks preference is off. Master volume still applies; **Turn sound on** appears when it is zero. Scale previews stop on Escape, navigation, changing the key, or starting another sound. **Studio** provides the full editor and analysis; **Arrange** restores your saved movable panels. **More → Settings** opens the instrument. **More → Projects** saves, imports and exports projects; **Backup** downloads editable JSON.
+The simple fretboard always auditions without changing music, even if Studio's Hear clicks preference is off. Master volume still applies; **Turn sound on** appears when it is zero. Scale previews stop on Escape, navigation, changing the key, or starting another sound. **Studio** provides the full editor and analysis; **Arrange** restores your saved movable panels. **Instrument** beside the neck or **More → Instrument setup** opens configuration. **More → Projects** saves, imports and exports projects; **Backup** downloads editable JSON.
 
 At laptop sizes, the main choices, neck and pattern share the screen. Small screens stack them, with the neck and longer patterns scrolling horizontally. Large targets, keyboard support and short instructions make a gentle starting point; suitability for a particular young learner still needs observation with that learner.
 
