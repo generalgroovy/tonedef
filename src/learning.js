@@ -226,7 +226,7 @@ export function learningView(input, topic = "notes", { keyFields = "", collectio
   const modeIndex = SCALE_DEFS.slice(0, 7).indexOf(scale);
   const homeName = pretty(spellPitch(60 + settings.tonic, settings).replace(/-?\d+$/, ""));
   const intervals = learningPitches(settings, lesson.id, degree).map((midi) => midi - 60 - settings.tonic);
-  const topics = `<p class="learning-route">Start with Notes. Follow the path, or jump in.</p><div class="learning-topics" role="group" aria-label="Learn guitar theory">${LEARNING_TOPICS.map((entry, i) => `<button type="button" id="learn-topic-${entry.id}" data-learn-topic="${entry.id}" aria-pressed="${lesson.id === entry.id}"><span aria-hidden="true">${i + 1}</span>${esc(entry.label)}</button>`).join("")}</div>`;
+  const topics = `<div class="learning-topics" role="group" aria-label="Learn guitar theory">${LEARNING_TOPICS.map((entry, i) => `<button type="button" id="learn-topic-${entry.id}" data-learn-topic="${entry.id}" aria-pressed="${lesson.id === entry.id}"><span aria-hidden="true">${i + 1}</span>${esc(entry.label)}</button>`).join("")}</div>`;
   const modes = lesson.id === "modes"
     ? `<div class="learning-modes" role="group" aria-label="Compare modes with the same home note">${SCALE_DEFS.slice(0, 7).map((mode, index) => `<button type="button" id="learn-scale-${index}" data-learn-scale="${index}" aria-label="${esc(mode.name)}" aria-pressed="${modeIndex === index}">${esc(modeNames[index])}</button>`).join("")}</div>`
     : "";
@@ -260,5 +260,5 @@ export function learningView(input, topic = "notes", { keyFields = "", collectio
     } else strip = '<p class="learning-empty">Choose a seven-note scale above to build triads. Your pattern stays the same.</p>';
   }
   const next = LEARNING_TOPICS[LEARNING_TOPICS.indexOf(lesson) + 1];
-  return `${topics}${controls}<p class="learning-task">${esc(prompt)}</p><a class="learning-jump" href="#learning-feedback">Try it on the neck ↓</a><p class="learning-explanation">${esc(explanation)}</p>${modes}${context.length ? `<p class="learning-context">${context.join(" ")}</p>` : ""}${chord}${listen}${strip}${learningFeedback(settings, lesson.id, first, last)}${info(lesson.id, scale, ["notes", "steps", "intervals"].includes(lesson.id) ? collectionControl : "")}<div class="learning-next">${next ? `<button id="learn-next" data-learn-topic="${next.id}">Next: ${esc(next.label)} →</button>` : '<button data-workspace-mode="overview">Explore harmony in Studio →</button>'}</div>`;
+  return `${topics}${controls}<p class="learning-task">${esc(prompt)}</p><a class="learning-jump" href="#learning-feedback">Go to fretboard ↓</a><p class="learning-explanation">${esc(explanation)}</p>${modes}${context.length ? `<p class="learning-context">${context.join(" ")}</p>` : ""}${chord}${listen}${strip}${learningFeedback(settings, lesson.id, first, last)}${info(lesson.id, scale, ["notes", "steps", "intervals"].includes(lesson.id) ? collectionControl : "")}<div class="learning-next">${next ? `<button id="learn-next" data-learn-topic="${next.id}">Next: ${esc(next.label)} →</button>` : '<button data-workspace-mode="overview">Open Studio →</button>'}</div>`;
 }

@@ -3,7 +3,7 @@
   "version": "1.13.0",
   "private": true,
   "type": "module",
-  "description": "Guitar and bass theory, made tangible.",
+  "description": "Guitar and bass theory, practice patterns and fretboard editing.",
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",

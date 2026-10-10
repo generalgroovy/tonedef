@@ -1,6 +1,6 @@
 # ToneDef
 
-Learn guitar and bass theory by hearing notes, exploring the neck, and making your own practice patterns. No account or download needed.
+Learn guitar and bass theory on an interactive fretboard. Generate practice patterns, hear intervals and edit melodies or chords.
 
 [Open ToneDef](https://generalgroovy.github.io/tonedef/) · [Release verification](docs/DEPLOYMENT.md)
 
@@ -22,7 +22,7 @@ ToneDef is the main guitar project. Useful melody contours from Guitar Practice 
 
 **Learn** opens first with a six-part path: Notes → Steps → Scales → Intervals → Chords → Modes. Jump into any lesson. Tap a note for an explanation of its place in the scale; in Steps or Intervals, tap two notes for the named distance, direction and exact half-step count, including octaves. **Hear pair** replays them; **New pair** chooses a new start. Chords builds a root–third–fifth triad on any degree of a seven-note scale. Hear its tones without editing your pattern. Modes keep home fixed and name the changes from major. Definitions stay under Info.
 
-**Practice** begins with **What do you want to practise?** Choose a goal from first notes and pulse through scale sequences, triplets, sixteenth-note groups and seventh-chord changes. Each goal explains what to listen for and how to stretch it. Goal selection configures rules; **New pattern** makes the music. The main action stays above the optional **Shape next pattern** controls. Check **Random** only beside choices you want to vary. **Keep step** protects a selected note, chord or rest. Undo restores the previous pattern and settings.
+**Practice** begins with **Practice goal** Choose a goal from first notes and pulse through scale sequences, triplets, sixteenth-note groups and seventh-chord changes. Each goal explains what to listen for and how to stretch it. Goal selection configures rules; **New pattern** makes the music. The main action stays above the optional **Shape next pattern** controls. Check **Random** only beside choices you want to vary. **Keep step** protects a selected note, chord or rest. Undo restores the previous pattern and settings.
 
 **Practise a passage:** open **Choose passage** and drag its endpoints or enter first/last step numbers. The middle grip moves the whole group; **Whole pattern** restores the full scope. This never deletes or edits saved music. **Play along** follows the guitar guide; **Listen → play** alternates the guide with your own turn over a click. **Repeat** continues that cycle. An optional one-bar count-in gives you time to prepare, once per start. The neck follows both turns, including chords. Escape stops everything.
 
