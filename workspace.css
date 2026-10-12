@@ -472,20 +472,21 @@ body[data-workspace="practice"] #play-status { display: none; }
 .fretboard .fret.in-key .note-disc { width: 32px; min-width: 32px; height: 32px; background: #242522; border: 2px solid var(--note-color); color: #fff6e8; font-size: .9rem; }
 .fretboard .fret.in-pattern .note-disc { width: 36px; min-width: 36px; height: 36px; border: 2px solid var(--note-color); border-radius: 9px; background: color-mix(in srgb,var(--note-color) 70%,white); color: var(--note-ink); font-size: .98rem; font-weight: 800; box-shadow: 0 2px 5px #130f0bd9; }
 .fretboard .fret.pattern-outside .note-disc { border: 2px dashed #211b18; }
-.fretboard .fret.current-note .note-disc { outline: 2px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 5px #1d1611; }
 .fretboard .fret.tonic .note-disc::after { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #fff6e8; border: 1px solid #242522; top: -3px; right: -2px; }
 .fretboard .fret .note-disc { position: relative; }
 .fretboard .fret.in-key { background: color-mix(in srgb,var(--note-color) 7%,transparent); }
 .fretboard .fret.in-pattern { background: color-mix(in srgb,var(--note-color) 24%,transparent); }
 .fretboard .fret.selected { background: color-mix(in srgb,var(--note-color) 38%,transparent); }
 .fretboard .fret:is(:hover,:focus-visible) .note-disc { border-color: #fff; }
-.fretboard .fret:is(.sounding,.learning-match) .note-disc { outline: 3px solid #fff; outline-offset: 2px; box-shadow: 0 0 14px var(--note-color); }
+.fretboard .fret.current-note { --selection-edge: 0 0 0 5px #101418; --selection-offset: 1px; }
+.fretboard .fret.current-note .note-disc { border-color: #101418; outline: 3px solid #fff; outline-offset: var(--selection-offset); box-shadow: var(--selection-edge); }
+.fretboard .fret:is(.sounding,.learning-match) .note-disc { outline: 3px solid #fff; outline-offset: var(--selection-offset,2px); box-shadow: var(--selection-edge,0 0 0 0 transparent),0 0 14px var(--note-color); }
 .note-state-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; margin: 9px 0 3px; font-size: .75rem; color: var(--muted); }
 .note-state-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .note-state-legend i { display: inline-block; width: 12px; height: 12px; border: 1px solid #9b9183; border-radius: 50%; background: #302720; }
 .note-state-legend .state-key { width: 16px; height: 16px; border: 2px solid #a3cabd; background: #242522; }
 .note-state-legend :is(.state-pattern,.state-current,.state-borrowed) { width: 18px; height: 18px; background: #a3cabd; border: 1px solid #a3cabd; border-radius: 4px; }
-.note-state-legend .state-current { outline: 2px solid #fff; outline-offset: 2px; margin: 0 2px; }
+.note-state-legend .state-current { border: 2px solid #101418; outline: 3px solid #fff; outline-offset: 1px; box-shadow: 0 0 0 5px #101418; margin: 0 3px; }
 .note-state-legend .state-borrowed { border: 2px dashed #211b18; }
 
 /* Direct manipulation stays beside exact entry; a whole band moves both bounds. */

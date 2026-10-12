@@ -12,7 +12,9 @@ Every fret remains a full-cell mouse, touch and keyboard target of at least 44 Ã
 | In the key, unused | 32px colored ring |
 | Used anywhere in the pattern | 36px filled, rounded square |
 | Used in the pattern but outside the key | Filled square with a dashed dark border |
-| Current selected or playing step | Additional white outline |
+| Current selected or playing step | 3px white outline with a dark inner border and outer edge |
+
+The selected chord outlines every note in that chord; a selected melody step outlines its exact physical position. Keep the ring crisp during note audition and playback by layering the sound glow behind its dark edge. A 1px outline offset preserves the existing footprint. The legend uses the same outline, and Hide hints suppresses it with the other answers.
 
 Membership is the set of exact `stringId:fret` positions from all saved events. An equivalent pitch on another string does not become a pattern position. Rests add nothing. The current step remains a separate layer: playback highlights its actual notes, and chord lines connect only that chord. A small dot marks the tonic. Interval colors still follow the chosen reference; retain the warm major-third / cool minor-third palette and contrast-aware foregrounds for custom colors. The short symbol legend appears above the neck in Learn/Practice. Accessible names announce pitch, string, fret, pattern/key membership and selection. Wood grain is retained in every workspace.
 
