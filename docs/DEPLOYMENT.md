@@ -1,6 +1,19 @@
 # Deployment and rollback
 
-## Release 1.13.0, verified 2026-10-08 UTC
+## Release 1.13.1, verified 2026-10-12 UTC
+
+Clearer selected-note outlines are deployed to [ToneDef](https://generalgroovy.github.io/tonedef/) from runtime revision `44dfb9d4032e393e3d084ab14937dc9d54944c03`.
+
+- Each note in the selected chord or melody step has a 3px white outline, dark inner border and dark outer edge. The ring retains its footprint and stays crisp when sound glow is present. The current-step legend matches. Interval fills, outside-key dashed borders, chord connections and hidden-answer behavior remain distinct.
+- **113 automated tests**, syntax and build checks passed. [Candidate browser regression](https://github.com/generalgroovy/tonedef/actions/runs/38249853746) and [main browser regression](https://github.com/generalgroovy/tonedef/actions/runs/38250317680) passed for this revision across the existing 21 primary browser contexts. Manual local checks covered melody selection changes, chords, playback, hidden answers, and 1280×720 / 390×844 layouts.
+- [Pages publication](https://github.com/generalgroovy/tonedef/actions/runs/38250317649) succeeded. All **28 runtime files** and the manifest matched committed bytes over certificate-validated HTTPS. Runtime SHA-256: `294e2ce01733a438ab9f992eb2d1cd8396708602acc988520ded39c51148dcff`.
+- Live inspection confirmed 3px outlines on all six selected Fmaj7 notes, no selection outlines on the other pattern positions, playback highlighting and Stop restoring the same selection. Project exports before and after were byte-identical; the browser recorded no warnings or errors.
+
+[Browser report](evidence/selection-outline-layout.json) · [Public byte receipt](evidence/selection-outline-public-runtime.json) · [Live receipt](evidence/selection-outline-live.json) · [Visual rebuild contract](VISUAL-PRACTICE.md)
+
+The release updates the canonical GitHub Pages app. Touch coverage uses browser emulation. Documentation-only commits may follow the runtime revision without changing deployed files.
+
+## Historical release: 1.13.0, verified 2026-10-08 UTC
 
 Navigation and in-place configuration are deployed to [ToneDef](https://generalgroovy.github.io/tonedef/) from runtime revision `bff23d9a4e55a5e99e69001580f2045dab0d59f8`.
 

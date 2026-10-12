@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-12T12:42:10.708250+00:00",
+  "url": "https://generalgroovy.github.io/tonedef/",
+  "version": "1.13.1",
+  "sourceRevision": "44dfb9d4032e393e3d084ab14937dc9d54944c03",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "checks": [
+    "Six selected Fmaj7 positions retain their identity and show a solid 3px white outline and dark border",
+    "Other nine pattern positions have no selection outline",
+    "Playing Fmaj7 retains the 3px outline on all six notes",
+    "Stop restores the Fmaj7 editing selection",
+    "Project exported through the live Backup action before and after deployment"
+  ],
+  "localChecks": [
+    "Selecting the next melody step moves the outline and removes it from the previous step",
+    "Selected chord notes have matching crisp edges and connected shape",
+    "Active Hide hints removes selection outlines and shadows",
+    "Desktop 1280x720 and phone 390x844 visually inspected without horizontal page overflow"
+  ],
+  "projectPreservation": {
+    "byteIdentical": true,
+    "beforeSha256": "6b2f46d0876c7f6a1ac95264c89266ff0f1704d75d7f24451390e9f11b882733",
+    "afterSha256": "6b2f46d0876c7f6a1ac95264c89266ff0f1704d75d7f24451390e9f11b882733",
+    "bytes": 9053,
+    "rawBackupsPublished": false
+  },
+  "consoleWarnings": 0,
+  "consoleErrors": 0,
+  "screenshot": "Captured locally as .runtime/selection-outline-live.png; regression screenshots are available in the linked workflow artifact."
+}
